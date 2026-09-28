@@ -97,6 +97,8 @@ class HostsManager {
     if (domains.isNotEmpty) {
       buffer.writeln();
       buffer.writeln(beginTag);
+      buffer.writeln('127.0.0.1  localhost');
+      buffer.writeln('::1        localhost');
       for (var d in domains) {
         buffer.writeln('127.0.0.1  $d');
         buffer.writeln('::1        $d');

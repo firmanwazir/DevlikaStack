@@ -45,9 +45,11 @@ class MariaDbManager {
     }
 
     config.ensureDirectories();
+    final myIniPath = ensureMyIni();
 
     try {
       final args = [
+        if (myIniPath != null) '--defaults-file=$myIniPath',
         '--datadir=${config.mariaDbDataDir}',
         '--port=3306',
         '--bind-address=127.0.0.1,::1',
@@ -172,6 +174,76 @@ class MariaDbManager {
       } catch (e) {
         _logController.add('[MariaDB Init Error] $e');
       }
+    }
+  }
+
+  String? ensureMyIni() {
+    final config = ConfigService.instance;
+    final iniPath = p.join(config.mariaDbDir, 'my.ini');
+    try {
+      final file = File(iniPath);
+      if (!file.existsSync()) {
+        file.parent.createSync(recursive: true);
+        file.writeAsStringSync('''# DevlikaStack MariaDB Turbo Configuration
+[mysqld]
+port = 3306
+bind-address = 127.0.0.1,::1
+
+# Network & DNS Optimization (Eliminates localhost / reverse DNS delay)
+skip-name-resolve
+skip-host-cache
+
+# Connections & Concurrency
+max_connections = 150
+thread_cache_size = 64
+table_open_cache = 2000
+table_definition_cache = 2000
+max_allowed_packet = 128M
+
+# InnoDB Windows NTFS Optimization (5-10x faster queries)
+innodb_buffer_pool_size = 512M
+innodb_log_file_size = 64M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = normal
+innodb_file_per_table = 1
+innodb_io_capacity = 1000
+innodb_io_capacity_max = 2000
+innodb_read_io_threads = 4
+innodb_write_io_threads = 4
+
+# Timeouts
+connect_timeout = 10
+wait_timeout = 600
+interactive_timeout = 600
+
+# Character Set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+[client]
+port = 3306
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4
+''');
+      }
+
+      // Clean up legacy my.ini in data dir if it contains stale hardcoded absolute paths
+      final legacyDataIni = File(p.join(config.mariaDbDataDir, 'my.ini'));
+      if (legacyDataIni.existsSync()) {
+        try {
+          final content = legacyDataIni.readAsStringSync();
+          if (content.contains('/Server/data/mariadb') || content.contains('plugin-dir')) {
+            legacyDataIni.deleteSync();
+          }
+        } catch (_) {}
+      }
+
+      return iniPath;
+    } catch (_) {
+      return null;
     }
   }
 }

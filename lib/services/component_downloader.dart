@@ -443,6 +443,7 @@ class ComponentDownloader {
       // Avoid duplicates causing warnings
       content = content.replaceAll('extension=php_openssl.dll', ';extension=php_openssl.dll');
       content = content.replaceAll('extension=php_ftp.dll', ';extension=php_ftp.dll');
+      content = content.replaceAll('extension=php_mysqli.dll', ';extension=php_mysqli.dll');
 
       // Limits & settings for modern frameworks
       content = content.replaceAll(RegExp(r'^;?\s*memory_limit\s*=.*$', multiLine: true), 'memory_limit = 512M');
@@ -452,24 +453,26 @@ class ComponentDownloader {
       content = content.replaceAll(RegExp(r'^;?\s*max_input_vars\s*=.*$', multiLine: true), 'max_input_vars = 5000');
       content = content.replaceAll(RegExp(r'^;?\s*cgi\.fix_pathinfo\s*=.*$', multiLine: true), 'cgi.fix_pathinfo = 1');
       content = content.replaceAll(RegExp(r'^;?\s*date\.timezone\s*=.*$', multiLine: true), 'date.timezone = Asia/Jakarta');
-      content = content.replaceAll(RegExp(r'^;?\s*realpath_cache_size\s*=.*$', multiLine: true), 'realpath_cache_size = 4096k');
+      content = content.replaceAll(RegExp(r'^;?\s*realpath_cache_size\s*=.*$', multiLine: true), 'realpath_cache_size = 16M');
       content = content.replaceAll(RegExp(r'^;?\s*realpath_cache_ttl\s*=.*$', multiLine: true), 'realpath_cache_ttl = 600');
+      content = content.replaceAll(RegExp(r'^;?\s*mysqlnd\.collect_statistics\s*=.*$', multiLine: true), 'mysqlnd.collect_statistics = Off');
+      content = content.replaceAll(RegExp(r'^;?\s*mysqlnd\.collect_memory_statistics\s*=.*$', multiLine: true), 'mysqlnd.collect_memory_statistics = Off');
 
       // Zend OPcache Turbo Bytecode Accelerator
-      if (!content.contains('zend_extension=opcache') && !content.contains('zend_extension="opcache"')) {
-        content += '''
-
-; --- Devlika Stack Turbo OPcache Configuration ---
-zend_extension=opcache
-opcache.enable=1
-opcache.enable_cli=0
-opcache.memory_consumption=128
-opcache.interned_strings_buffer=16
-opcache.max_accelerated_files=10000
-opcache.revalidate_freq=0
-opcache.validate_timestamps=1
-''';
+      if (RegExp(r'^;\s*zend_extension\s*=\s*"?opcache"?', multiLine: true).hasMatch(content)) {
+        content = content.replaceAll(RegExp(r'^;\s*zend_extension\s*=\s*"?opcache"?', multiLine: true), 'zend_extension=opcache');
+      } else if (!RegExp(r'^\s*zend_extension\s*=\s*"?opcache"?', multiLine: true).hasMatch(content)) {
+        content += '\nzend_extension=opcache\n';
       }
+
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.enable\s*=.*$', multiLine: true), 'opcache.enable=1');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.enable_cli\s*=.*$', multiLine: true), 'opcache.enable_cli=1');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.memory_consumption\s*=.*$', multiLine: true), 'opcache.memory_consumption=256');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.interned_strings_buffer\s*=.*$', multiLine: true), 'opcache.interned_strings_buffer=16');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.max_accelerated_files\s*=.*$', multiLine: true), 'opcache.max_accelerated_files=20000');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.revalidate_freq\s*=.*$', multiLine: true), 'opcache.revalidate_freq=0');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.validate_timestamps\s*=.*$', multiLine: true), 'opcache.validate_timestamps=1');
+      content = content.replaceAll(RegExp(r'^;?\s*opcache\.save_comments\s*=.*$', multiLine: true), 'opcache.save_comments=1');
 
       File(iniPath).writeAsStringSync(content);
     }

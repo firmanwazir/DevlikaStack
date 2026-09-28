@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'config_service.dart';
 import 'http_server_service.dart';
 import 'vhost_config_generator.dart';
+import '../models/php_version_model.dart';
 
 class WebServerEngineManager extends ChangeNotifier {
   static final WebServerEngineManager instance = WebServerEngineManager._();
@@ -290,11 +291,7 @@ class WebServerEngineManager extends ChangeNotifier {
       if (File(defaultCgi).existsSync()) {
         try {
           final defaultExtDir = p.join(defaultModel.dirPath, 'ext');
-          final defaultArgs = [
-            '-b', '127.0.0.1:9000',
-            if (File(defaultModel.phpIni).existsSync()) ...['-c', defaultModel.phpIni],
-            if (Directory(defaultExtDir).existsSync()) ...['-d', 'extension_dir=$defaultExtDir'],
-          ];
+          final defaultArgs = _buildFastCgiArgs(defaultModel, 9000);
           final proc = await Process.start(
             defaultCgi,
             defaultArgs,
@@ -336,11 +333,7 @@ class WebServerEngineManager extends ChangeNotifier {
       if (File(cgiExe).existsSync() && cgiExe.toLowerCase().contains('cgi')) {
         try {
           final extDir = p.join(phpModel.dirPath, 'ext');
-          final args = [
-            '-b', '127.0.0.1:$port',
-            if (File(phpModel.phpIni).existsSync()) ...['-c', phpModel.phpIni],
-            if (Directory(extDir).existsSync()) ...['-d', 'extension_dir=$extDir'],
-          ];
+          final args = _buildFastCgiArgs(phpModel, port);
           final proc = await Process.start(
             cgiExe,
             args,
@@ -387,5 +380,43 @@ class WebServerEngineManager extends ChangeNotifier {
       } catch (_) {}
     }
     _isFastCgiRunning = false;
+  }
+
+  List<String> _buildFastCgiArgs(PhpVersionModel phpModel, int port) {
+    final config = ConfigService.instance;
+    final extDir = p.join(phpModel.dirPath, 'ext');
+    final sessionDir = p.join(config.storageDir, 'sessions');
+    final uploadDir = p.join(config.storageDir, 'temp');
+    final opcacheDir = p.join(config.storageDir, 'opcache', 'php-${phpModel.versionKey}');
+
+    for (final dir in [sessionDir, uploadDir, opcacheDir]) {
+      try {
+        Directory(dir).createSync(recursive: true);
+      } catch (_) {}
+    }
+
+    return [
+      '-b', '127.0.0.1:$port',
+      if (File(phpModel.phpIni).existsSync()) ...['-c', phpModel.phpIni],
+      if (Directory(extDir).existsSync()) ...['-d', 'extension_dir=$extDir'],
+      '-d', 'zend_extension=opcache',
+      '-d', 'realpath_cache_size=16M',
+      '-d', 'realpath_cache_ttl=600',
+      '-d', 'opcache.enable=1',
+      '-d', 'opcache.enable_cli=1',
+      '-d', 'opcache.memory_consumption=256',
+      '-d', 'opcache.interned_strings_buffer=16',
+      '-d', 'opcache.max_accelerated_files=20000',
+      '-d', 'opcache.validate_timestamps=1',
+      '-d', 'opcache.revalidate_freq=0',
+      '-d', 'opcache.save_comments=1',
+      if (Directory(opcacheDir).existsSync()) ...['-d', 'opcache.file_cache=$opcacheDir'],
+      '-d', 'session.save_path=$sessionDir',
+      '-d', 'upload_tmp_dir=$uploadDir',
+      '-d', 'mysqli.default_host=127.0.0.1',
+      '-d', 'pdo_mysql.default_host=127.0.0.1',
+      '-d', 'mysqlnd.collect_statistics=0',
+      '-d', 'mysqlnd.collect_memory_statistics=0',
+    ];
   }
 }
