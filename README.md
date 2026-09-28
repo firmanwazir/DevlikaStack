@@ -1,8 +1,6 @@
 # DevlikaStack
 
-**Bahasa Indonesia** | [English](README.en.md)
-
-DevlikaStack adalah aplikasi desktop Windows yang ringan dan hemat resource untuk manajemen web server lokal serta database development environment. Dibuat menggunakan Flutter, aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
+Aplikasi desktop Windows yang ringan dan hemat resource untuk manajemen web server lokal serta database development environment. Dibuat menggunakan Flutter, aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
 
 ![DevlikaStack Dashboard](assets/screenshots/preview.png)
 
@@ -53,13 +51,13 @@ Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PH
 
 ---
 
-## Port dan Konfigurasi Default
+## Port dan Konfigurasi Default / Default Ports
 
-| Layanan | Port Default | Keterangan |
+| Layanan / Service | Port Default | Keterangan / Description |
 |---|---|---|
 | HTTP Web Server | `80` | Native HTTP / Nginx / Apache |
-| HTTPS (SSL) | `443` | Sertifikat SSL lokal otomatis |
-| MariaDB | `3306` | User: `root`, Password: *(kosong)* |
+| HTTPS (SSL) | `443` | Automated local SSL certificates |
+| MariaDB | `3306` | User: `root`, Password: *(kosong / empty)* |
 | phpMyAdmin | `80` | Akses via `http://localhost/__phpmyadmin` |
 | FastCGI PHP 7.4 | `9074` | Daemon persistent worker pool |
 | FastCGI PHP 8.1 | `9081` | Daemon persistent worker pool |
@@ -68,20 +66,26 @@ Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PH
 
 ---
 
-## Build dari Source
+## English Version
 
-Prasyarat:
-- Flutter SDK (3.12+)
-- Visual Studio (dengan workload *Desktop development with C++*)
-- Windows 10/11 64-bit
+A lightweight, resource-efficient local web server and database development environment for Windows built with Flutter desktop. It combines a web server (Native HTTP / Nginx / Apache), multi-version PHP via FastCGI daemon, MariaDB, and phpMyAdmin in a single portable package without modifying the Windows registry.
+
+### Features
+
+- **Web Server Engines**: Switch between Native HTTP (Dart), Nginx 1.26, and Apache 2.4 on ports 80 and 443. Includes a built-in `.htaccess` parser for URL rewrites (Laravel, CodeIgniter, WordPress, and SPAs).
+- **Multi-PHP Runtime**: Run multiple PHP versions simultaneously (PHP 7.4, 8.1, 8.2, 8.3) assigned per virtual host. Communication runs via persistent FastCGI daemon workers (`php-cgi.exe`) to prevent per-request process creation overhead.
+- **MariaDB & phpMyAdmin**: Local MariaDB on port 3306 (user `root`, no password) with dual-stack loopback binding (`127.0.0.1` and `::1`) and `--skip-name-resolve` to avoid Windows IPv6/localhost delays. Includes built-in phpMyAdmin and a chunked SQL importer for large database dumps.
+- **Virtual Hosts & Auto Hosts File**: Automatic synchronization with the Windows `hosts` file (`127.0.0.1` and `::1`) for custom local domains. Automatically detects `public` and `public_html` DocumentRoot directories.
+- **Reverse Proxy**: Forward domain requests to other backend ports (Node.js, Go, Python, etc.).
+- **Local SSL**: Generates local SSL certificates for testing HTTPS on port 443.
+- **Lightweight & Portable**: Fully self-contained in the application directory with no Windows registry pollution. Operates natively with minimal idle RAM usage (no Docker Desktop or VM overhead) and minimizes to the Windows System Tray.
+
+---
+
+## Build dari Source / Building from Source
 
 ```bash
-# Ambil dependency
 flutter pub get
-
-# Jalankan pengujian unit test
 flutter test
-
-# Build executable release
 flutter build windows --release
 ```
