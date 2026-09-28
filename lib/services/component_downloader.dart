@@ -444,6 +444,8 @@ class ComponentDownloader {
       content = content.replaceAll('extension=php_openssl.dll', ';extension=php_openssl.dll');
       content = content.replaceAll('extension=php_ftp.dll', ';extension=php_ftp.dll');
       content = content.replaceAll('extension=php_mysqli.dll', ';extension=php_mysqli.dll');
+      content = content.replaceAll('extension=php_pdo_pgsql.dll', ';extension=php_pdo_pgsql.dll');
+      content = content.replaceAll('extension=php_pgsql.dll', ';extension=php_pgsql.dll');
 
       // Limits & settings for modern frameworks
       content = content.replaceAll(RegExp(r'^;?\s*memory_limit\s*=.*$', multiLine: true), 'memory_limit = 512M');

@@ -24,7 +24,7 @@ class HostsManager {
 
   bool isDomainMapped(String domain) {
     final clean = domain.trim().toLowerCase();
-    if (clean.isEmpty || !_validDomainRegex.hasMatch(clean)) return false;
+    if (clean.isEmpty || clean == 'localhost' || !_validDomainRegex.hasMatch(clean)) return false;
 
     try {
       final file = File(hostsPath);

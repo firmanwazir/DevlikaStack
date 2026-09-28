@@ -295,22 +295,54 @@ class PhpManager {
     // 1. Portable extension_dir
     content = content.replaceAll(RegExp(r'^;?\s*extension_dir\s*=.*$', multiLine: true), 'extension_dir = "ext"');
 
-    // 2. Enable critical extensions for Laravel & CodeIgniter
+    // 2. Enable critical extensions matching available DLLs
+    final extDir = p.join(phpDir, 'ext');
+    final availableDlls = <String>{};
+    if (Directory(extDir).existsSync()) {
+      for (final f in Directory(extDir).listSync()) {
+        if (f is File && f.path.toLowerCase().endsWith('.dll')) {
+          availableDlls.add(p.basename(f.path).toLowerCase());
+        }
+      }
+    }
+
     final exts = [
-      'bz2', 'curl', 'fileinfo', 'gd', 'gd2', 'gettext', 'intl', 'mbstring',
+      'bz2', 'curl', 'fileinfo', 'gettext', 'intl', 'mbstring',
       'exif', 'mysqli', 'openssl', 'pdo_mysql', 'pdo_sqlite', 'sqlite3',
-      'pgsql', 'pdo_pgsql', 'sodium', 'soap', 'sockets', 'zip'
+      'pgsql', 'pdo_pgsql', 'sodium', 'soap', 'sockets'
     ];
 
+    final isPhp74 = phpDir.contains('php-7.4') || phpDir.contains('php7');
+
     for (var ext in exts) {
-      content = content.replaceAll(RegExp('^;\\s*extension\\s*=\\s*$ext\\b', multiLine: true), 'extension=$ext');
-      content = content.replaceAll(RegExp('^;\\s*extension\\s*=\\s*php_$ext\\.dll\\b', multiLine: true), 'extension=php_$ext.dll');
+      if (availableDlls.isEmpty || availableDlls.contains('php_$ext.dll')) {
+        content = content.replaceAll(RegExp('^;\\s*extension\\s*=\\s*$ext\\b', multiLine: true), 'extension=$ext');
+        content = content.replaceAll(RegExp('^;\\s*extension\\s*=\\s*php_$ext\\.dll\\b', multiLine: true), 'extension=$ext');
+      }
+    }
+
+    if (isPhp74) {
+      content = content.replaceAll(RegExp(r'^\s*extension\s*=\s*gd\b', multiLine: true), ';extension=gd');
+      content = content.replaceAll(RegExp(r'^\s*extension\s*=\s*zip\b', multiLine: true), ';extension=zip');
+      content = content.replaceAll(RegExp(r'^;\s*extension\s*=\s*gd2\b', multiLine: true), 'extension=gd2');
+      content = content.replaceAll(RegExp(r'^;\s*extension\s*=\s*php_gd2\.dll\b', multiLine: true), 'extension=gd2');
+    } else {
+      if (availableDlls.isEmpty || availableDlls.contains('php_gd.dll')) {
+        if (!phpDir.contains('php-8.1')) {
+          content = content.replaceAll(RegExp(r'^;\s*extension\s*=\s*gd\b', multiLine: true), 'extension=gd');
+        }
+      }
+      if (availableDlls.isEmpty || availableDlls.contains('php_zip.dll')) {
+        content = content.replaceAll(RegExp(r'^;\s*extension\s*=\s*zip\b', multiLine: true), 'extension=zip');
+      }
     }
 
     // Clean duplicates that cause startup warnings
     content = content.replaceAll('extension=php_openssl.dll', ';extension=php_openssl.dll');
     content = content.replaceAll('extension=php_ftp.dll', ';extension=php_ftp.dll');
     content = content.replaceAll('extension=php_mysqli.dll', ';extension=php_mysqli.dll');
+    content = content.replaceAll('extension=php_pdo_pgsql.dll', ';extension=php_pdo_pgsql.dll');
+    content = content.replaceAll('extension=php_pgsql.dll', ';extension=php_pgsql.dll');
     content = content.replaceAll(RegExp(r'^error_log\s*=.*$', multiLine: true), ';error_log = "logs/php_error.log"');
 
     // Ensure portable session and upload dirs (use Windows default temp)
