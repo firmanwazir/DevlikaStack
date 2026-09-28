@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import '../models/site_model.dart';
 import '../models/php_version_model.dart';
@@ -73,6 +74,11 @@ class ConfigService {
           exactVersion: normalized,
           downloadUrl: '',
         );
+      }
+      // If a specific version was requested, return that version model
+      final match = list.where((v) => v.versionKey == normalized || v.versionKey == versionKey).firstOrNull;
+      if (match != null) {
+        return match;
       }
     }
 
@@ -223,13 +229,21 @@ class ConfigService {
       }
     }
 
-    // 3. If running from root next to bin/ (e.g. DevlikaStack-Portable/DevlikaStack.exe)
+    // 3. If running from root next to existing bin/ (e.g. DevlikaStack-Portable/DevlikaStack.exe)
     final adjacentBin = p.join(exeDir, 'bin');
     if (Directory(adjacentBin).existsSync()) {
       return adjacentBin;
     }
 
-    // 4. Development mode: current working directory or search upwards for bin/
+    // 4. In Release mode or if running from a Release build directory:
+    // ALWAYS use adjacentBin directly next to the executable.
+    // This ensures the application is completely self-contained and portable
+    // inside its release directory, never leaking bin/ to outside project folders.
+    if (kReleaseMode || p.basename(exeDir).toLowerCase() == 'release') {
+      return adjacentBin;
+    }
+
+    // 5. Development mode: current working directory or search upwards for bin/
     var current = Directory.current.path;
     if (Directory(p.join(current, 'bin', 'php')).existsSync() ||
         File(p.join(current, 'pubspec.yaml')).existsSync()) {
