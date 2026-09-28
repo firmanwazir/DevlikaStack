@@ -1,13 +1,81 @@
 # DevlikaStack
 
-Aplikasi desktop Windows untuk web server lokal (PHP, MariaDB, Nginx, Apache) berbasis Flutter. Dibuat supaya bisa development web di Windows secara portable tanpa perlu setup yang ribet.
+DevlikaStack adalah aplikasi desktop Windows untuk manajemen web server lokal dan environment database, dibuat menggunakan Flutter. Aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
 
-## Fitur & Fungsi
+---
 
-- **Web Server**: Bisa pilih engine bawaan, Nginx, atau Apache di port 80 & 443. Sudah support rewrite `.htaccess` untuk Laravel, CodeIgniter, WordPress, dan SPA.
-- **Multi-PHP**: Bisa jalanin PHP 7.4, 8.1, 8.2, dan 8.3 secara bersamaan. Versi PHP bisa diatur berbeda untuk tiap domain/projek. Dijalankan lewat daemon FastCGI (`php-cgi`) dengan worker pool biar respon web tetap cepat.
-- **MariaDB & phpMyAdmin**: MariaDB langsung aktif di port 3306 (user `root` tanpa password) dengan koneksi dual-stack IPv4/IPv6 biar tidak ada delay saat panggil `localhost`. Sudah include phpMyAdmin dan tool import SQL untuk file dump besar.
-- **Virtual Host & Auto Hosts**: Tambah domain lokal (contoh `projek.test`), otomatis sync ke file `hosts` Windows (`127.0.0.1` dan `::1`). Otomatis deteksi folder root `public` atau `public_html`.
-- **Reverse Proxy**: Bisa mapping domain lokal ke port service lain seperti Node.js, Python, atau Go.
-- **SSL Lokal**: Otomatis buat sertifikat SSL lokal untuk akses HTTPS di port 443.
-- **System Tray & Portabel**: Semua runtime PHP, MariaDB, database, dan konfigurasi tersimpan di dalam folder aplikasi. Bisa diminimize ke tray taskbar untuk monitor status servis.
+## Fitur dan Fungsionalitas
+
+### 1. Pilihan Web Server Engine
+Aplikasi menyediakan tiga opsi web engine yang bisa diganti langsung dari dashboard:
+- **Native HTTP Engine**: Web server internal berbasis Dart yang berjalan di port 80 dan 443. Dilengkapi parser `.htaccess` bawaan untuk URL rewrite (kompatibel dengan Laravel, CodeIgniter, WordPress, dan Single Page Application), Keep-Alive persistent connection, dan in-memory cache untuk berkas statis.
+- **Nginx 1.26**: Engine Nginx portabel dengan generator konfigurasi virtual host otomatis (`conf/vhosts/*.conf`).
+- **Apache HTTPD 2.4**: Engine Apache portabel untuk kebutuhan projek yang memerlukan modul Apache.
+
+Pergantian engine dilakukan secara aman dengan melepas socket port 80/443 sebelum mengaktifkan engine baru.
+
+### 2. Multi-PHP FastCGI Daemon Pool
+Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PHP secara global:
+- Mendukung beberapa versi PHP aktif sekaligus (PHP 7.4, 8.1, 8.2, 8.3).
+- Versi PHP dapat diatur berbeda untuk masing-masing virtual host / projek.
+- Komunikasi menggunakan FastCGI daemon pool (`php-cgi.exe`) via TCP socket di port dedicated:
+  - PHP 7.4: port `9074`
+  - PHP 8.1: port `9081`
+  - PHP 8.2: port `9082`
+  - PHP 8.3: port `9083`
+  - Default: port `9000`
+- Worker pool dikelola dengan `PHP_FCGI_CHILDREN` dan akselerasi OPcache, sehingga request tidak perlu menunggu proses PHP baru di-spawn setiap kali halaman dimuat.
+
+### 3. Database MariaDB & phpMyAdmin
+- **MariaDB 3306**: Service database lokal dengan konfigurasi dual-stack loopback (`127.0.0.1` dan `::1`) serta `--skip-name-resolve`, mencegah delay DNS/IPv6 timeout pada Windows saat aplikasi PHP menghubungkan database via `localhost`.
+- **phpMyAdmin**: Terintegrasi langsung dan dapat diakses lewat browser di path `/__phpmyadmin` dengan autentikasi otomatis ke MariaDB lokal.
+- **SQL Importer**: Fitur import SQL dump besar dengan eksekusi bertahap (chunked transaction buffer) agar file SQL ratusan megabyte dapat diimpor tanpa memory limit atau timeout.
+
+### 4. Virtual Host & Sinkronisasi Hosts File
+- Menambahkan domain lokal kustom (contoh: `projek.test`, `siakad.univrab`).
+- Otomatis memperbarui file Windows hosts (`C:\Windows\System32\drivers\etc\hosts`) dengan mendaftarkan entri IPv4 (`127.0.0.1`) dan IPv6 (`::1`) agar browser tidak melakukan lookup DNS eksternal.
+- Auto-detect folder DocumentRoot: otomatis mengenali folder `public/index.php` (Laravel) atau `public_html/index.php` (CodeIgniter/arsitektur lama).
+- **Reverse Proxy**: Mendukung proxy request dari domain lokal ke port aplikasi backend lain (Node.js, Go, Python, dsb).
+
+### 5. SSL / HTTPS Lokal
+- Menyediakan sertifikat SSL lokal otomatis untuk melayani koneksi HTTPS pada port 443 di semua engine web server.
+
+### 6. Desain Portabel & System Tray
+- Semua berkas PHP, MariaDB, database pengguna, dan file konfigurasi tersimpan di dalam direktori aplikasi (`bin/` dan `storage/`).
+- Aplikasi memiliki manifest `requireAdministrator` agar dapat mengelola port 80/443 dan file `hosts` sistem.
+- Terintegrasi dengan Windows System Tray untuk memantau status servis dan kontrol background.
+
+---
+
+## Port dan Konfigurasi Default
+
+| Layanan | Port Default | Keterangan |
+|---|---|---|
+| HTTP Web Server | `80` | Native HTTP / Nginx / Apache |
+| HTTPS (SSL) | `443` | Sertifikat SSL lokal otomatis |
+| MariaDB | `3306` | User: `root`, Password: *(kosong)* |
+| phpMyAdmin | `80` | Akses via `http://localhost/__phpmyadmin` |
+| FastCGI PHP 7.4 | `9074` | Daemon persistent worker pool |
+| FastCGI PHP 8.1 | `9081` | Daemon persistent worker pool |
+| FastCGI PHP 8.2 | `9082` | Daemon persistent worker pool |
+| FastCGI PHP 8.3 | `9083` | Daemon persistent worker pool |
+
+---
+
+## Build dari Source
+
+Prasyarat:
+- Flutter SDK (3.12+)
+- Visual Studio (dengan workload *Desktop development with C++*)
+- Windows 10/11 64-bit
+
+```bash
+# Ambil dependency
+flutter pub get
+
+# Jalankan pengujian unit test
+flutter test
+
+# Build executable release
+flutter build windows --release
+```
