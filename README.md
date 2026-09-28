@@ -2,6 +2,8 @@
 
 DevlikaStack adalah aplikasi desktop Windows untuk manajemen web server lokal dan environment database, dibuat menggunakan Flutter. Aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
 
+![DevlikaStack Dashboard](assets/screenshots/dashboard.png)
+
 ---
 
 ## Fitur dan Fungsionalitas
