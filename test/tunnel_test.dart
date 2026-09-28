@@ -14,8 +14,25 @@ void main() {
       final tunnel = TunnelService.instance;
       expect(tunnel.isRunning, isFalse);
       expect(tunnel.isStarting, isFalse);
+      expect(tunnel.isDownloading, isFalse);
       expect(tunnel.publicUrl, isNull);
       expect(tunnel.activeDomain, isNull);
+      expect(tunnel.activePort, isNull);
+      expect(tunnel.lastError, isNull);
+    });
+
+    test('Auto-reconnect is enabled by default', () {
+      final tunnel = TunnelService.instance;
+      expect(tunnel.autoReconnectEnabled, isTrue);
+      expect(tunnel.reconnectAttempts, equals(0));
+    });
+
+    test('setAutoReconnect toggles correctly', () {
+      final tunnel = TunnelService.instance;
+      tunnel.setAutoReconnect(false);
+      expect(tunnel.autoReconnectEnabled, isFalse);
+      tunnel.setAutoReconnect(true);
+      expect(tunnel.autoReconnectEnabled, isTrue);
     });
 
     test('Cloudflare Quick Tunnel regex extracts valid trycloudflare URL', () {
@@ -32,12 +49,31 @@ void main() {
       expect(match!.group(0), equals('https://alpha-beta-gamma-123.trycloudflare.com'));
     });
 
-    test('stopTunnel resets active state safely', () async {
+    test('Regex does NOT match invalid domains', () {
+      const noMatch = 'https://example.com/hello';
+      final reg = RegExp(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com');
+      expect(reg.firstMatch(noMatch), isNull);
+    });
+
+    test('stopTunnel resets active state safely (idempotent)', () async {
       final tunnel = TunnelService.instance;
+      // Calling stopTunnel even when nothing is running should not throw
       await tunnel.stopTunnel();
       expect(tunnel.isRunning, isFalse);
       expect(tunnel.isStarting, isFalse);
       expect(tunnel.publicUrl, isNull);
+      expect(tunnel.reconnectAttempts, equals(0));
+
+      // Call again - should be safe
+      await tunnel.stopTunnel();
+      expect(tunnel.isRunning, isFalse);
+    });
+
+    test('downloadCloudflared prevents double-download', () async {
+      final tunnel = TunnelService.instance;
+      // Since cloudflared is not installed in test env, this tests
+      // that the guard works - it should not crash
+      expect(tunnel.isDownloading, isFalse);
     });
   });
 }

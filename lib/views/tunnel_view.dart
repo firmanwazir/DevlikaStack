@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +20,7 @@ class _TunnelViewState extends State<TunnelView> {
   final TextEditingController _portController = TextEditingController(text: '80');
   final ScrollController _logScrollController = ScrollController();
   final List<String> _logs = [];
+  StreamSubscription<String>? _logSub;
 
   @override
   void initState() {
@@ -28,11 +30,11 @@ class _TunnelViewState extends State<TunnelView> {
       _selectedDomain = sites.first.domain;
     }
 
-    TunnelService.instance.logStream.listen((log) {
+    _logSub = TunnelService.instance.logStream.listen((log) {
       if (mounted) {
         setState(() {
           _logs.add(log);
-          if (_logs.length > 300) _logs.removeAt(0);
+          if (_logs.length > 500) _logs.removeRange(0, _logs.length - 500);
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_logScrollController.hasClients) {
@@ -49,6 +51,7 @@ class _TunnelViewState extends State<TunnelView> {
 
   @override
   void dispose() {
+    _logSub?.cancel();
     _portController.dispose();
     _logScrollController.dispose();
     super.dispose();
@@ -623,9 +626,71 @@ class _TunnelViewState extends State<TunnelView> {
               ),
             ],
 
+            // Auto-Reconnect Toggle
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.bgDark.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.borderDark),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.autorenew_rounded, size: 16, color: AppTheme.accentCyan),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Auto-Reconnect',
+                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Otomatis sambung ulang jika tunnel mati secara tiba-tiba (maks 5 percobaan).',
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: tunnel.autoReconnectEnabled,
+                    activeColor: AppTheme.accentGreen,
+                    onChanged: (val) => tunnel.setAutoReconnect(val),
+                  ),
+                ],
+              ),
+            ),
+
+            // Reconnect Status
+            if (tunnel.reconnectAttempts > 0 && !isRunning && !isStarting) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentAmber.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.accentAmber.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sync_rounded, size: 16, color: AppTheme.accentAmber),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Auto-reconnect: percobaan ${tunnel.reconnectAttempts}/5...',
+                        style: const TextStyle(color: AppTheme.accentAmber, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // Error Message
             if (tunnel.lastError != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
