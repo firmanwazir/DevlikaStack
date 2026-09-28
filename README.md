@@ -1,5 +1,7 @@
 # DevlikaStack
 
+[Bahasa Indonesia](#fitur-dan-fungsionalitas) • [English](#english-version)
+
 Aplikasi desktop Windows yang ringan dan hemat resource untuk manajemen web server lokal serta database development environment. Dibuat menggunakan Flutter, aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
 
 ![DevlikaStack Dashboard](assets/screenshots/preview.png)
