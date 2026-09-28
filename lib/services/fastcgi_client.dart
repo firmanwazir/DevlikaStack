@@ -47,7 +47,7 @@ class FastCgiClient {
     Socket? socket;
     try {
       socket = await Socket.connect(host, port,
-          timeout: const Duration(milliseconds: 1000));
+          timeout: const Duration(milliseconds: 5000));
       // Disable Nagle's algorithm for lower latency
       socket.setOption(SocketOption.tcpNoDelay, true);
 

@@ -87,8 +87,8 @@ void main() {
       final laravelConf = File('${config.nginxVhostsDir}/laravelsite.test.conf');
       expect(laravelConf.existsSync(), isTrue);
       final laravelContent = laravelConf.readAsStringSync();
-      expect(laravelContent.contains('server_name laravelsite.test;'), isTrue);
-      expect(laravelContent.contains('fastcgi_pass   127.0.0.1:9082;'), isTrue);
+      expect(laravelContent.contains('fastcgi_pass   php_8_2_pool;'), isTrue);
+      expect(laravelContent.contains('fastcgi_keep_conn on;'), isTrue);
       expect(laravelContent.contains('try_files \$uri \$uri/ /index.php?\$query_string;'), isTrue);
       // Ensure path is converted to forward slashes (no Windows backslash in nginx config)
       expect(laravelContent.contains(r'D:\WebServer'), isFalse);

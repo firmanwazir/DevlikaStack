@@ -200,6 +200,18 @@ table_open_cache = 2000
 table_definition_cache = 2000
 max_allowed_packet = 128M
 
+# Query Cache & Memory Buffers (Instant RAM lookups for repeated SELECT queries)
+query_cache_type = 1
+query_cache_size = 64M
+query_cache_limit = 4M
+query_cache_min_res_unit = 2k
+tmp_table_size = 64M
+max_heap_table_size = 64M
+join_buffer_size = 4M
+sort_buffer_size = 4M
+read_buffer_size = 2M
+read_rnd_buffer_size = 2M
+
 # InnoDB Windows NTFS Optimization (5-10x faster queries)
 innodb_buffer_pool_size = 512M
 innodb_log_file_size = 64M

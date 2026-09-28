@@ -10,6 +10,7 @@ import 'config_service.dart';
 import 'fastcgi_client.dart';
 import 'htaccess_service.dart';
 import 'ssl_service.dart';
+import 'vhost_config_generator.dart';
 
 class HttpServerService {
   static final HttpServerService instance = HttpServerService._();
@@ -29,10 +30,10 @@ class HttpServerService {
   Map<String, SiteModel>? _siteDomainMap;
   final http.Client _proxyClient = http.Client();
 
-  // --- Multi-Version FastCGI Daemon Pool (persistent php-cgi per PHP version) ---
-  final Map<String, Process> _fastCgiDaemons = {};
-  final Map<String, FastCgiClient> _fastCgiClients = {};
-  final Map<String, int> _fastCgiPorts = {};
+  // --- Multi-Worker FastCGI Daemon Pools (Zero-queue parallel concurrency per PHP version) ---
+  final Map<String, List<Process>> _fastCgiDaemons = {};
+  final Map<String, List<FastCgiClient>> _fastCgiPools = {};
+  final Map<String, int> _poolIndex = {};
   final Map<String, bool> _fastCgiReady = {};
 
   // --- Performance Caches (avoid disk I/O per request) ---
@@ -177,23 +178,10 @@ class HttpServerService {
 
   /// Deterministic FastCGI port mapping per PHP version
   int _getPortForPhpVersion(String versionKey) {
-    final norm = ConfigService.normalizePhpVersionKey(versionKey);
-    switch (norm) {
-      case '7.4':
-        return 9074;
-      case '8.1':
-        return 9081;
-      case '8.2':
-        return 9082;
-      case '8.3':
-        return 9083;
-      case 'default':
-      default:
-        return 9000;
-    }
+    return VhostConfigGenerator.getFastCgiPort(versionKey);
   }
 
-  /// Start FastCGI daemons for all PHP versions needed by enabled sites + default PHP
+  /// Start FastCGI worker pools for all PHP versions needed by enabled sites + default PHP
   Future<void> _startAllConfiguredFastCgiDaemons() async {
     final sites = ConfigService.instance.loadSites();
     final neededKeys = <String>{'default'};
@@ -211,10 +199,10 @@ class HttpServerService {
     await Future.wait(futures);
   }
 
-  /// Start a persistent php-cgi daemon for a specific PHP version.
+  /// Start a persistent multi-worker php-cgi pool for a specific PHP version.
   Future<bool> _startFastCgiDaemonFor(PhpVersionModel phpModel) async {
     final versionKey = phpModel.versionKey;
-    final port = _getPortForPhpVersion(versionKey);
+    final ports = VhostConfigGenerator.getFastCgiPorts(versionKey);
     final cgiExe = phpModel.phpCgiExe;
 
     if (!File(cgiExe).existsSync()) {
@@ -222,19 +210,9 @@ class HttpServerService {
       return false;
     }
 
-    // Check if port is already active (reuse existing daemon)
-    try {
-      final testSocket = await Socket.connect('127.0.0.1', port,
-          timeout: const Duration(milliseconds: 200));
-      testSocket.destroy();
-      _fastCgiClients[versionKey] = FastCgiClient(port: port);
-      _fastCgiPorts[versionKey] = port;
-      _fastCgiReady[versionKey] = true;
-      _logController.add('[FastCGI] Daemon ${phpModel.name} aktif di port $port (reuse).');
-      return true;
-    } catch (_) {
-      // Port free, start daemon
-    }
+    _fastCgiPools.putIfAbsent(versionKey, () => []);
+    _fastCgiDaemons.putIfAbsent(versionKey, () => []);
+    _poolIndex.putIfAbsent(versionKey, () => 0);
 
     final config = ConfigService.instance;
     final sessionDir = p.join(config.storageDir, 'sessions');
@@ -249,110 +227,136 @@ class HttpServerService {
     }
 
     final extDir = p.join(phpModel.dirPath, 'ext');
-    final args = <String>[
-      '-b', '127.0.0.1:$port',
-      if (File(phpModel.phpIni).existsSync()) ...['-c', phpModel.phpIni],
-      if (Directory(extDir).existsSync()) ...['-d', 'extension_dir=$extDir'],
-      '-d', 'zend_extension=opcache',
-      '-d', 'realpath_cache_size=16M',
-      '-d', 'realpath_cache_ttl=600',
-      '-d', 'opcache.enable=1',
-      '-d', 'opcache.enable_cli=1',
-      '-d', 'opcache.memory_consumption=256',
-      '-d', 'opcache.interned_strings_buffer=16',
-      '-d', 'opcache.max_accelerated_files=20000',
-      '-d', 'opcache.validate_timestamps=1',
-      '-d', 'opcache.revalidate_freq=0',
-      '-d', 'opcache.save_comments=1',
-      if (Directory(opcacheDir).existsSync()) ...['-d', 'opcache.file_cache=$opcacheDir'],
-      '-d', 'session.save_path=$sessionDir',
-      '-d', 'upload_tmp_dir=$uploadDir',
-      '-d', 'mysqli.default_host=127.0.0.1',
-      '-d', 'pdo_mysql.default_host=127.0.0.1',
-      '-d', 'mysqlnd.collect_statistics=0',
-      '-d', 'mysqlnd.collect_memory_statistics=0',
-    ];
+    bool anyReady = false;
 
-    try {
-      final proc = await Process.start(
-        cgiExe,
-        args,
-        environment: {
-          'PHP_FCGI_CHILDREN': '8',
-          'PHP_FCGI_MAX_REQUESTS': '10000',
-          if (File(phpModel.phpIni).existsSync()) 'PHPRC': phpModel.dirPath,
-          'PATH': '${phpModel.dirPath};$extDir;${Platform.environment['PATH'] ?? ''}',
-        },
-        workingDirectory: phpModel.dirPath,
-      );
-
-      _fastCgiDaemons[versionKey] = proc;
-      _fastCgiPorts[versionKey] = port;
-
-      // Monitor stderr
-      proc.stderr.listen((data) {
-        final msg = utf8.decode(data, allowMalformed: true).trim();
-        if (msg.isNotEmpty) {
-          _logController.add('[FastCGI $versionKey Error] $msg');
+    for (final port in ports) {
+      // Check if port is already active (reuse existing daemon)
+      try {
+        final testSocket = await Socket.connect('127.0.0.1', port,
+            timeout: const Duration(milliseconds: 150));
+        testSocket.destroy();
+        if (!_fastCgiPools[versionKey]!.any((c) => c.port == port)) {
+          _fastCgiPools[versionKey]!.add(FastCgiClient(port: port));
         }
-      });
-
-      // Monitor exit
-      proc.exitCode.then((code) {
-        _fastCgiReady[versionKey] = false;
-        _fastCgiClients.remove(versionKey);
-        _fastCgiDaemons.remove(versionKey);
-        if (_isRunning) {
-          _logController.add('[FastCGI] Daemon ${phpModel.name} berhenti (code $code).');
-        }
-      });
-
-      // Wait for daemon port to be ready (up to 2.5 seconds)
-      for (int i = 0; i < 25; i++) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        try {
-          final testSocket = await Socket.connect('127.0.0.1', port,
-              timeout: const Duration(milliseconds: 150));
-          testSocket.destroy();
-          _fastCgiClients[versionKey] = FastCgiClient(port: port);
-          _fastCgiReady[versionKey] = true;
-          _logController.add('[FastCGI] Daemon ${phpModel.name} siap di port $port.');
-          return true;
-        } catch (_) {}
+        anyReady = true;
+        continue;
+      } catch (_) {
+        // Port free, spawn worker
       }
 
-      _logController.add('[FastCGI] Daemon ${phpModel.name} belum merespons port $port, akan coba lagi saat request masuk.');
-    } catch (e) {
-      _logController.add('[FastCGI Error] Gagal memulai daemon ${phpModel.name}: $e');
+      final args = <String>[
+        '-b', '127.0.0.1:$port',
+        if (File(phpModel.phpIni).existsSync()) ...['-c', phpModel.phpIni],
+        if (Directory(extDir).existsSync()) ...['-d', 'extension_dir=$extDir'],
+        '-d', 'realpath_cache_size=16M',
+        '-d', 'realpath_cache_ttl=600',
+        '-d', 'opcache.enable=1',
+        '-d', 'opcache.enable_cli=1',
+        '-d', 'opcache.memory_consumption=256',
+        '-d', 'opcache.interned_strings_buffer=16',
+        '-d', 'opcache.max_accelerated_files=20000',
+        '-d', 'opcache.validate_timestamps=1',
+        '-d', 'opcache.revalidate_freq=2',
+        '-d', 'opcache.save_comments=1',
+        if (Directory(opcacheDir).existsSync()) ...['-d', 'opcache.file_cache=$opcacheDir'],
+        '-d', 'session.save_path=$sessionDir',
+        '-d', 'session.lazy_write=1',
+        '-d', 'upload_tmp_dir=$uploadDir',
+        '-d', 'mysqli.default_host=127.0.0.1',
+        '-d', 'pdo_mysql.default_host=127.0.0.1',
+        '-d', 'mysqlnd.collect_statistics=0',
+        '-d', 'mysqlnd.collect_memory_statistics=0',
+      ];
+
+      try {
+        final proc = await Process.start(
+          cgiExe,
+          args,
+          environment: {
+            'PHP_FCGI_CHILDREN': '0',
+            'PHP_FCGI_MAX_REQUESTS': '10000',
+            if (File(phpModel.phpIni).existsSync()) 'PHPRC': phpModel.dirPath,
+            'PATH': '${phpModel.dirPath};$extDir;${Platform.environment['PATH'] ?? ''}',
+          },
+          workingDirectory: phpModel.dirPath,
+        );
+
+        _fastCgiDaemons[versionKey]!.add(proc);
+
+        // Monitor stderr
+        proc.stderr.listen((data) {
+          final msg = utf8.decode(data, allowMalformed: true).trim();
+          if (msg.isNotEmpty && !msg.contains('already loaded')) {
+            _logController.add('[FastCGI $versionKey Error] $msg');
+          }
+        });
+
+        // Monitor exit
+        proc.exitCode.then((code) {
+          _fastCgiPools[versionKey]?.removeWhere((c) => c.port == port);
+          _fastCgiDaemons[versionKey]?.remove(proc);
+        });
+
+        // Wait for daemon port to be ready (up to 2 seconds)
+        for (int i = 0; i < 20; i++) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          try {
+            final testSocket = await Socket.connect('127.0.0.1', port,
+                timeout: const Duration(milliseconds: 150));
+            testSocket.destroy();
+            if (!_fastCgiPools[versionKey]!.any((c) => c.port == port)) {
+              _fastCgiPools[versionKey]!.add(FastCgiClient(port: port));
+            }
+            anyReady = true;
+            break;
+          } catch (_) {}
+        }
+      } catch (e) {
+        _logController.add('[FastCGI Error] Gagal memulai worker $port untuk ${phpModel.name}: $e');
+      }
+    }
+
+    if (anyReady) {
+      _fastCgiReady[versionKey] = true;
+      _logController.add('[FastCGI] Worker pool ${phpModel.name} (${_fastCgiPools[versionKey]!.length} workers) aktif.');
+      return true;
     }
     return false;
   }
 
-  /// Get or on-demand start FastCGI client for a specific PHP version model
+  /// Get or on-demand start FastCGI client with round-robin worker distribution
   Future<FastCgiClient?> _getOrStartFastCgiClient(PhpVersionModel phpModel) async {
     final versionKey = phpModel.versionKey;
-    if (_fastCgiReady[versionKey] == true && _fastCgiClients.containsKey(versionKey)) {
-      return _fastCgiClients[versionKey];
+    final pool = _fastCgiPools[versionKey];
+    if (_fastCgiReady[versionKey] == true && pool != null && pool.isNotEmpty) {
+      final idx = (_poolIndex[versionKey] ?? 0) % pool.length;
+      _poolIndex[versionKey] = idx + 1;
+      return pool[idx];
     }
 
     final started = await _startFastCgiDaemonFor(phpModel);
-    if (started && _fastCgiClients.containsKey(versionKey)) {
-      return _fastCgiClients[versionKey];
+    final newPool = _fastCgiPools[versionKey];
+    if (started && newPool != null && newPool.isNotEmpty) {
+      final idx = (_poolIndex[versionKey] ?? 0) % newPool.length;
+      _poolIndex[versionKey] = idx + 1;
+      return newPool[idx];
     }
     return null;
   }
 
   Future<void> _stopFastCgiDaemon() async {
-    _fastCgiClients.clear();
+    _fastCgiPools.clear();
+    _poolIndex.clear();
     _fastCgiReady.clear();
 
-    for (var proc in _fastCgiDaemons.values) {
-      try {
-        proc.kill();
-      } catch (_) {}
+    for (var procs in _fastCgiDaemons.values) {
+      for (var proc in procs) {
+        try {
+          proc.kill();
+        } catch (_) {}
+      }
     }
     _fastCgiDaemons.clear();
-    _fastCgiPorts.clear();
 
     // Clean up any orphaned php-cgi processes on all known ports
     if (Platform.isWindows) {
@@ -660,7 +664,6 @@ class HttpServerService {
 
     final args = <String>[
       if (_cachedDirExists(extDir)) ...['-d', 'extension_dir=$extDir'],
-      '-d', 'zend_extension=opcache',
       '-d', 'realpath_cache_size=16M',
       '-d', 'realpath_cache_ttl=600',
       '-d', 'opcache.enable=1',
@@ -669,10 +672,11 @@ class HttpServerService {
       '-d', 'opcache.interned_strings_buffer=16',
       '-d', 'opcache.max_accelerated_files=20000',
       '-d', 'opcache.validate_timestamps=1',
-      '-d', 'opcache.revalidate_freq=0',
+      '-d', 'opcache.revalidate_freq=2',
       '-d', 'opcache.save_comments=1',
       if (_cachedDirExists(opcacheDir)) ...['-d', 'opcache.file_cache=$opcacheDir'],
       '-d', 'session.save_path=$sessionDir',
+      '-d', 'session.lazy_write=1',
       '-d', 'upload_tmp_dir=$uploadDir',
       '-d', 'mysqli.default_host=127.0.0.1',
       '-d', 'pdo_mysql.default_host=127.0.0.1',

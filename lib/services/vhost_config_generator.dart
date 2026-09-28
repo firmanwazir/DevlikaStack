@@ -8,21 +8,31 @@ class VhostConfigGenerator {
   static final VhostConfigGenerator instance = VhostConfigGenerator._();
   VhostConfigGenerator._();
 
-  static int getFastCgiPort(String? versionKey) {
+  static List<int> getFastCgiPorts(String? versionKey) {
     final norm = ConfigService.normalizePhpVersionKey(versionKey);
     switch (norm) {
       case '7.4':
-        return 9074;
+        return const [9074, 9174, 9274, 9374];
       case '8.1':
-        return 9081;
+        return const [9081, 9181, 9281, 9381];
       case '8.2':
-        return 9082;
+        return const [9082, 9182, 9282, 9382];
       case '8.3':
-        return 9083;
+        return const [9083, 9183, 9283, 9383];
       case 'default':
       default:
-        return 9000;
+        return const [9000, 9001, 9002, 9003];
     }
+  }
+
+  static int getFastCgiPort(String? versionKey) {
+    return getFastCgiPorts(versionKey).first;
+  }
+
+  static String getUpstreamName(String? versionKey) {
+    final norm = ConfigService.normalizePhpVersionKey(versionKey);
+    if (norm == 'default' || norm.isEmpty) return 'php_default_pool';
+    return 'php_${norm.replaceAll('.', '_')}_pool';
   }
 
   String _toForwardSlash(String path) {
@@ -101,6 +111,47 @@ http {
         application/rss+xml
         image/svg+xml;
 
+    # PHP FastCGI Multi-Worker Pools (Zero-queue parallel concurrency for Windows)
+    upstream php_default_pool {
+        server 127.0.0.1:9000;
+        server 127.0.0.1:9001;
+        server 127.0.0.1:9002;
+        server 127.0.0.1:9003;
+        keepalive 32;
+    }
+
+    upstream php_7_4_pool {
+        server 127.0.0.1:9074;
+        server 127.0.0.1:9174;
+        server 127.0.0.1:9274;
+        server 127.0.0.1:9374;
+        keepalive 32;
+    }
+
+    upstream php_8_1_pool {
+        server 127.0.0.1:9081;
+        server 127.0.0.1:9181;
+        server 127.0.0.1:9281;
+        server 127.0.0.1:9381;
+        keepalive 32;
+    }
+
+    upstream php_8_2_pool {
+        server 127.0.0.1:9082;
+        server 127.0.0.1:9182;
+        server 127.0.0.1:9282;
+        server 127.0.0.1:9382;
+        keepalive 32;
+    }
+
+    upstream php_8_3_pool {
+        server 127.0.0.1:9083;
+        server 127.0.0.1:9183;
+        server 127.0.0.1:9283;
+        server 127.0.0.1:9383;
+        keepalive 32;
+    }
+
     # Default localhost / 127.0.0.1 server
     server {
         listen       80 default_server;
@@ -118,18 +169,26 @@ http {
             index index.php;
 
             location ~ \\.php\$ {
-                fastcgi_pass   127.0.0.1:9000;
+                fastcgi_pass   php_default_pool;
+                fastcgi_keep_conn on;
                 fastcgi_index  index.php;
                 fastcgi_param  SCRIPT_FILENAME  \$request_filename;
                 include        fastcgi_params;
+                fastcgi_read_timeout 3600;
+                fastcgi_buffers 16 16k;
+                fastcgi_buffer_size 32k;
             }
         }
 
         location ~ \\.php\$ {
-            fastcgi_pass   127.0.0.1:9000;
+            fastcgi_pass   php_default_pool;
+            fastcgi_keep_conn on;
             fastcgi_index  index.php;
             fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
             include        fastcgi_params;
+            fastcgi_read_timeout 3600;
+            fastcgi_buffers 16 16k;
+            fastcgi_buffer_size 32k;
         }
 
         location ~ /\\.(env|git|log|htaccess) {
@@ -191,7 +250,7 @@ server {
 ''';
       } else {
         final docRoot = _getEffectiveDocRoot(site.rootPath);
-        final fcgiPort = getFastCgiPort(site.phpVersion);
+        final upstreamName = getUpstreamName(site.phpVersion);
         content = '''
 # Devlika Stack Virtual Host: ${site.domain} (PHP ${site.phpVersion} / Static)
 server {
@@ -213,7 +272,8 @@ server {
     }
 
     location ~ \\.php\$ {
-        fastcgi_pass   127.0.0.1:$fcgiPort;
+        fastcgi_pass   $upstreamName;
+        fastcgi_keep_conn on;
         fastcgi_index  index.php;
         fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
         include        fastcgi_params;

@@ -361,6 +361,7 @@ class PhpManager {
     content = _replaceDirective(content, 'realpath_cache_ttl', '600');
     content = _replaceDirective(content, 'mysqlnd.collect_statistics', 'Off');
     content = _replaceDirective(content, 'mysqlnd.collect_memory_statistics', 'Off');
+    content = _replaceDirective(content, 'session.lazy_write', '1');
 
     // 4. Zend OPcache Turbo Bytecode Accelerator
     if (RegExp(r'^;\s*zend_extension\s*=\s*"?opcache"?', multiLine: true).hasMatch(content)) {
@@ -374,7 +375,7 @@ class PhpManager {
     content = content.replaceAll(RegExp(r'^;?\s*opcache\.memory_consumption\s*=.*$', multiLine: true), 'opcache.memory_consumption=256');
     content = content.replaceAll(RegExp(r'^;?\s*opcache\.interned_strings_buffer\s*=.*$', multiLine: true), 'opcache.interned_strings_buffer=16');
     content = content.replaceAll(RegExp(r'^;?\s*opcache\.max_accelerated_files\s*=.*$', multiLine: true), 'opcache.max_accelerated_files=20000');
-    content = content.replaceAll(RegExp(r'^;?\s*opcache\.revalidate_freq\s*=.*$', multiLine: true), 'opcache.revalidate_freq=0');
+    content = content.replaceAll(RegExp(r'^;?\s*opcache\.revalidate_freq\s*=.*$', multiLine: true), 'opcache.revalidate_freq=2');
     content = content.replaceAll(RegExp(r'^;?\s*opcache\.validate_timestamps\s*=.*$', multiLine: true), 'opcache.validate_timestamps=1');
     content = content.replaceAll(RegExp(r'^;?\s*opcache\.save_comments\s*=.*$', multiLine: true), 'opcache.save_comments=1');
 

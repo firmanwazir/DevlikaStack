@@ -282,16 +282,20 @@ class WebServerEngineManager extends ChangeNotifier {
     final config = ConfigService.instance;
     bool anyStarted = false;
 
-    // 1. Start Default PHP on port 9000
-    if (await checkPortOpen(9000)) {
-      anyStarted = true;
-    } else {
-      final defaultModel = config.getPhpForSite('default');
-      final defaultCgi = defaultModel.phpCgiExe;
-      if (File(defaultCgi).existsSync()) {
+    // 1. Start Default PHP Multi-Worker Pool on ports 9000..9003
+    final defaultPorts = VhostConfigGenerator.getFastCgiPorts('default');
+    final defaultModel = config.getPhpForSite('default');
+    final defaultCgi = defaultModel.phpCgiExe;
+
+    if (File(defaultCgi).existsSync()) {
+      final defaultExtDir = p.join(defaultModel.dirPath, 'ext');
+      for (final port in defaultPorts) {
+        if (await checkPortOpen(port)) {
+          anyStarted = true;
+          continue;
+        }
         try {
-          final defaultExtDir = p.join(defaultModel.dirPath, 'ext');
-          final defaultArgs = _buildFastCgiArgs(defaultModel, 9000);
+          final defaultArgs = _buildFastCgiArgs(defaultModel, port);
           final proc = await Process.start(
             defaultCgi,
             defaultArgs,
@@ -299,16 +303,16 @@ class WebServerEngineManager extends ChangeNotifier {
             mode: ProcessStartMode.normal,
             workingDirectory: defaultModel.dirPath,
             environment: {
-              'PHP_FCGI_CHILDREN': '8',
-              'PHP_FCGI_MAX_REQUESTS': '1000',
+              'PHP_FCGI_CHILDREN': '0',
+              'PHP_FCGI_MAX_REQUESTS': '10000',
               if (File(defaultModel.phpIni).existsSync()) 'PHPRC': defaultModel.dirPath,
               'PATH': '${defaultModel.dirPath};$defaultExtDir;${Platform.environment['PATH'] ?? ''}',
             },
           );
           _fastCgiProcesses.add(proc);
           for (int i = 0; i < 15; i++) {
-            await Future.delayed(const Duration(milliseconds: 150));
-            if (await checkPortOpen(9000)) {
+            await Future.delayed(const Duration(milliseconds: 100));
+            if (await checkPortOpen(port)) {
               anyStarted = true;
               break;
             }
@@ -317,7 +321,7 @@ class WebServerEngineManager extends ChangeNotifier {
       }
     }
 
-    // 2. Start other required PHP versions (e.g. 7.4 on 9074, 8.1 on 9081, 8.3 on 9083)
+    // 2. Start other required PHP version worker pools (e.g. 7.4 on 9074..9077, 8.1 on 9084..9087)
     final sites = config.loadSites();
     final neededVersions = sites
         .where((s) => s.isEnabled && s.type == 'php' && s.phpVersion.isNotEmpty && s.phpVersion != 'default')
@@ -325,34 +329,35 @@ class WebServerEngineManager extends ChangeNotifier {
         .toSet();
 
     for (var ver in neededVersions) {
-      final port = VhostConfigGenerator.getFastCgiPort(ver);
-      if (await checkPortOpen(port)) continue;
-
+      final ports = VhostConfigGenerator.getFastCgiPorts(ver);
       final phpModel = config.getPhpForSite(ver);
       final cgiExe = phpModel.phpCgiExe;
       if (File(cgiExe).existsSync() && cgiExe.toLowerCase().contains('cgi')) {
-        try {
-          final extDir = p.join(phpModel.dirPath, 'ext');
-          final args = _buildFastCgiArgs(phpModel, port);
-          final proc = await Process.start(
-            cgiExe,
-            args,
-            runInShell: false,
-            mode: ProcessStartMode.normal,
-            workingDirectory: phpModel.dirPath,
-            environment: {
-              'PHP_FCGI_CHILDREN': '8',
-              'PHP_FCGI_MAX_REQUESTS': '1000',
-              if (File(phpModel.phpIni).existsSync()) 'PHPRC': phpModel.dirPath,
-              'PATH': '${phpModel.dirPath};$extDir;${Platform.environment['PATH'] ?? ''}',
-            },
-          );
-          _fastCgiProcesses.add(proc);
-          for (int i = 0; i < 15; i++) {
-            await Future.delayed(const Duration(milliseconds: 150));
-            if (await checkPortOpen(port)) break;
-          }
-        } catch (_) {}
+        final extDir = p.join(phpModel.dirPath, 'ext');
+        for (final port in ports) {
+          if (await checkPortOpen(port)) continue;
+          try {
+            final args = _buildFastCgiArgs(phpModel, port);
+            final proc = await Process.start(
+              cgiExe,
+              args,
+              runInShell: false,
+              mode: ProcessStartMode.normal,
+              workingDirectory: phpModel.dirPath,
+              environment: {
+                'PHP_FCGI_CHILDREN': '0',
+                'PHP_FCGI_MAX_REQUESTS': '10000',
+                if (File(phpModel.phpIni).existsSync()) 'PHPRC': phpModel.dirPath,
+                'PATH': '${phpModel.dirPath};$extDir;${Platform.environment['PATH'] ?? ''}',
+              },
+            );
+            _fastCgiProcesses.add(proc);
+            for (int i = 0; i < 15; i++) {
+              await Future.delayed(const Duration(milliseconds: 100));
+              if (await checkPortOpen(port)) break;
+            }
+          } catch (_) {}
+        }
       }
     }
 
@@ -399,7 +404,6 @@ class WebServerEngineManager extends ChangeNotifier {
       '-b', '127.0.0.1:$port',
       if (File(phpModel.phpIni).existsSync()) ...['-c', phpModel.phpIni],
       if (Directory(extDir).existsSync()) ...['-d', 'extension_dir=$extDir'],
-      '-d', 'zend_extension=opcache',
       '-d', 'realpath_cache_size=16M',
       '-d', 'realpath_cache_ttl=600',
       '-d', 'opcache.enable=1',
@@ -408,10 +412,11 @@ class WebServerEngineManager extends ChangeNotifier {
       '-d', 'opcache.interned_strings_buffer=16',
       '-d', 'opcache.max_accelerated_files=20000',
       '-d', 'opcache.validate_timestamps=1',
-      '-d', 'opcache.revalidate_freq=0',
+      '-d', 'opcache.revalidate_freq=2',
       '-d', 'opcache.save_comments=1',
       if (Directory(opcacheDir).existsSync()) ...['-d', 'opcache.file_cache=$opcacheDir'],
       '-d', 'session.save_path=$sessionDir',
+      '-d', 'session.lazy_write=1',
       '-d', 'upload_tmp_dir=$uploadDir',
       '-d', 'mysqli.default_host=127.0.0.1',
       '-d', 'pdo_mysql.default_host=127.0.0.1',
