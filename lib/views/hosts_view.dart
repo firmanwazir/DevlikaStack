@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/site_model.dart';
 import '../services/server_controller.dart';
+import '../services/tunnel_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/add_host_dialog.dart';
+import '../widgets/tunnel_dialog.dart';
 
 class HostsView extends StatefulWidget {
   const HostsView({super.key});
@@ -270,7 +272,7 @@ class _HostsViewState extends State<HostsView> {
                 Expanded(flex: 3, child: Text('DOMAIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
                 Expanded(flex: 2, child: Text('RUNTIME / TARGET', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
                 Expanded(flex: 5, child: Text('DOCUMENT ROOT / TARGET PROXY', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 170, child: Text('AKSI', textAlign: TextAlign.right, style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
+                SizedBox(width: 245, child: Text('AKSI', textAlign: TextAlign.right, style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
               ],
             ),
           ),
@@ -399,12 +401,43 @@ class _HostsViewState extends State<HostsView> {
                         ),
                       ),
 
-                      // Actions: Open Browser, Open Folder, Edit, Delete
+                      // Actions: Tunnel (Cloudflare), Open Browser, Open Folder, Edit, Delete
                       SizedBox(
-                        width: 205,
+                        width: 245,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            // Cloudflare Quick Tunnel (Preview Online ke Klien)
+                            AnimatedBuilder(
+                              animation: TunnelService.instance,
+                              builder: (context, _) {
+                                final tunnel = TunnelService.instance;
+                                final isActive = tunnel.isRunning && tunnel.activeDomain == site.domain;
+                                final isStarting = tunnel.isStarting && tunnel.activeDomain == site.domain;
+
+                                return IconButton(
+                                  icon: Icon(
+                                    isActive
+                                        ? Icons.cloud_done_rounded
+                                        : (isStarting ? Icons.cloud_sync_rounded : Icons.cloud_upload_outlined),
+                                    size: 16,
+                                  ),
+                                  tooltip: isActive
+                                      ? 'Tunnel Aktif (${tunnel.publicUrl}) - Klik info'
+                                      : 'Bagikan ke Internet (Cloudflare Quick Tunnel)',
+                                  color: isActive
+                                      ? AppTheme.accentGreen
+                                      : (isStarting ? AppTheme.accentAmber : AppTheme.accentPurple),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => TunnelDialog(site: site),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+
                             // Buka HTTPS
                             IconButton(
                               icon: const Icon(Icons.lock_outline_rounded, size: 16),

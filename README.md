@@ -39,7 +39,14 @@ Unlike traditional local stacks that enforce a single global PHP version:
 - Automatic DocumentRoot detection: intelligently identifies `public/index.php` (Laravel) or `public_html/index.php` (CodeIgniter/traditional layouts).
 - **Reverse Proxy**: Forward local domain traffic to external backend services (Node.js, Go, Python, etc.) running on custom local ports.
 
-### 5. Lightweight, Portable & System Tray
+### 5. 1-Click Cloudflare Quick Tunnel (Public Preview)
+- **Instant Client Previews**: Share any local virtual host (e.g. `siakad.id`) or custom local port directly to the internet with a single click.
+- **Valid Official HTTPS Certificate**: Powered by Cloudflare Anycast edge, ensuring clients never see browser security or certificate warnings.
+- **Zero Configuration**: Uses Cloudflare Quick Tunnels—no account creation, credit card, or auth tokens required.
+- **Virtual Host Preservation**: Automatically routes with `--http-host-header`, ensuring Nginx, Apache, and Native HTTP engines route requests to the correct virtual host rather than falling back to default localhost.
+- **Automated Binary Provisioning**: Downloads official `cloudflared` binary on-demand directly into `bin/tools/` with in-app download progress.
+
+### 6. Lightweight, Portable & System Tray
 - **Low RAM & Non-VM**: Runs natively on Windows without Docker Desktop, WSL2, or virtual machine overhead, preserving system RAM for IDEs and compilers.
 - **Minimal Idle Footprint**: Near-zero idle CPU and memory consumption; services only consume processing cycles when handling active requests.
 - **Self-Contained & Portable**: All PHP binaries, MariaDB data, web engines, and configuration files live inside the application directory (`bin/` and `storage/`). No Windows registry keys are altered.

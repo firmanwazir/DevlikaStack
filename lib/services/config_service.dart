@@ -132,6 +132,8 @@ class ConfigService {
 
   String get toolsDir => p.join(binDir, 'tools');
   String get phpMyAdminDir => p.join(toolsDir, 'phpmyadmin');
+  String get cloudflaredExe => p.join(toolsDir, 'cloudflared.exe');
+  bool get isCloudflaredInstalled => File(cloudflaredExe).existsSync();
 
   // ALL data, databases, config, and demo site are strictly inside binDir!
   String get storageDir => p.join(binDir, 'storage');

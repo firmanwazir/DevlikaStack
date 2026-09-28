@@ -4,6 +4,7 @@ class AppTheme {
   static const Color bgDark = Color(0xFF0A0D14);
   static const Color sidebarDark = Color(0xFF10141D);
   static const Color cardDark = Color(0xFF161B26);
+  static const Color bgCard = cardDark;
   static const Color cardHover = Color(0xFF1C2230);
   static const Color borderDark = Color(0xFF232B3B);
 

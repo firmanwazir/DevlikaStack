@@ -14,6 +14,7 @@ import 'views/turbo_importer_view.dart';
 import 'views/phpmyadmin_view.dart';
 import 'views/environment_view.dart';
 import 'views/logs_view.dart';
+import 'views/tunnel_view.dart';
 import 'services/tray_service.dart';
 
 void main() async {
@@ -79,6 +80,7 @@ class _MainScreenState extends State<MainScreen> {
     'phpMyAdmin',
     'Pusat Komponen',
     'Log Aktivitas',
+    'Cloudflare Tunnel',
   ];
 
   final _subtitles = [
@@ -91,6 +93,7 @@ class _MainScreenState extends State<MainScreen> {
     'Antarmuka web untuk manajemen database MariaDB.',
     'Status dan instalasi runtime komponen server.',
     'Output log aktivitas HTTP dan query database secara real-time.',
+    'Bagikan website lokal ke internet secara publik dan aman untuk preview klien.',
   ];
 
   @override
@@ -128,6 +131,7 @@ class _MainScreenState extends State<MainScreen> {
                       const PhpMyAdminView(),
                       const EnvironmentView(),
                       const LogsView(),
+                      const TunnelView(),
                     ],
                   ),
                 ),

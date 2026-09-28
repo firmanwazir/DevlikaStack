@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/server_controller.dart';
+import '../services/tunnel_service.dart';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -15,7 +16,7 @@ class Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: ServerController.instance,
+      animation: Listenable.merge([ServerController.instance, TunnelService.instance]),
       builder: (context, _) {
         final controller = ServerController.instance;
         final isWebOn = controller.isWebRunning;
@@ -200,6 +201,14 @@ class Sidebar extends StatelessWidget {
 
                     // CATEGORY: SYSTEM
                     _buildSectionHeader('SYSTEM & TOOLS'),
+                    _buildNavItem(
+                      index: 9,
+                      title: 'Cloudflare Tunnel',
+                      icon: Icons.cloud_upload_rounded,
+                      badge: TunnelService.instance.isRunning ? 'Online' : 'Tunnel',
+                      badgeColor: TunnelService.instance.isRunning ? AppTheme.accentGreen : AppTheme.accentPurple,
+                      isServiceRunning: TunnelService.instance.isRunning,
+                    ),
                     _buildNavItem(
                       index: 7,
                       title: 'Komponen Server',
