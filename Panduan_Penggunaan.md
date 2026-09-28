@@ -1,98 +1,184 @@
-﻿# âš¡ Panduan DevStack (Edisi Native Flutter Desktop)
+# ⚡ Panduan Penggunaan DevlikaStack
 
-Aplikasi **DevStack** telah dibangun sepenuhnya menggunakan **Flutter Desktop Native Windows** dengan antarmuka modern yang presisi, responsif, dan instan dibuka.
-
----
-
-## ðŸŽ¯ 5 Penyempurnaan Utama Berdasarkan Kebutuhanmu
-
-1. **Proteksi Komponen (Belum Ada = Belum Bisa Dinyalakan)**:
-   - Tombol toggle Web Server dan MariaDB otomatis **terkunci (disabled)** jika library PHP atau MariaDB belum terpasang.
-   - Muncul peringatan jelas: *"âš ï¸ Komponen PHP belum ada - Install Sekarang"*.
-   - Tidak ada lagi error membingungkan bagi pemula.
-
-2. **Fleksibilitas Instalasi (Bisa Sekaligus atau Per-Library)**:
-   - Di menu **Environment (Komponen)**:
-     - Tombol utama: **"âš¡ Install Semua Komponen Sekaligus"** (Download & setup PHP + MariaDB + phpMyAdmin otomatis 1-klik).
-     - Tombol per-komponen: Kamu bisa install/reinstall **PHP saja**, **MariaDB saja**, atau **phpMyAdmin saja** dengan indikator progress bar real-time.
-
-3. **Kecepatan Buka Super Cepat (Native Desktop)**:
-   - Dibuat dengan **Flutter Windows C++ Native**.
-   - Buka dalam **0.1 detik (instan)** tanpa lag browser, tanpa font eksternal yang bikin macet.
-
-4. **Database Manager Menggunakan phpMyAdmin**:
-   - Terintegrasi penuh dengan **phpMyAdmin**.
-   - Dilengkapi menu khusus di sidebar dan header bar.
-   - 1-klik tombol **"ðŸŒ Buka phpMyAdmin"** otomatis membuka browser dan langsung login ke MariaDB (`127.0.0.1:3306`, user `root`).
-
-5. **Antarmuka (UI) Modern & 100% Responsif**:
-   - **Left Sidebar Navigation**:
-     - ðŸ“Š **Dashboard Overview** (Kartu status, toggle servis, port chip, quick website list)
-     - ðŸŒ **Hosts / Websites** (Tabel virtual host, tombol tambah domain lokal, action browser/folder)
-     - ðŸ˜ **PHP Engine** (Detail path, ekstensi aktif, info php.ini)
-     - ðŸ¬ **MariaDB** (Status port 3306, user root, kredensial)
-     - ðŸ—„ï¸ **phpMyAdmin** (Akses database instan)
-     - ðŸ“¦ **Environment (Pusat Komponen)** (Install sekaligus / per library)
-     - ðŸ“œ **Log Server** (Terminal live aktivitas HTTP)
-   - Layout kartu dan tabel adaptif terhadap ukuran layar.
+Panduan lengkap cara menggunakan **DevlikaStack** — aplikasi server lokal portabel berbasis Flutter Desktop untuk pengembangan web di Windows.
 
 ---
 
-## ðŸš€ Cara Menjalankan Portable
+## 🚀 Cara Menjalankan
 
-Buka folder:
-`D:\WebServer\www\WindowApp\Server\DevStack-Portable\`
+### Pertama Kali (Portable)
 
-Di dalam folder portable ini **HANYA ADA 2 ITEM**:
-1. `DevStack.exe`
-2. `bin/`
+1. Unduh file `DevlikaStack-v2.1-windows-x64.zip` dari [halaman Release GitHub](https://github.com/firmanwazir/DevlikaStack/releases).
+2. Ekstrak ke lokasi mana saja (misalnya `D:\DevlikaStack-Portable\`).
+3. Klik dua kali file **`DevlikaStack.exe`**.
+4. Aplikasi akan otomatis meminta izin **Administrator** (diperlukan untuk menulis file `hosts` Windows dan menjalankan server di port 80).
 
-Cukup klik dua kali:
+> **Catatan**: Tidak perlu install apa pun. Cukup ekstrak dan jalankan. Semua data dan konfigurasi tersimpan di folder `bin/`.
+
+---
+
+## 📱 Halaman & Navigasi Sidebar
+
+Berikut semua halaman yang tersedia di sidebar kiri aplikasi:
+
+### 1. Dashboard (Halaman Utama)
+- Menampilkan **kartu status** Web Server dan MariaDB (hijau = aktif, abu-abu = mati).
+- **Toggle ON/OFF** untuk Web Server dan MariaDB dengan satu klik.
+- Pilihan **engine Web Server** (Native HTTP, Nginx, Apache) langsung dari dashboard.
+- Daftar ringkas **website lokal** yang terdaftar beserta domain-nya.
+- Port chip menunjukkan port layanan yang sedang aktif.
+
+### 2. Virtual Hosts (Kelola Website Lokal)
+- Tabel daftar semua domain lokal (contoh: `demo.local`, `siakad.id`).
+- **Tambah Domain Baru**: Klik tombol "Tambah Host" → isi nama domain, pilih versi PHP, dan tentukan folder DocumentRoot.
+- Kolom **Aksi** untuk setiap host:
+  - 🌐 **Buka di Browser** — Langsung buka domain di browser default.
+  - 📂 **Buka Folder** — Buka folder DocumentRoot di File Explorer.
+  - ☁️ **Online Tunnel** — Bagikan host ini ke internet via Cloudflare Tunnel.
+  - ✏️ **Edit** — Ubah konfigurasi domain.
+  - 🗑️ **Hapus** — Hapus domain dari daftar.
+- Deteksi otomatis folder `public/` untuk **Laravel** dan `public_html/` untuk **CodeIgniter**.
+- **Reverse Proxy**: Arahkan domain lokal ke backend Node.js, Go, Python, dll yang berjalan di port kustom.
+- Sinkronisasi otomatis ke file `C:\Windows\System32\drivers\etc\hosts` dengan mapping IPv4 dan IPv6.
+
+### 3. Web Server (Pilih Engine HTTP)
+- Ganti engine antara **Native HTTP**, **Nginx 1.26**, dan **Apache HTTPD 2.4**.
+- Menampilkan status engine aktif, port binding, dan proses PID.
+- Perpindahan engine otomatis melepas port 80 sebelum mengaktifkan engine baru.
+
+### 4. PHP Environment
+- Informasi lengkap versi PHP yang terinstal (PHP 7.4, 8.1, 8.2, 8.3).
+- Daftar **ekstensi PHP aktif** per versi (intl, mbstring, pdo_mysql, curl, gd, zip, dll).
+- Path ke file `php.ini` dan konfigurasi penting:
+  - `memory_limit = 512M`
+  - `upload_max_filesize = 128M`
+  - `max_execution_time = 300`
+  - `OPcache = Enabled`
+- Port FastCGI per versi:
+  - PHP 7.4 → Port `9074`
+  - PHP 8.1 → Port `9081`
+  - PHP 8.2 → Port `9082`
+  - PHP 8.3 → Port `9083`
+
+### 5. MariaDB Server
+- Status koneksi database (Port 3306, user `root`, tanpa password).
+- Parameter binding: `127.0.0.1` dan `::1` (dual-stack).
+- Informasi versi MariaDB dan lokasi data directory.
+- Optimasi bawaan: `skip-name-resolve`, query cache 64MB.
+
+### 6. SQL Importer (Turbo Import)
+- Import file `.sql` dump besar (ratusan MB) langsung ke database MariaDB.
+- Menggunakan metode **chunked transaction buffering** untuk mencegah kehabisan memori.
+- Pilih database tujuan, pilih file SQL, lalu klik "Import".
+- Progress bar real-time menampilkan persen dan kecepatan import.
+
+### 7. phpMyAdmin
+- Akses phpMyAdmin via `http://localhost/__phpmyadmin`.
+- Tombol **"Buka phpMyAdmin"** langsung membuka browser dan auto-login ke MariaDB.
+- Kelola tabel, jalankan query, export/import database semuanya via antarmuka web.
+
+### 8. Cloudflare Tunnel (Online Preview)
+Fitur ini memungkinkan Anda membagikan website lokal ke internet **tanpa IP publik, tanpa port forwarding, dan tanpa akun Cloudflare**.
+
+**Cara Menggunakan:**
+1. Buka halaman **Cloudflare Tunnel** di sidebar.
+2. Pilih mode: **Virtual Host** (pilih domain dari dropdown) atau **Port Kustom** (masukkan nomor port).
+3. Klik tombol **"Mulai Tunnel Preview"**.
+4. Tunggu beberapa detik hingga status berubah menjadi **ONLINE**.
+5. Anda akan mendapat link publik seperti `https://abc-xyz-123.trycloudflare.com`.
+6. **Salin** link tersebut dan kirim ke klien — mereka bisa membukanya di browser mana pun di smartphone atau laptop.
+
+**Fitur Unggulan Tunnel:**
+- ✅ **HTTPS Resmi Valid** — Sertifikat SSL resmi dari Cloudflare, tanpa peringatan keamanan di browser klien.
+- ✅ **Gratis & Unlimited** — Tidak ada batasan bandwidth seperti di ngrok versi gratis.
+- ✅ **Tanpa Akun** — Langsung aktif tanpa registrasi atau auth token.
+- ✅ **Auto-Reconnect** — Jika tunnel mati secara tiba-tiba, DevlikaStack otomatis menyambung ulang dengan jeda bertahap (3→6→12→24→48 detik), maksimal 5 percobaan. Fitur ini bisa diaktifkan/nonaktifkan via toggle switch.
+- ✅ **Health Check** — Pengecekan otomatis setiap 30 detik untuk memastikan proses tunnel masih berjalan.
+- ✅ **Auto-Download** — Binary `cloudflared.exe` (~55 MB) diunduh otomatis saat pertama kali digunakan.
+
+**Cara Cepat dari Tabel Virtual Host:**
+- Di halaman **Virtual Hosts**, setiap baris domain memiliki tombol ☁️ **Tunnel** untuk langsung membuka dialog tunnel tanpa perlu berpindah halaman.
+
+### 9. Pusat Komponen (Environment)
+- Melihat status instalasi setiap komponen: PHP, MariaDB, phpMyAdmin, Nginx, Apache.
+- Tombol **"Install Semua Komponen Sekaligus"** — download dan setup semua runtime dengan 1 klik.
+- Atau install **per-komponen** (PHP saja, MariaDB saja, dll) dengan progress bar real-time.
+- Indikator hijau ✅ jika komponen sudah terinstal, amber ⚠️ jika belum.
+
+### 10. Log Aktivitas (Live Terminal)
+- Terminal log real-time menampilkan seluruh aktivitas server:
+  - Request HTTP masuk (URL, method, status code, response time).
+  - Query database dari phpMyAdmin atau aplikasi.
+  - Output error PHP.
+  - Status proses tunnel.
+- Tombol **"Bersihkan Log"** untuk mengosongkan tampilan.
+
+---
+
+## ⚡ Dukungan Framework PHP Modern
+
+DevlikaStack siap digunakan untuk framework populer:
+
+### Laravel 9 / 10 / 11
+- Semua ekstensi wajib aktif: `pdo_mysql`, `openssl`, `sodium`, `bcmath`, `fileinfo`, `gd`, `zip`, `exif`, `mbstring`, `tokenizer`, `xml`, `ctype`.
+- OPcache aktif untuk performa optimal.
+- URL rewrite otomatis (`/login`, `/api/v1/data`, dll) tanpa konfigurasi tambahan.
+- Header `Authorization: Bearer <token>` diteruskan untuk Laravel Sanctum / Passport / JWT.
+- Deteksi otomatis folder `public/` sebagai DocumentRoot.
+
+### CodeIgniter 4
+- Ekstensi wajib aktif: `intl`, `mbstring`, `mysqli`, `curl`, `json`.
+- Deteksi otomatis folder `public/` untuk CI4.
+
+### WordPress
+- Ekstensi wajib aktif: `mysqli`, `gd`, `curl`, `xml`, `mbstring`, `zip`.
+- URL rewrite untuk permalink cantik (`/2024/01/my-post/`).
+
+---
+
+## 📂 Struktur Folder Portabel
+
 ```text
-DevStack-Portable\DevStack.exe
+DevlikaStack-Portable/
+├── DevlikaStack.exe                 <-- Klik 2x untuk menjalankan (auto-admin)
+├── flutter_windows.dll              <-- Flutter Runtime
+├── *.dll                            <-- Plugin libraries
+├── data/                            <-- Asset internal (shader, font, app.so)
+└── bin/                             <-- Semua komponen server portabel
+    ├── php/                         <-- Multi-versi PHP (7.4, 8.1, 8.2, 8.3)
+    ├── mariadb/                     <-- MariaDB Daemon & Data
+    ├── nginx/                       <-- Nginx 1.26 Engine
+    ├── apache/                      <-- Apache HTTPD 2.4 Engine
+    ├── tools/
+    │   ├── phpmyadmin/              <-- phpMyAdmin Full Version
+    │   └── cloudflared.exe          <-- Cloudflare Tunnel (auto-download)
+    ├── storage/
+    │   ├── mariadb/                 <-- File database MySQL
+    │   ├── sites.json               <-- Daftar Virtual Hosts
+    │   └── settings.json            <-- Pengaturan aplikasi
+    └── demo-site/                   <-- Website contoh demo.local
 ```
 
-- **Langsung Administrator Otomatis**: Memiliki manifest UAC (`requireAdministrator`), otomatis meminta izin admin saat dibuka.
-- **Tanpa Layar Hitam / Terminal CMD**: Berjalan di subsistem Windows GUI native murni.
+> **Tips Portabilitas**: Folder `DevlikaStack-Portable` ini bisa langsung di-copy ke flashdisk atau PC lain tanpa perlu install apapun. Semua data dan konfigurasi ikut terbawa.
 
 ---
 
-## ðŸ“‚ Struktur Bersih & Portabel (Hanya 1 EXE & 1 Folder)
+## ❓ FAQ (Pertanyaan Umum)
 
-Semua folder dan library yang dibutuhkan aplikasi (`php`, `mariadb`, `phpmyadmin`, `storage`, `data`, `demo-site`) sudah dipersatukan ke dalam **SATU FOLDER** `bin/`:
+**Q: Apakah saya perlu install PHP, MySQL, atau web server secara terpisah?**
+A: Tidak. Semua sudah dibundel di dalam folder `bin/`. Cukup klik `DevlikaStack.exe`.
 
-```text
-DevStack-Portable/
-â”œâ”€â”€ DevStack.exe                 <-- File Eksekusi Utama (Double-click ini)
-â””â”€â”€ bin/                          <-- SATU-SATUNYA FOLDER KEBUTUHAN APLIKASI
-    â”œâ”€â”€ DevStack.exe             <-- Engine Native GUI (Flutter Release)
-    â”œâ”€â”€ flutter_windows.dll       <-- Runtime DLL
-    â”œâ”€â”€ url_launcher_windows_plugin.dll
-    â”œâ”€â”€ data/                     <-- Asset internal aplikasi
-    â”œâ”€â”€ php/                      <-- PHP Portable Engine
-    â”œâ”€â”€ mariadb/                  <-- MariaDB Daemon & Binaries
-    â”œâ”€â”€ tools/
-    â”‚   â””â”€â”€ phpmyadmin/           <-- phpMyAdmin Full Version
-    â”œâ”€â”€ storage/
-    â”‚   â”œâ”€â”€ mariadb/              <-- Database MySQL tersimpan di sini
-    â”‚   â””â”€â”€ sites.json            <-- Konfigurasi Virtual Hosts Lokal
-    â””â”€â”€ demo-site/                <-- Folder website default demo.local
-```
+**Q: Apakah data database saya tersimpan secara portabel?**
+A: Ya. Database MariaDB tersimpan di `bin/storage/mariadb/`. Jika Anda copy folder DevlikaStack ke komputer lain, database ikut terbawa.
 
-> **Catatan Portabilitas**: Folder `DevStack-Portable` ini bisa langsung kamu copy atau pindahkan ke flashdisk / PC mana saja tanpa perlu install apa-apa lagi!
+**Q: Mengapa butuh akses Administrator?**
+A: Untuk dua hal: (1) Menulis ke file `hosts` Windows agar domain lokal bisa diakses di browser, dan (2) Menjalankan web server di port 80 yang memerlukan privilege admin.
 
----
+**Q: Tunnel Cloudflare tiba-tiba mati, bagaimana?**
+A: Jika fitur **Auto-Reconnect** aktif (default ON), DevlikaStack akan otomatis menyambung ulang. Jika gagal setelah 5 percobaan, Anda bisa klik manual "Mulai Tunnel Preview" lagi.
 
-## âš¡ Dukungan Penuh Framework Modern (Laravel & CodeIgniter)
+**Q: Apakah tunnel Cloudflare benar-benar gratis?**
+A: Ya, Cloudflare Quick Tunnel 100% gratis tanpa batasan bandwidth. Tidak perlu akun atau auth token. URL berubah setiap kali tunnel dimulai ulang karena menggunakan mode Quick Tunnel (bukan Named Tunnel).
 
-Aplikasi telah dilengkapi modul PHP dan fitur Web Server tingkat lanjut:
-
-1. **Modul PHP Aktif & Optimal**:
-   - **CodeIgniter 4**: `intl`, `mbstring`, `mysqli`, `curl`, `json`
-   - **Laravel 9/10/11**: `pdo_mysql`, `openssl`, `sodium`, `bcmath`, `fileinfo`, `gd`, `zip`, `exif`
-   - **Composer**: `memory_limit = 512M`, `upload_max_filesize = 128M`, `max_execution_time = 300`
-
-2. **Fitur Web Server (URL Rewrite / Pretty URLs)**:
-   - Seperti `try_files` Nginx atau `mod_rewrite` Apache, semua routing URL (seperti `/login`, `/api/v1/posts`, dsb.) otomatis diarahkan ke `index.php` tanpa error 404.
-   - Deteksi otomatis folder `public/` jika kamu menambahkan proyek Laravel atau CodeIgniter 4.
-   - Meneruskan header `Authorization: Bearer <token>` untuk autentikasi API (Laravel Sanctum / Passport / JWT).
+**Q: Bagaimana cara memperbarui DevlikaStack?**
+A: Unduh versi terbaru dari [GitHub Releases](https://github.com/firmanwazir/DevlikaStack/releases), ekstrak, lalu copy file-file baru ke folder DevlikaStack Anda. **Jangan hapus folder `bin/`** — di sana tersimpan database dan konfigurasi Anda.

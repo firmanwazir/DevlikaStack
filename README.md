@@ -1,6 +1,6 @@
 # DevlikaStack
 
-A lightweight, portable local web server and database development environment for Windows, built with Flutter. DevlikaStack bundles a multi-engine web server (Native HTTP, Nginx, Apache), a multi-version PHP FastCGI daemon pool, MariaDB, and phpMyAdmin into a single portable package without requiring Windows registry modifications or heavy virtualization layers.
+A lightweight, portable local web server and database development environment for Windows, built with Flutter. DevlikaStack bundles a multi-engine web server (Native HTTP, Nginx, Apache), a multi-version PHP FastCGI daemon pool, MariaDB, phpMyAdmin, and 1-click Cloudflare Quick Tunnel into a single portable package without requiring Windows registry modifications or heavy virtualization layers.
 
 ![DevlikaStack Dashboard](assets/screenshots/preview.png)
 
@@ -31,7 +31,7 @@ Unlike traditional local stacks that enforce a single global PHP version:
 ### 3. MariaDB & Database Management
 - **MariaDB 3306**: Local database service configured with dual-stack loopback binding (`127.0.0.1` and `::1`), 64MB query cache, and `--skip-name-resolve` to eliminate Windows IPv6/localhost DNS resolution delays. Default credentials: user `root`, no password.
 - **Integrated phpMyAdmin**: Accessible via `http://localhost/__phpmyadmin` with automated authentication to the local database instance.
-- **Chunked SQL Importer**: High-throughput SQL dump importer utilizing chunked transaction buffering, enabling multi-hundred-megabyte database imports without memory exhaustion or script timeouts.
+- **Turbo SQL Importer**: High-throughput SQL dump importer utilizing chunked transaction buffering, enabling multi-hundred-megabyte database imports without memory exhaustion or script timeouts.
 
 ### 4. Virtual Hosts & Automated Hosts File Sync
 - Add custom local domains (e.g. `demo.local`, `siakad.id`).
@@ -40,11 +40,12 @@ Unlike traditional local stacks that enforce a single global PHP version:
 - **Reverse Proxy**: Forward local domain traffic to external backend services (Node.js, Go, Python, etc.) running on custom local ports.
 
 ### 5. 1-Click Cloudflare Quick Tunnel (Public Preview)
-- **Instant Client Previews**: Share any local virtual host (e.g. `siakad.id`) or custom local port directly to the internet with a single click.
+- **Instant Client Previews**: Share any local virtual host or custom local port directly to the internet with a single click.
 - **Valid Official HTTPS Certificate**: Powered by Cloudflare Anycast edge, ensuring clients never see browser security or certificate warnings.
-- **Zero Configuration**: Uses Cloudflare Quick Tunnels—no account creation, credit card, or auth tokens required.
-- **Virtual Host Preservation**: Automatically routes with `--http-host-header`, ensuring Nginx, Apache, and Native HTTP engines route requests to the correct virtual host rather than falling back to default localhost.
-- **Automated Binary Provisioning**: Downloads official `cloudflared` binary on-demand directly into `bin/tools/` with in-app download progress.
+- **Zero Configuration**: Uses Cloudflare Quick Tunnels — no account creation, credit card, or auth tokens required. 100% free and unlimited bandwidth.
+- **Virtual Host Preservation**: Automatically routes with `--http-host-header`, ensuring Nginx, Apache, and Native HTTP engines route requests to the correct virtual host.
+- **Auto-Reconnect**: If the free tunnel drops unexpectedly, DevlikaStack automatically reconnects with exponential backoff (up to 5 attempts). Configurable via toggle switch.
+- **Automated Binary Provisioning**: Downloads official `cloudflared` binary on-demand (~55 MB) directly into `bin/tools/` with in-app download progress.
 
 ### 6. Lightweight, Portable & System Tray
 - **Low RAM & Non-VM**: Runs natively on Windows without Docker Desktop, WSL2, or virtual machine overhead, preserving system RAM for IDEs and compilers.
