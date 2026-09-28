@@ -1,0 +1,69 @@
+# ==============================================================================
+# DevlikaStack Git Ignore Configuration
+# ==============================================================================
+
+# --- DevlikaStack Application Binaries & Local Storage ---
+# Do not commit the portable release bundle, runtime binaries, or user databases
+DevlikaStack-Portable/
+bin/
+data/
+scratch/
+serverapp_icon_*.jpg
+
+# --- Flutter / Dart Build Artifacts ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# --- Windows Native C++ & CMake Ephemeral Artifacts ---
+# Critical: prevents committing 250MB+ of downloaded engine DLLs & CMake cache
+**/windows/flutter/ephemeral/
+windows/flutter/ephemeral/
+*.vcxproj.user
+*.vcxproj.filters
+*.sln.docstates
+*.suo
+*.user
+*.userosv
+CMakeSettings.json
+
+# --- Symbolication & Obfuscation ---
+app.*.symbols
+app.*.map.json
+
+# --- IDE & Editor Settings ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# --- Database Dumps & Local Data Files ---
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+
+# --- Logs, Temporary Files & Archives ---
+*.log
+*.tmp
+*.temp
+*.swp
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# --- Operating System Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
