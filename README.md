@@ -34,7 +34,7 @@ Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PH
 - **SQL Importer**: Fitur import SQL dump besar dengan eksekusi bertahap (chunked transaction buffer) agar file SQL ratusan megabyte dapat diimpor tanpa memory limit atau timeout.
 
 ### 4. Virtual Host & Sinkronisasi Hosts File
-- Menambahkan domain lokal kustom (contoh: `projek.test`, `siakad.univrab`).
+- Menambahkan domain lokal kustom (contoh: `demo.local`, `siakad.id`).
 - Otomatis memperbarui file Windows hosts (`C:\Windows\System32\drivers\etc\hosts`) dengan mendaftarkan entri IPv4 (`127.0.0.1`) dan IPv6 (`::1`) agar browser tidak melakukan lookup DNS eksternal.
 - Auto-detect folder DocumentRoot: otomatis mengenali folder `public/index.php` (Laravel) atau `public_html/index.php` (CodeIgniter/arsitektur lama).
 - **Reverse Proxy**: Mendukung proxy request dari domain lokal ke port aplikasi backend lain (Node.js, Go, Python, dsb).
