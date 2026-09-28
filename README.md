@@ -1,93 +1,84 @@
 # DevlikaStack
 
-[Bahasa Indonesia](#fitur-dan-fungsionalitas) • [English](#english-version)
-
-Aplikasi desktop Windows yang ringan dan hemat resource untuk manajemen web server lokal serta database development environment. Dibuat menggunakan Flutter, aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
+A lightweight, portable local web server and database development environment for Windows, built with Flutter. DevlikaStack bundles a multi-engine web server (Native HTTP, Nginx, Apache), a multi-version PHP FastCGI daemon pool, MariaDB, and phpMyAdmin into a single portable package without requiring Windows registry modifications or heavy virtualization layers.
 
 ![DevlikaStack Dashboard](assets/screenshots/preview.png)
 
 ---
 
-## Fitur dan Fungsionalitas
+## Features & Architecture
 
-### 1. Pilihan Web Server Engine
-Aplikasi menyediakan tiga opsi web engine yang bisa diganti langsung dari dashboard:
-- **Native HTTP Engine**: Web server internal berbasis Dart yang berjalan di port 80 dan 443. Dilengkapi parser `.htaccess` bawaan untuk URL rewrite (kompatibel dengan Laravel, CodeIgniter, WordPress, dan Single Page Application), Keep-Alive persistent connection, dan in-memory cache untuk berkas statis.
-- **Nginx 1.26**: Engine Nginx portabel dengan generator konfigurasi virtual host otomatis (`conf/vhosts/*.conf`).
-- **Apache HTTPD 2.4**: Engine Apache portabel untuk kebutuhan projek yang memerlukan modul Apache.
+### 1. Multi-Engine Web Server
+DevlikaStack offers three switchable web server engines managed directly from the dashboard:
+- **Native HTTP Engine**: A built-in Dart-based web server listening on ports 80 and 443. Includes an integrated `.htaccess` parser for URL rewrites (fully compatible with Laravel, CodeIgniter, WordPress, and Single Page Applications), Keep-Alive persistent connection pooling, and in-memory static file caching for sub-millisecond asset delivery.
+- **Nginx 1.26**: Portable Nginx engine with automated virtual host configuration generation (`conf/vhosts/*.conf`).
+- **Apache HTTPD 2.4**: Portable Apache engine for projects requiring specific Apache modules or traditional `.htaccess` workflows.
 
-Pergantian engine dilakukan secara aman dengan melepas socket port 80/443 sebelum mengaktifkan engine baru.
+Engine switching releases existing socket bindings on ports 80 and 443 before initializing the selected engine to prevent port collision.
 
 ### 2. Multi-PHP FastCGI Daemon Pool
-Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PHP secara global:
-- Mendukung beberapa versi PHP aktif sekaligus (PHP 7.4, 8.1, 8.2, 8.3).
-- Versi PHP dapat diatur berbeda untuk masing-masing virtual host / projek.
-- Komunikasi menggunakan FastCGI daemon pool (`php-cgi.exe`) via TCP socket di port dedicated:
+Unlike traditional local stacks that enforce a single global PHP version:
+- Run multiple PHP versions concurrently (PHP 7.4, 8.1, 8.2, and 8.3).
+- Assign specific PHP runtimes per virtual host or project.
+- FastCGI daemon communication runs via dedicated TCP ports:
   - PHP 7.4: port `9074`
   - PHP 8.1: port `9081`
   - PHP 8.2: port `9082`
   - PHP 8.3: port `9083`
-  - Default: port `9000`
-- Worker pool dikelola dengan `PHP_FCGI_CHILDREN` dan akselerasi OPcache, sehingga request tidak perlu menunggu proses PHP baru di-spawn setiap kali halaman dimuat.
+  - Default fallback: port `9000`
+- Persistent worker pools are managed with `PHP_FCGI_CHILDREN` and OPcache pre-compilation, eliminating per-request process spawn overhead and ensuring fast response times.
 
-### 3. Database MariaDB & phpMyAdmin
-- **MariaDB 3306**: Service database lokal dengan konfigurasi dual-stack loopback (`127.0.0.1` dan `::1`) serta `--skip-name-resolve`, mencegah delay DNS/IPv6 timeout pada Windows saat aplikasi PHP menghubungkan database via `localhost`.
-- **phpMyAdmin**: Terintegrasi langsung dan dapat diakses lewat browser di path `/__phpmyadmin` dengan autentikasi otomatis ke MariaDB lokal.
-- **SQL Importer**: Fitur import SQL dump besar dengan eksekusi bertahap (chunked transaction buffer) agar file SQL ratusan megabyte dapat diimpor tanpa memory limit atau timeout.
+### 3. MariaDB & Database Management
+- **MariaDB 3306**: Local database service configured with dual-stack loopback binding (`127.0.0.1` and `::1`) and `--skip-name-resolve` to eliminate Windows IPv6/localhost DNS resolution delays. Default credentials: user `root`, no password.
+- **Integrated phpMyAdmin**: Accessible via `http://localhost/__phpmyadmin` with automated authentication to the local database instance.
+- **Chunked SQL Importer**: High-throughput SQL dump importer utilizing chunked transaction buffering, enabling multi-hundred-megabyte database imports without memory exhaustion or script timeouts.
 
-### 4. Virtual Host & Sinkronisasi Hosts File
-- Menambahkan domain lokal kustom (contoh: `demo.local`, `siakad.id`).
-- Otomatis memperbarui file Windows hosts (`C:\Windows\System32\drivers\etc\hosts`) dengan mendaftarkan entri IPv4 (`127.0.0.1`) dan IPv6 (`::1`) agar browser tidak melakukan lookup DNS eksternal.
-- Auto-detect folder DocumentRoot: otomatis mengenali folder `public/index.php` (Laravel) atau `public_html/index.php` (CodeIgniter/arsitektur lama).
-- **Reverse Proxy**: Mendukung proxy request dari domain lokal ke port aplikasi backend lain (Node.js, Go, Python, dsb).
+### 4. Virtual Hosts & Automated Hosts File Sync
+- Add custom local domains (e.g. `demo.local`, `siakad.id`).
+- Automatically synchronizes with the Windows `hosts` file (`C:\Windows\System32\drivers\etc\hosts`) using dual IPv4 (`127.0.0.1`) and IPv6 (`::1`) mapping to bypass external DNS lookups.
+- Automatic DocumentRoot detection: intelligently identifies `public/index.php` (Laravel) or `public_html/index.php` (CodeIgniter/traditional layouts).
+- **Reverse Proxy**: Forward local domain traffic to external backend services (Node.js, Go, Python, etc.) running on custom local ports.
 
-### 5. SSL / HTTPS Lokal
-- Menyediakan sertifikat SSL lokal otomatis untuk melayani koneksi HTTPS pada port 443 di semua engine web server.
+### 5. Local SSL (HTTPS)
+- Automated generation of local SSL certificates to serve HTTPS traffic over port 443 across all web engines.
 
-### 6. Ringan, Portabel & System Tray
-- **Hemat RAM & Tanpa VM**: Berjalan native langsung di Windows tanpa layer virtualisasi (seperti Docker Desktop atau VM WSL2) yang sering memakan RAM bergiga-giga saat ngoding.
-- **Konsumsi Idle Minimal**: Pemakaian memori dan CPU saat standby sangat kecil; service hanya aktif memproses resource ketika ada request web atau query database.
-- **Portabel Mandiri**: Seluruh berkas PHP, MariaDB, database pengguna, dan file konfigurasi tersimpan di dalam direktori aplikasi (`bin/` dan `storage/`) tanpa mengotori registry Windows.
-- **System Tray**: Aplikasi bisa diminimize ke tray taskbar dan berjalan senyap di background tanpa membebani komputer saat membuka editor kode (VS Code, PhpStorm).
-- Memiliki manifest `requireAdministrator` agar dapat mengelola port 80/443 dan file `hosts` sistem secara otomatis.
+### 6. Lightweight, Portable & System Tray
+- **Low RAM & Non-VM**: Runs natively on Windows without Docker Desktop, WSL2, or virtual machine overhead, preserving system RAM for IDEs and compilers.
+- **Minimal Idle Footprint**: Near-zero idle CPU and memory consumption; services only consume processing cycles when handling active requests.
+- **Self-Contained & Portable**: All PHP binaries, MariaDB data, web engines, and configuration files live inside the application directory (`bin/` and `storage/`). No Windows registry keys are altered.
+- **System Tray Integration**: Minimizes to the Windows system tray for background operation while monitoring service statuses.
 
 ---
 
-## Port dan Konfigurasi Default / Default Ports
+## Default Port Allocations
 
-| Layanan / Service | Port Default | Keterangan / Description |
+| Service | Default Port | Description |
 |---|---|---|
 | HTTP Web Server | `80` | Native HTTP / Nginx / Apache |
 | HTTPS (SSL) | `443` | Automated local SSL certificates |
-| MariaDB | `3306` | User: `root`, Password: *(kosong / empty)* |
-| phpMyAdmin | `80` | Akses via `http://localhost/__phpmyadmin` |
-| FastCGI PHP 7.4 | `9074` | Daemon persistent worker pool |
-| FastCGI PHP 8.1 | `9081` | Daemon persistent worker pool |
-| FastCGI PHP 8.2 | `9082` | Daemon persistent worker pool |
-| FastCGI PHP 8.3 | `9083` | Daemon persistent worker pool |
+| MariaDB | `3306` | User: `root`, Password: *(empty)* |
+| phpMyAdmin | `80` | Accessible via `http://localhost/__phpmyadmin` |
+| FastCGI PHP 7.4 | `9074` | Persistent FastCGI worker pool |
+| FastCGI PHP 8.1 | `9081` | Persistent FastCGI worker pool |
+| FastCGI PHP 8.2 | `9082` | Persistent FastCGI worker pool |
+| FastCGI PHP 8.3 | `9083` | Persistent FastCGI worker pool |
 
 ---
 
-## English Version
+## Building from Source
 
-A lightweight, resource-efficient local web server and database development environment for Windows built with Flutter desktop. It combines a web server (Native HTTP / Nginx / Apache), multi-version PHP via FastCGI daemon, MariaDB, and phpMyAdmin in a single portable package without modifying the Windows registry.
-
-### Features
-
-- **Web Server Engines**: Switch between Native HTTP (Dart), Nginx 1.26, and Apache 2.4 on ports 80 and 443. Includes a built-in `.htaccess` parser for URL rewrites (Laravel, CodeIgniter, WordPress, and SPAs).
-- **Multi-PHP Runtime**: Run multiple PHP versions simultaneously (PHP 7.4, 8.1, 8.2, 8.3) assigned per virtual host. Communication runs via persistent FastCGI daemon workers (`php-cgi.exe`) to prevent per-request process creation overhead.
-- **MariaDB & phpMyAdmin**: Local MariaDB on port 3306 (user `root`, no password) with dual-stack loopback binding (`127.0.0.1` and `::1`) and `--skip-name-resolve` to avoid Windows IPv6/localhost delays. Includes built-in phpMyAdmin and a chunked SQL importer for large database dumps.
-- **Virtual Hosts & Auto Hosts File**: Automatic synchronization with the Windows `hosts` file (`127.0.0.1` and `::1`) for custom local domains. Automatically detects `public` and `public_html` DocumentRoot directories.
-- **Reverse Proxy**: Forward domain requests to other backend ports (Node.js, Go, Python, etc.).
-- **Local SSL**: Generates local SSL certificates for testing HTTPS on port 443.
-- **Lightweight & Portable**: Fully self-contained in the application directory with no Windows registry pollution. Operates natively with minimal idle RAM usage (no Docker Desktop or VM overhead) and minimizes to the Windows System Tray.
-
----
-
-## Build dari Source / Building from Source
+### Prerequisites
+- Flutter SDK (3.12 or newer)
+- Visual Studio with the **Desktop development with C++** workload
+- Windows 10/11 64-bit
 
 ```bash
+# Fetch dependencies
 flutter pub get
+
+# Run test suite
 flutter test
+
+# Compile release executable
 flutter build windows --release
 ```
