@@ -1,6 +1,6 @@
 # DevlikaStack
 
-DevlikaStack adalah aplikasi desktop Windows untuk manajemen web server lokal dan environment database, dibuat menggunakan Flutter. Aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
+DevlikaStack adalah aplikasi desktop Windows yang ringan dan hemat resource untuk manajemen web server lokal serta database development environment. Dibuat menggunakan Flutter, aplikasi ini menggabungkan web server (Native HTTP / Nginx / Apache), multi-versi PHP via FastCGI daemon, MariaDB, dan phpMyAdmin dalam satu paket portabel tanpa perlu instalasi ke registry Windows.
 
 ![DevlikaStack Dashboard](assets/screenshots/preview.png)
 
@@ -42,10 +42,12 @@ Berbeda dengan web server lokal tradisional yang hanya menjalankan satu versi PH
 ### 5. SSL / HTTPS Lokal
 - Menyediakan sertifikat SSL lokal otomatis untuk melayani koneksi HTTPS pada port 443 di semua engine web server.
 
-### 6. Desain Portabel & System Tray
-- Semua berkas PHP, MariaDB, database pengguna, dan file konfigurasi tersimpan di dalam direktori aplikasi (`bin/` dan `storage/`).
-- Aplikasi memiliki manifest `requireAdministrator` agar dapat mengelola port 80/443 dan file `hosts` sistem.
-- Terintegrasi dengan Windows System Tray untuk memantau status servis dan kontrol background.
+### 6. Ringan, Portabel & System Tray
+- **Hemat RAM & Tanpa VM**: Berjalan native langsung di Windows tanpa layer virtualisasi (seperti Docker Desktop atau VM WSL2) yang sering memakan RAM bergiga-giga saat ngoding.
+- **Konsumsi Idle Minimal**: Pemakaian memori dan CPU saat standby sangat kecil; service hanya aktif memproses resource ketika ada request web atau query database.
+- **Portabel Mandiri**: Seluruh berkas PHP, MariaDB, database pengguna, dan file konfigurasi tersimpan di dalam direktori aplikasi (`bin/` dan `storage/`) tanpa mengotori registry Windows.
+- **System Tray**: Aplikasi bisa diminimize ke tray taskbar dan berjalan senyap di background tanpa membebani komputer saat membuka editor kode (VS Code, PhpStorm).
+- Memiliki manifest `requireAdministrator` agar dapat mengelola port 80/443 dan file `hosts` sistem secara otomatis.
 
 ---
 
