@@ -57,9 +57,10 @@ class Sidebar extends StatelessWidget {
                         ],
                       ),
                       child: const Center(
-                        child: Text(
-                          '⚡',
-                          style: TextStyle(fontSize: 18),
+                        child: Icon(
+                          Icons.layers_rounded,
+                          color: Colors.white,
+                          size: 20,
                         ),
                       ),
                     ),
@@ -74,7 +75,7 @@ class Sidebar extends StatelessWidget {
                             children: [
                               const Flexible(
                                 child: Text(
-                                  'Devlika Stack',
+                                  'DevlikaStack',
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white,
@@ -122,15 +123,15 @@ class Sidebar extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   children: [
-                    // CATEGORY: RINGKASAN
-                    _buildSectionHeader('RINGKASAN'),
+                    // CATEGORY: OVERVIEW
+                    _buildSectionHeader('OVERVIEW'),
                     _buildNavItem(
                       index: 0,
                       title: 'Dashboard',
                       icon: Icons.dashboard_rounded,
                       badge: isAllOn
-                          ? 'Aktif'
-                          : (isWebOn || isDbOn ? 'Sebagian' : null),
+                          ? 'Running'
+                          : (isWebOn || isDbOn ? 'Partial' : null),
                       badgeColor: isAllOn
                           ? AppTheme.accentGreen
                           : (isWebOn || isDbOn ? AppTheme.accentAmber : null),
@@ -138,36 +139,31 @@ class Sidebar extends StatelessWidget {
 
                     const SizedBox(height: 6),
 
-                    // CATEGORY: PROYEK & SITUS
-                    _buildSectionHeader('PROYEK & SITUS'),
+                    // CATEGORY: PROJECTS
+                    _buildSectionHeader('PROJECTS'),
                     _buildNavItem(
                       index: 1,
-                      title: 'Hosts / Websites',
+                      title: 'Virtual Hosts',
                       icon: Icons.language_rounded,
-                      badge: '$activeSitesCount Web',
+                      badge: '$activeSitesCount Hosts',
                       badgeColor: AppTheme.accentCyan,
                     ),
 
                     const SizedBox(height: 6),
 
-                    // CATEGORY: WEB SERVER
-                    _buildSectionHeader('WEB SERVER'),
+                    // CATEGORY: SERVERS
+                    _buildSectionHeader('SERVERS & RUNTIME'),
                     _buildNavItem(
                       index: 2,
-                      title: 'Web Server Engine',
+                      title: 'Web Server',
                       icon: Icons.dns_rounded,
-                      badge: isWebOn ? 'Port 80' : 'Off',
+                      badge: isWebOn ? 'Port 80' : 'Stopped',
                       badgeColor: isWebOn ? AppTheme.accentGreen : AppTheme.textMuted,
                       isServiceRunning: isWebOn,
                     ),
-
-                    const SizedBox(height: 6),
-
-                    // CATEGORY: RUNTIME & BAHASA
-                    _buildSectionHeader('RUNTIME & BAHASA'),
                     _buildNavItem(
                       index: 3,
-                      title: 'PHP Engine',
+                      title: 'PHP Environment',
                       icon: Icons.code_rounded,
                       badge: 'PHP 8.2',
                       badgeColor: AppTheme.accentPurple,
@@ -175,21 +171,21 @@ class Sidebar extends StatelessWidget {
 
                     const SizedBox(height: 6),
 
-                    // CATEGORY: BASIS DATA
-                    _buildSectionHeader('BASIS DATA'),
+                    // CATEGORY: DATABASE
+                    _buildSectionHeader('DATABASE'),
                     _buildNavItem(
                       index: 4,
                       title: 'MariaDB Server',
                       icon: Icons.storage_rounded,
-                      badge: isDbOn ? 'Port 3306' : 'Off',
+                      badge: isDbOn ? 'Port 3306' : 'Stopped',
                       badgeColor: isDbOn ? AppTheme.accentGreen : AppTheme.textMuted,
                       isServiceRunning: isDbOn,
                     ),
                     _buildNavItem(
                       index: 5,
-                      title: 'Turbo Importer',
+                      title: 'SQL Importer',
                       icon: Icons.bolt_rounded,
-                      badge: '⚡ TURBO',
+                      badge: 'Dump',
                       badgeColor: AppTheme.accentAmber,
                     ),
                     _buildNavItem(
@@ -202,18 +198,18 @@ class Sidebar extends StatelessWidget {
 
                     const SizedBox(height: 6),
 
-                    // CATEGORY: SISTEM & MONITOR
-                    _buildSectionHeader('SISTEM & MONITOR'),
+                    // CATEGORY: SYSTEM
+                    _buildSectionHeader('SYSTEM & TOOLS'),
                     _buildNavItem(
                       index: 7,
-                      title: 'Pusat Komponen',
+                      title: 'Komponen Server',
                       icon: Icons.inventory_2_rounded,
-                      badge: controller.components.isAllInstalled ? 'Lengkap' : 'Unduh',
+                      badge: controller.components.isAllInstalled ? 'Ready' : 'Download',
                       badgeColor: controller.components.isAllInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
                     ),
                     _buildNavItem(
                       index: 8,
-                      title: 'Log Server & Trafik',
+                      title: 'Log Aktivitas',
                       icon: Icons.terminal_rounded,
                       badge: 'Live',
                       badgeColor: AppTheme.accentCyan,
@@ -253,8 +249,8 @@ class Sidebar extends StatelessWidget {
                         Expanded(
                           child: Text(
                             isAllOn
-                                ? 'Semua Servis Aktif'
-                                : (isWebOn || isDbOn ? 'Sebagian Berjalan' : 'Semua Servis Berhenti'),
+                                ? 'Semua Layanan Berjalan'
+                                : (isWebOn || isDbOn ? 'Sebagian Berjalan' : 'Semua Layanan Berhenti'),
                             style: const TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11,

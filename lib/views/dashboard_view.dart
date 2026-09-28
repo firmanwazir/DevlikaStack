@@ -80,7 +80,7 @@ class DashboardView extends StatelessWidget {
                   Row(
                     children: [
                       const Text(
-                        'Website Lokal Aktif',
+                        'Virtual Hosts',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -106,7 +106,7 @@ class DashboardView extends StatelessWidget {
                       TextButton.icon(
                         onPressed: () => onNavigate(1), // Go to Hosts view
                         icon: const Icon(Icons.list_alt_rounded, size: 16),
-                        label: const Text('Kelola Semua'),
+                        label: const Text('Lihat Semua'),
                         style: TextButton.styleFrom(foregroundColor: AppTheme.textSecondary),
                       ),
                       const SizedBox(width: 8),
@@ -118,7 +118,7 @@ class DashboardView extends StatelessWidget {
                           );
                         },
                         icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Tambah Website'),
+                        label: const Text('Tambah Host'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentBlue,
                           foregroundColor: Colors.white,
@@ -158,12 +158,12 @@ class DashboardView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Komponen Belum Lengkap',
+                  'Komponen Runtime Belum Lengkap',
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Beberapa library belum terpasang. Servis belum bisa dinyalakan sebelum komponen diinstal.',
+                  'Beberapa komponen runtime belum terpasang. Pasang komponen untuk menjalankan layanan.',
                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                 ),
               ],
@@ -172,7 +172,7 @@ class DashboardView extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () => onNavigate(7), // Go to Environment / Components tab
             icon: const Icon(Icons.download_rounded, size: 16),
-            label: const Text('Install Sekarang'),
+            label: const Text('Pasang Komponen'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentAmber,
               foregroundColor: Colors.black,
@@ -218,8 +218,8 @@ class DashboardView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('Web Server Engine', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
-                            Text('Port 80 (HTTP) • .htaccess & VHosts', style: TextStyle(color: AppTheme.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
+                            Text('Web Server', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            Text('Port 80 (HTTP) • Port 443 (HTTPS)', style: TextStyle(color: AppTheme.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
                           ],
                         ),
                       ),
@@ -243,11 +243,11 @@ class DashboardView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (!isInstalled)
-                  const Text('⚠️ Komponen PHP belum ada', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
+                  const Text('Komponen PHP belum terpasang', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
                 else
                   Expanded(
                     child: Text(
-                      isRunning ? '🟢 Berjalan (Port 80)' : '⚪ Berhenti',
+                      isRunning ? 'Berjalan (Port 80)' : 'Berhenti',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
@@ -261,14 +261,14 @@ class DashboardView extends StatelessWidget {
                     if (!isInstalled)
                       InkWell(
                         onTap: () => onNavigate(7),
-                        child: const Text('Install PHP', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text('Pasang PHP', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                       )
                     else
                       InkWell(
                         onTap: () => onNavigate(2), // Go to Web Server Engine view
                         child: Row(
                           children: const [
-                            Text('Detail Engine', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('Pengaturan', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                             SizedBox(width: 4),
                             Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppTheme.accentCyan),
                           ],
@@ -318,7 +318,7 @@ class DashboardView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('MariaDB Database', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            Text('MariaDB Server', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
                             Text('Port 3306 • MySQL Compatible', style: TextStyle(color: AppTheme.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
                           ],
                         ),
@@ -343,11 +343,11 @@ class DashboardView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (!isInstalled)
-                  const Text('⚠️ MariaDB belum ada', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
+                  const Text('MariaDB belum terpasang', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
                 else
                   Expanded(
                     child: Text(
-                      isRunning ? '🟢 Berjalan (User: root)' : '⚪ Berhenti',
+                      isRunning ? 'Berjalan (Port 3306)' : 'Berhenti',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
@@ -361,7 +361,7 @@ class DashboardView extends StatelessWidget {
                     if (!isInstalled)
                       InkWell(
                         onTap: () => onNavigate(7),
-                        child: const Text('Install MariaDB', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text('Pasang MariaDB', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                       )
                     else ...[
                       InkWell(
@@ -374,7 +374,7 @@ class DashboardView extends StatelessWidget {
                             border: Border.all(color: AppTheme.accentAmber.withOpacity(0.3)),
                           ),
                           child: const Text(
-                            '⚡ Turbo Importer',
+                            'SQL Importer',
                             style: TextStyle(color: AppTheme.accentAmber, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -384,7 +384,7 @@ class DashboardView extends StatelessWidget {
                         onTap: () => onNavigate(4), // Go to MariaDB view
                         child: Row(
                           children: const [
-                            Text('Detail DB', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('Pengaturan', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                             SizedBox(width: 4),
                             Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppTheme.accentCyan),
                           ],
@@ -481,7 +481,7 @@ class DashboardView extends StatelessWidget {
                 children: [
                   const Text('phpMyAdmin', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
                   Text(
-                    pma.isInstalled ? 'Siap Digunakan' : 'Belum Terpasang',
+                    pma.isInstalled ? 'Terpasang' : 'Belum Terpasang',
                     style: TextStyle(
                       color: pma.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
                       fontSize: 12,
@@ -495,7 +495,7 @@ class DashboardView extends StatelessWidget {
                 if (pma.isInstalled) ...[
                   IconButton(
                     icon: const Icon(Icons.info_outline_rounded, size: 18, color: AppTheme.textMuted),
-                    tooltip: 'Lihat Info phpMyAdmin',
+                    tooltip: 'Info phpMyAdmin',
                     onPressed: () => onNavigate(6), // Go to PhpMyAdmin view
                   ),
                   const SizedBox(width: 4),
@@ -509,7 +509,7 @@ class DashboardView extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
-                  child: Text(pma.isInstalled ? 'Buka' : 'Install', style: const TextStyle(fontSize: 11)),
+                  child: Text(pma.isInstalled ? 'Buka' : 'Pasang', style: const TextStyle(fontSize: 11)),
                 ),
               ],
             ),
@@ -534,16 +534,16 @@ class DashboardView extends StatelessWidget {
               children: [
                 const Icon(Icons.language_rounded, size: 40, color: AppTheme.textMuted),
                 const SizedBox(height: 12),
-                const Text('Belum ada website yang didaftarkan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                const Text('Belum ada virtual host yang terdaftar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
-                const Text('Daftarkan domain lokalmu seperti app.test atau web.local dengan mudah.', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                const Text('Tambahkan virtual host untuk mengarahkan domain lokal ke direktori proyek.', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () {
                     showDialog(context: context, builder: (_) => const AddHostDialog());
                   },
                   icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Tambah Website Sekarang'),
+                  label: const Text('Tambah Host'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accentBlue,
                     foregroundColor: Colors.white,

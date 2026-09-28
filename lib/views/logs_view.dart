@@ -58,7 +58,7 @@ class _LogsViewState extends State<LogsView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Log Aktivitas Real-Time',
+                    'Log Aktivitas',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   OutlinedButton.icon(
@@ -86,7 +86,7 @@ class _LogsViewState extends State<LogsView> {
                   child: controller.logs.isEmpty
                       ? const Center(
                           child: Text(
-                            'Belum ada log aktivitas...',
+                            'Tidak ada riwayat log.',
                             style: TextStyle(color: AppTheme.textMuted, fontSize: 13, fontFamily: 'Consolas'),
                           ),
                         )

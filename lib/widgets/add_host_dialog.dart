@@ -49,7 +49,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
   Future<void> _pickFolder() async {
     final result = await FilePickerPlatform.instance.getDirectoryPath(
-      dialogTitle: 'Pilih Folder Proyek Website',
+      dialogTitle: 'Pilih Direktori Root Host',
     );
     if (result != null) {
       // Don't auto-redirect to public/ — _handleFileOrPhp() handles framework detection
@@ -83,7 +83,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Website $domain berhasil diperbarui!'),
+            content: Text('Virtual host $domain berhasil diperbarui.'),
             backgroundColor: AppTheme.accentGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -103,7 +103,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Website $domain berhasil ditambahkan!'),
+            content: Text('Virtual host $domain berhasil ditambahkan.'),
             backgroundColor: AppTheme.accentGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -139,7 +139,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isEditing ? 'Edit Website (Host)' : 'Tambah Website (Host)',
+                        isEditing ? 'Edit Virtual Host' : 'Tambah Virtual Host',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -149,8 +149,8 @@ class _AddHostDialogState extends State<AddHostDialog> {
                       const SizedBox(height: 3),
                       Text(
                         isEditing
-                            ? 'Perbarui konfigurasi domain & direktori'
-                            : 'Daftarkan domain lokal ke web server',
+                            ? 'Perbarui konfigurasi domain dan direktori root'
+                            : 'Konfigurasi virtual host lokal baru',
                         style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                       ),
                     ],
@@ -165,7 +165,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
               // Domain Name
               const Text(
-                'Nama Domain Lokal',
+                'Domain',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 6),
@@ -173,7 +173,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 controller: _domainController,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'contoh: tokoku.local atau myweb.test',
+                  hintText: 'contoh: app.local atau api.test',
                   hintStyle: const TextStyle(color: AppTheme.textMuted),
                   filled: true,
                   fillColor: AppTheme.bgDark,
@@ -211,7 +211,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
               // Type Selector
               const Text(
-                'Tipe Website',
+                'Tipe Host',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 8),
@@ -219,8 +219,8 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 children: [
                   Expanded(
                     child: _buildTypeOption(
-                      'PHP / Web Statis',
-                      'File HTML/PHP dari folder',
+                      'PHP / Statis',
+                      'FastCGI & Document Root',
                       'php',
                     ),
                   ),
@@ -228,7 +228,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                   Expanded(
                     child: _buildTypeOption(
                       'Reverse Proxy',
-                      'Port Node/Vite (3000, 5173)',
+                      'Forward ke port lokal (Node, Vite, dll)',
                       'proxy',
                     ),
                   ),
@@ -239,7 +239,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
               // Target Folder (for PHP)
               if (_selectedType == 'php') ...[
                 const Text(
-                  'Folder Proyek',
+                  'Document Root',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 6),
@@ -250,7 +250,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         controller: _pathController,
                         style: const TextStyle(color: Colors.white, fontSize: 13),
                         decoration: InputDecoration(
-                          hintText: r'D:\WebServer\www\proyek_kamu',
+                          hintText: r'D:\projects\my-app',
                           hintStyle: const TextStyle(color: AppTheme.textMuted),
                           filled: true,
                           fillColor: AppTheme.bgDark,
@@ -266,10 +266,10 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         ),
                         validator: (val) {
                           if (_selectedType == 'php' && (val == null || val.trim().isEmpty)) {
-                            return 'Folder proyek wajib diisi';
+                            return 'Direktori root wajib diisi';
                           }
                           if (_selectedType == 'php' && val != null && val.trim().isNotEmpty && !Directory(val.trim()).existsSync()) {
-                            return 'Folder tidak ditemukan di lokasi ini';
+                            return 'Direktori tidak ditemukan di lokasi ini';
                           }
                           return null;
                         },
@@ -284,7 +284,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Pilih Folder'),
+                      child: const Text('Browse...'),
                     ),
                   ],
                 ),
@@ -292,7 +292,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
                 // PHP Version Selection
                 const Text(
-                  'Versi PHP untuk Website Ini',
+                  'Versi PHP',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 6),
@@ -312,7 +312,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                       items: [
                         const DropdownMenuItem(
                           value: 'default',
-                          child: Text('⚡ Otomatis (Versi Default Terpasang)'),
+                          child: Text('Default (Sistem)'),
                         ),
                         ...PhpManager.instance.getVersions().map((v) {
                           return DropdownMenuItem(
@@ -326,7 +326,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '${v.name} ${v.isInstalled ? "(v${v.exactVersion})" : "(Belum Dipasang)"}',
+                                  '${v.name} ${v.isInstalled ? "(v${v.exactVersion})" : "(Belum Terpasang)"}',
                                   style: TextStyle(
                                     color: v.isInstalled ? Colors.white : AppTheme.textMuted,
                                   ),
@@ -349,7 +349,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
               // Proxy Port (for Proxy)
               if (_selectedType == 'proxy') ...[
                 const Text(
-                  'Port Lokal Aplikasi (Node / Next.js / Vite)',
+                  'Target Port (Localhost)',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 6),
@@ -406,7 +406,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Status Website: ${_isEnabled ? "Aktif" : "Nonaktif (Dimatikan)"}',
+                            'Status Host: ${_isEnabled ? "Aktif" : "Nonaktif"}',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -445,7 +445,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: Text(
-                      isEditing ? 'Simpan Perubahan' : 'Simpan & Aktifkan',
+                      isEditing ? 'Simpan Perubahan' : 'Tambah Host',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),

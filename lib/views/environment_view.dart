@@ -25,12 +25,12 @@ class EnvironmentView extends StatelessWidget {
               const SizedBox(height: 24),
 
               const Text(
-                'Pustaka / Library Mandiri',
+                'Komponen Runtime',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const SizedBox(height: 6),
               const Text(
-                'Kamu dapat menginstal setiap komponen secara terpisah atau sekaligus.',
+                'Instalasi komponen runtime portable secara mandiri atau batch.',
                 style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 16),
@@ -42,10 +42,10 @@ class EnvironmentView extends StatelessWidget {
                 item: comp.php,
                 icon: Icons.code_rounded,
                 iconColor: AppTheme.accentPurple,
-                defaultName: 'PHP Portable Engine',
+                defaultName: 'PHP FastCGI Runtime',
                 details: comp.php.isInstalled
                     ? 'Terpasang: ${comp.php.path}'
-                    : 'Diperlukan untuk menjalankan website PHP dan phpMyAdmin.',
+                    : 'Eksekusi skrip PHP melalui protokol FastCGI.',
                 onInstall: () => controller.installSingleComponent('php'),
               ),
 
@@ -57,10 +57,10 @@ class EnvironmentView extends StatelessWidget {
                 item: comp.mariaDb,
                 icon: Icons.storage_rounded,
                 iconColor: AppTheme.accentGreen,
-                defaultName: 'MariaDB Database (Port 3306)',
+                defaultName: 'MariaDB Server (Port 3306)',
                 details: comp.mariaDb.isInstalled
                     ? 'Terpasang: ${comp.mariaDb.path}'
-                    : 'Server SQL lokal mandiri untuk basis data.',
+                    : 'Database engine relasional lokal berbasis SQL.',
                 onInstall: () => controller.installSingleComponent('mariadb'),
               ),
 
@@ -72,10 +72,10 @@ class EnvironmentView extends StatelessWidget {
                 item: comp.phpMyAdmin,
                 icon: Icons.table_chart_rounded,
                 iconColor: AppTheme.accentAmber,
-                defaultName: 'phpMyAdmin Database Manager',
+                defaultName: 'phpMyAdmin',
                 details: comp.phpMyAdmin.isInstalled
                     ? 'Terpasang: ${comp.phpMyAdmin.path}'
-                    : 'Web UI lengkap untuk mengelola tabel & database.',
+                    : 'Web interface administrasi basis data MariaDB.',
                 onInstall: () => controller.installSingleComponent('phpmyadmin'),
                 customAction: comp.phpMyAdmin.isInstalled
                     ? TextButton.icon(
@@ -95,10 +95,10 @@ class EnvironmentView extends StatelessWidget {
                 item: comp.nginx,
                 icon: Icons.language_rounded,
                 iconColor: AppTheme.accentGreen,
-                defaultName: 'Nginx High-Performance Web Server',
+                defaultName: 'Nginx Web Server',
                 details: comp.nginx.isInstalled
                     ? 'Terpasang: ${comp.nginx.path}'
-                    : 'Web server ringan berkecepatan tinggi dengan FastCGI PHP.',
+                    : 'HTTP reverse proxy dan web server berkinerja tinggi.',
                 onInstall: () => controller.installSingleComponent('nginx'),
               ),
 
@@ -113,7 +113,7 @@ class EnvironmentView extends StatelessWidget {
                 defaultName: 'Apache HTTPD Server',
                 details: comp.apache.isInstalled
                     ? 'Terpasang: ${comp.apache.path}'
-                    : 'Web server berstandar industri dengan dukungan file .htaccess.',
+                    : 'HTTP server modular dengan evaluasi file .htaccess.',
                 onInstall: () => controller.installSingleComponent('apache'),
               ),
             ],
@@ -149,7 +149,7 @@ class EnvironmentView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '⚡ Instalasi Komponen Sekaligus',
+                      'Instalasi Batch Komponen',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -159,8 +159,8 @@ class EnvironmentView extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       comp.isAllInstalled
-                          ? 'Semua komponen penting sudah terpasang dan siap digunakan.'
-                          : 'Download dan pasang PHP, MariaDB, serta phpMyAdmin otomatis dalam 1 kali klik.',
+                          ? 'Semua komponen runtime dasar telah terpasang.'
+                          : 'Unduh dan pasang PHP, MariaDB, serta phpMyAdmin secara otomatis.',
                       style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                     ),
                   ],
@@ -174,9 +174,9 @@ class EnvironmentView extends StatelessWidget {
                         height: 14,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                       )
-                    : const Icon(Icons.bolt, size: 18),
+                    : const Icon(Icons.download_rounded, size: 18),
                 label: Text(
-                  comp.isAllInstalled ? 'Install Ulang Semua' : 'Install Semua Sekaligus',
+                  comp.isAllInstalled ? 'Pasang Ulang Semua' : 'Pasang Semua Komponen',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -263,7 +263,7 @@ class EnvironmentView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              item.isInstalled ? 'Terpasang' : 'Belum Ada',
+                              item.isInstalled ? 'Terpasang' : 'Belum Terpasang',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -299,7 +299,7 @@ class EnvironmentView extends StatelessWidget {
                   label: Text(
                     item.isInstalling
                         ? 'Memasang...'
-                        : (item.isInstalled ? 'Install Ulang' : 'Install'),
+                        : (item.isInstalled ? 'Pasang Ulang' : 'Pasang'),
                     style: const TextStyle(fontSize: 12),
                   ),
                   style: ElevatedButton.styleFrom(

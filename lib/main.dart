@@ -70,27 +70,27 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final _titles = [
-    'Dashboard Overview',
-    'Daftar Website (Virtual Hosts)',
-    'Web Server HTTP Engine',
-    'PHP Runtime Environment',
-    'MariaDB (MySQL) Database Server',
-    'Big Database Turbo Importer',
-    'phpMyAdmin Database Manager',
-    'Pusat Komponen (Library Mandiri)',
-    'Log Server & Aktivitas',
+    'Dashboard',
+    'Virtual Hosts',
+    'Web Server',
+    'PHP Environment',
+    'MariaDB Server',
+    'SQL Importer',
+    'phpMyAdmin',
+    'Pusat Komponen',
+    'Log Aktivitas',
   ];
 
   final _subtitles = [
-    'Monitor status web server, database, dan kontrol utama.',
-    'Kelola domain lokal kustom dan hubungkan ke folder proyek.',
-    'Daemon HTTP lokal port 80, Apache .htaccess rewrite, CGI pool & routing.',
-    'Manajemen versi PHP, modul ekstensi, dan konfigurasi live php.ini.',
-    'Manajemen daemon MariaDB port 3306, parameter koneksi & versi resmi.',
-    'Streaming importer kecepatan tinggi untuk file SQL 1 GB - 5 GB+ (SSD & HDD).',
-    'Kelola tabel, struktur data, dan kueri SQL secara visual di browser.',
-    'Install sekaligus atau per library resmi secara mandiri tanpa dependensi luar.',
-    'Pemantauan lalu lintas HTTP, daemon MariaDB, dan output proses real-time.',
+    'Status layanan dan kontrol web server lokal.',
+    'Kelola domain lokal kustom dan DocumentRoot proyek.',
+    'Pilihan engine HTTP (Native Dart, Nginx 1.26, Apache 2.4).',
+    'Manajemen multi-versi PHP, ekstensi, dan konfigurasi php.ini.',
+    'Database server MariaDB port 3306 dan parameter koneksi.',
+    'Import berkas SQL dump besar langsung ke database.',
+    'Antarmuka web untuk manajemen database MariaDB.',
+    'Status dan instalasi runtime komponen server.',
+    'Output log aktivitas HTTP dan query database secara real-time.',
   ];
 
   @override

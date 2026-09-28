@@ -199,7 +199,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
         _loadCurrentIniValues();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PHP $versionKey berhasil dipasang dan siap digunakan!'),
+            content: Text('PHP $versionKey berhasil dipasang.'),
             backgroundColor: AppTheme.accentGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -231,14 +231,14 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
           borderRadius: BorderRadius.circular(14),
           side: const BorderSide(color: AppTheme.borderDark),
         ),
-        title: const Text('Uninstall PHP', style: TextStyle(color: Colors.white, fontSize: 16)),
-        content: Text('Hapus binary dan konfigurasi PHP $versionKey dari sistem portable?'),
+        title: const Text('Hapus PHP', style: TextStyle(color: Colors.white, fontSize: 16)),
+        content: Text('Hapus direktori binary dan konfigurasi PHP $versionKey?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentRed),
-            child: const Text('Uninstall'),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -294,11 +294,11 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                   tabs: const [
                     Tab(
                       icon: Icon(Icons.inventory_2_outlined, size: 18),
-                      text: 'Versi & Deteksi Pembaruan PHP',
+                      text: 'Versi PHP',
                     ),
                     Tab(
                       icon: Icon(Icons.tune_rounded, size: 18),
-                      text: 'Editor Konfigurasi php.ini Penting',
+                      text: 'Konfigurasi php.ini',
                     ),
                   ],
                 ),
@@ -356,12 +356,12 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          'Manajemen Multi-PHP & Deteksi Pembaruan',
+                          'Manajemen Versi PHP',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Kamu bisa memasang berbagai versi PHP sekaligus. Setiap website bisa memilih versi PHP yang berbeda.',
+                          'Kelola multiple binary PHP secara berdampingan. Setiap virtual host dapat menggunakan versi PHP berbeda.',
                           style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                         ),
                       ],
@@ -376,7 +376,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.refresh_rounded, size: 16),
-                    label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Periksa Versi Baru'),
+                    label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Periksa Pembaruan'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.cardHover,
                       foregroundColor: Colors.white,
@@ -470,7 +470,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                       border: Border.all(color: AppTheme.accentCyan.withOpacity(0.4)),
                                     ),
                                     child: Text(
-                                      '⚡ Update Tersedia: v$latestVer',
+                                      'Update: v$latestVer',
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -485,7 +485,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             Text(
                               isInstalled
                                   ? 'Terpasang di ${ver.dirPath}'
-                                  : 'Belum terpasang. Klik tombol pasang untuk mengunduh versi ini.',
+                                  : 'Belum terpasang di sistem.',
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -514,7 +514,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                          tooltip: 'Hapus (Uninstall) PHP ${ver.versionKey}',
+                          tooltip: 'Hapus PHP ${ver.versionKey}',
                           color: AppTheme.accentRed,
                           onPressed: () => _uninstallPhpVersion(ver.versionKey),
                         ),
@@ -583,7 +583,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                   children: [
                     const Icon(Icons.settings_suggest_rounded, color: AppTheme.accentCyan, size: 22),
                     const SizedBox(width: 12),
-                    const Text('Versi PHP yang Diedit:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                    const Text('Versi PHP Target:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
                     const SizedBox(width: 14),
 
                     // Version Dropdown
@@ -624,7 +624,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                     OutlinedButton.icon(
                       onPressed: () => _openInNotepad(current.phpIni),
                       icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                      label: const Text('Buka File Lengkap di Notepad'),
+                      label: const Text('Buka di Notepad'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: AppTheme.borderDark),
@@ -655,7 +655,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Icon(Icons.tune_rounded, size: 18, color: AppTheme.accentGreen),
                         SizedBox(width: 8),
                         Text(
-                          'Parameter Utama php.ini (Optimal untuk Framework & CMS)',
+                          'Direktif Utama php.ini',
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
@@ -668,7 +668,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildDirectiveInput(
                             label: 'memory_limit',
-                            desc: 'Batas RAM script (cth: 512M, 1024M)',
+                            desc: 'Batas memori skrip (cth: 512M)',
                             controller: _memoryLimitCtrl,
                           ),
                         ),
@@ -676,7 +676,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildDirectiveInput(
                             label: 'upload_max_filesize',
-                            desc: 'Maks file upload (cth: 128M, 256M)',
+                            desc: 'Batas ukuran file upload (cth: 128M)',
                             controller: _uploadMaxCtrl,
                           ),
                         ),
@@ -684,7 +684,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildDirectiveInput(
                             label: 'post_max_size',
-                            desc: 'Maks total form POST (cth: 128M)',
+                            desc: 'Batas total payload POST (cth: 128M)',
                             controller: _postMaxCtrl,
                           ),
                         ),
@@ -698,7 +698,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildDirectiveInput(
                             label: 'max_execution_time',
-                            desc: 'Timeout eksekusi (detik, cth: 300)',
+                            desc: 'Batas waktu eksekusi skrip (detik)',
                             controller: _maxExecTimeCtrl,
                           ),
                         ),
@@ -706,7 +706,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildDirectiveInput(
                             label: 'max_input_vars',
-                            desc: 'Batas variabel input form (cth: 5000)',
+                            desc: 'Batas jumlah variabel input form',
                             controller: _maxInputVarsCtrl,
                           ),
                         ),
@@ -731,7 +731,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             children: [
                               const Text('cgi.fix_pathinfo', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Consolas')),
                               const SizedBox(height: 2),
-                              const Text('Routing URL framework (Laravel/CI)', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                              const Text('Normalisasi pathinfo untuk routing framework', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                               const SizedBox(height: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -747,7 +747,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                     isExpanded: true,
                                     style: const TextStyle(color: Colors.white, fontSize: 13),
                                     items: const [
-                                      DropdownMenuItem(value: '1', child: Text('1 (Aktif - Direkomendasikan)')),
+                                      DropdownMenuItem(value: '1', child: Text('1 (Aktif)')),
                                       DropdownMenuItem(value: '0', child: Text('0 (Nonaktif)')),
                                     ],
                                     onChanged: (val) {
@@ -766,7 +766,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             children: [
                               const Text('display_errors', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Consolas')),
                               const SizedBox(height: 2),
-                              const Text('Tampilkan pesan error di browser', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                              const Text('Output error ke HTTP response', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                               const SizedBox(height: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -782,8 +782,8 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                     isExpanded: true,
                                     style: const TextStyle(color: Colors.white, fontSize: 13),
                                     items: const [
-                                      DropdownMenuItem(value: 'On', child: Text('On (Mode Development)')),
-                                      DropdownMenuItem(value: 'Off', child: Text('Off (Mode Production)')),
+                                      DropdownMenuItem(value: 'On', child: Text('On (Development)')),
+                                      DropdownMenuItem(value: 'Off', child: Text('Off (Production)')),
                                     ],
                                     onChanged: (val) {
                                       if (val != null) setState(() => _displayErrors = val);
@@ -806,7 +806,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         icon: _isSaving
                             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                             : const Icon(Icons.save_rounded, size: 18),
-                        label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Perubahan php.ini (${current.name})'),
+                        label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Konfigurasi (${current.name})'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentGreen,
                           foregroundColor: Colors.black,

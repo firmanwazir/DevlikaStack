@@ -58,9 +58,9 @@ class TrayService with TrayListener, WindowListener {
       final isWebRunning = serverController.isWebRunning;
       final isDbRunning = serverController.isMariaDbRunning;
 
-      final toolTip = 'Devlika Stack Portable - '
-          'Web: ${isWebRunning ? "Aktif" : "Mati"} | '
-          'DB: ${isDbRunning ? "Aktif" : "Mati"}';
+      final toolTip = 'DevlikaStack - '
+          'Web: ${isWebRunning ? "Running" : "Stopped"} | '
+          'MariaDB: ${isDbRunning ? "Running" : "Stopped"}';
 
       await trayManager.setToolTip(toolTip);
 
@@ -68,23 +68,23 @@ class TrayService with TrayListener, WindowListener {
         items: [
           MenuItem(
             key: 'show_window',
-            label: 'Tampilkan Devlika Stack',
+            label: 'Buka DevlikaStack',
           ),
           MenuItem.separator(),
           MenuItem(
             key: 'status_web',
-            label: 'Web Server: ${isWebRunning ? "Aktif (Port 80/443)" : "Mati"}',
+            label: 'Web Server: ${isWebRunning ? "Running (Port 80/443)" : "Stopped"}',
             disabled: true,
           ),
           MenuItem(
             key: 'status_db',
-            label: 'MariaDB: ${isDbRunning ? "Aktif (Port 3306)" : "Mati"}',
+            label: 'MariaDB: ${isDbRunning ? "Running (Port 3306)" : "Stopped"}',
             disabled: true,
           ),
           MenuItem.separator(),
           MenuItem(
             key: 'open_browser',
-            label: 'Buka Web Server (localhost)',
+            label: 'Buka Localhost (Browser)',
           ),
           MenuItem(
             key: 'open_pma',
@@ -93,7 +93,7 @@ class TrayService with TrayListener, WindowListener {
           MenuItem.separator(),
           MenuItem(
             key: 'exit_app',
-            label: 'Keluar Devlika Stack (Tutup Server)',
+            label: 'Keluar',
           ),
         ],
       );

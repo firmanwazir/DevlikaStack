@@ -190,14 +190,14 @@ ${altNamesBuffer.toString().trim()}
       final batFile = File(p.join(sslDir.path, 'install_ssl_certificate.bat'));
       batFile.writeAsStringSync('''@echo off
 echo ========================================================
-echo   Devlika Stack - Pasang Sertifikat SSL ke Windows Root
+echo   DevlikaStack - Registrasi Root CA SSL ke Windows Store
 echo ========================================================
 echo.
-echo Mendaftarkan Devlika Root CA ke Windows Trusted Store...
+echo Mendaftarkan Devlika Root CA ke Windows Trusted Root Store...
 powershell -NoProfile -Command "Start-Process certutil -Verb RunAs -ArgumentList '-addstore -f ROOT \\"%~dp0ca.crt\\"' -Wait"
 echo.
-echo Selesai! Silakan restart browser Chrome / Edge Anda.
-echo Seluruh website lokal Devlika Stack (HTTPS port 443) sekarang akan SECURE (Gembok Hijau).
+echo Registrasi selesai. Silakan restart browser untuk memperbarui status sertifikat.
+echo Seluruh virtual host HTTPS (port 443) kini berstatus terverifikasi (trusted).
 pause
 ''');
 

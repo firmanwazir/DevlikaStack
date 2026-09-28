@@ -95,7 +95,7 @@ class _WebServerViewState extends State<WebServerView> {
                               Icon(Icons.tune_rounded, size: 20, color: AppTheme.accentCyan),
                               SizedBox(width: 8),
                               Text(
-                                'Pilih Web Server Engine Aktif (Port 80)',
+                                'Web Server Engine',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ],
@@ -124,8 +124,8 @@ class _WebServerViewState extends State<WebServerView> {
                             _buildEngineCard(
                               id: 'builtin',
                               title: 'Devlika Built-in',
-                              subtitle: 'Native Async HTTP (Bawaan • Cepat & Ringan)',
-                              badge: 'Bawaan (Siap)',
+                              subtitle: 'Native Async HTTP (Bawaan)',
+                              badge: 'Built-in',
                               badgeColor: AppTheme.accentGreen,
                               icon: Icons.bolt_rounded,
                               iconColor: AppTheme.accentCyan,
@@ -135,9 +135,9 @@ class _WebServerViewState extends State<WebServerView> {
                             ),
                             _buildEngineCard(
                               id: 'nginx',
-                              title: 'Nginx 1.26 Portable',
-                              subtitle: 'High-Concurrency Event-Driven + FastCGI',
-                              badge: controller.components.nginx.isInstalled ? 'Terpasang' : 'Perlu Unduh',
+                              title: 'Nginx 1.26',
+                              subtitle: 'Event-Driven HTTP Server & FastCGI',
+                              badge: controller.components.nginx.isInstalled ? 'Terpasang' : 'Belum Ada',
                               badgeColor: controller.components.nginx.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
                               icon: Icons.dns_rounded,
                               iconColor: AppTheme.accentGreen,
@@ -149,8 +149,8 @@ class _WebServerViewState extends State<WebServerView> {
                             _buildEngineCard(
                               id: 'apache',
                               title: 'Apache HTTPD 2.4',
-                              subtitle: 'Standar Industri dengan Native .htaccess',
-                              badge: controller.components.apache.isInstalled ? 'Terpasang' : 'Perlu Unduh',
+                              subtitle: 'Apache HTTP Server dengan mod_rewrite',
+                              badge: controller.components.apache.isInstalled ? 'Terpasang' : 'Belum Ada',
                               badgeColor: controller.components.apache.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
                               icon: Icons.public_rounded,
                               iconColor: AppTheme.accentAmber,
@@ -264,8 +264,8 @@ class _WebServerViewState extends State<WebServerView> {
                             const SizedBox(height: 5),
                             Text(
                               isRunning
-                                  ? '🟢 Mendengarkan permintaan pada Port 80 & 443 (SSL/HTTPS) • Menangani ${activeSites.length} domain aktif'
-                                  : '⚪ Server nonaktif. Klik tombol Start Server untuk mengaktifkan.',
+                                  ? 'Berjalan di Port 80 & 443 (HTTPS) • ${activeSites.length} virtual host aktif'
+                                  : 'Server tidak aktif.',
                               style: TextStyle(
                                 color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
                                 fontSize: 13,
@@ -278,7 +278,7 @@ class _WebServerViewState extends State<WebServerView> {
                                   Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.accentGreen)),
                                   const SizedBox(width: 6),
                                   const Text(
-                                    '🔒 SSL / HTTPS Aktif pada Port 443 (Wildcard SAN Dev CA)',
+                                    'SSL / HTTPS aktif pada Port 443',
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: AppTheme.accentGreen,
@@ -296,8 +296,8 @@ class _WebServerViewState extends State<WebServerView> {
                                   const SizedBox(width: 6),
                                   Text(
                                     engineMgr.isFastCgiRunning
-                                        ? '🟣 PHP FastCGI Daemon aktif pada 127.0.0.1:9000'
-                                        : '⚠️ PHP FastCGI Worker belum merespons port 9000',
+                                        ? 'FastCGI pool aktif pada 127.0.0.1:9000'
+                                        : 'FastCGI worker belum aktif pada port 9000',
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: engineMgr.isFastCgiRunning ? AppTheme.accentPurple : AppTheme.accentAmber,
@@ -395,7 +395,7 @@ class _WebServerViewState extends State<WebServerView> {
                               Icon(Icons.settings_suggest_rounded, size: 18, color: AppTheme.accentAmber),
                               SizedBox(width: 8),
                               Text(
-                                'Konfigurasi & Pengaturan Berkas Server',
+                                'Konfigurasi Server',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ],
@@ -409,7 +409,7 @@ class _WebServerViewState extends State<WebServerView> {
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Icon(Icons.sync_rounded, size: 16),
-                            label: Text(_isSyncingHosts ? 'Menyinkronkan...' : 'Sinkronkan Konfigurasi'),
+                            label: Text(_isSyncingHosts ? 'Menyinkronkan...' : 'Sinkronkan Hosts'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.cardHover,
                               foregroundColor: Colors.white,
@@ -473,7 +473,7 @@ class _WebServerViewState extends State<WebServerView> {
                               child: OutlinedButton.icon(
                                 onPressed: () => controller.openFolder(ConfigService.instance.demoSiteDir),
                                 icon: const Icon(Icons.folder_open_rounded, size: 16),
-                                label: const Text('Folder Root Web (Demo Site)'),
+                                label: const Text('Folder Demo Site'),
                                 style: OutlinedButton.styleFrom(foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
                               ),
                             ),
@@ -482,11 +482,11 @@ class _WebServerViewState extends State<WebServerView> {
                       ],
 
                       const SizedBox(height: 14),
-                      _buildInfoRow('Port HTTP Utama', '80 (Default Web Standard)'),
+                      _buildInfoRow('Port HTTP', '80'),
                       const Divider(height: 16, color: AppTheme.borderDark),
-                      _buildInfoRow('FastCGI PHP Daemon', activeEngine == 'builtin' ? 'Internal Pipe (Per-Request)' : '127.0.0.1:9000 (Persistent Pool)'),
+                      _buildInfoRow('FastCGI PHP Daemon', activeEngine == 'builtin' ? 'Internal Pipe' : '127.0.0.1:9000 (Persistent Pool)'),
                       const Divider(height: 16, color: AppTheme.borderDark),
-                      _buildInfoRow('Lokasi Berkas Hosts Windows', r'C:\Windows\System32\drivers\etc\hosts'),
+                      _buildInfoRow('File Hosts Windows', r'C:\Windows\System32\drivers\etc\hosts'),
                     ],
                   ),
                 ),
@@ -743,7 +743,7 @@ class _WebServerViewState extends State<WebServerView> {
                 child: ElevatedButton.icon(
                   onPressed: onInstall,
                   icon: const Icon(Icons.download_rounded, size: 14),
-                  label: const Text('Unduh Sekarang', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  label: const Text('Unduh Engine', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accentAmber,
                     foregroundColor: Colors.black,
@@ -757,7 +757,7 @@ class _WebServerViewState extends State<WebServerView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    isSelected ? '● Aktif Digunakan' : 'Klik untuk Beralih',
+                    isSelected ? 'Aktif' : 'Pilih Engine',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

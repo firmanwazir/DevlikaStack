@@ -34,12 +34,12 @@ class PhpMyAdminView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'phpMyAdmin Database Manager',
+                          'phpMyAdmin',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Kelola tabel, struktur, relasi, eksekusi kueri SQL, dan ekspor/impor database secara visual.',
+                          'Web interface visual untuk administrasi basis data MariaDB/MySQL.',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                         ),
@@ -48,7 +48,7 @@ class PhpMyAdminView extends StatelessWidget {
                           ElevatedButton.icon(
                             onPressed: () => controller.openPhpMyAdmin(),
                             icon: const Icon(Icons.open_in_new, size: 18),
-                            label: const Text('Buka phpMyAdmin di Browser (1-Klik)'),
+                            label: const Text('Buka di Browser'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.accentBlue,
                               foregroundColor: Colors.white,
@@ -59,14 +59,14 @@ class PhpMyAdminView extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           const Text(
-                            'URL: http://127.0.0.1/__phpmyadmin/ • Login otomatis root tanpa password',
+                            'URL: http://127.0.0.1/__phpmyadmin/ • Auto-login root',
                             style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontFamily: 'Consolas'),
                           ),
                         ] else ...[
                           ElevatedButton.icon(
                             onPressed: () => controller.installSingleComponent('phpmyadmin'),
                             icon: const Icon(Icons.download, size: 18),
-                            label: const Text('Install phpMyAdmin Sekarang'),
+                            label: const Text('Pasang phpMyAdmin'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.accentAmber,
                               foregroundColor: Colors.black,
@@ -82,7 +82,7 @@ class PhpMyAdminView extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              const Text('Informasi Koneksi Database', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+              const Text('Parameter Koneksi Database', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 12),
 
               Card(
@@ -90,15 +90,15 @@ class PhpMyAdminView extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildRow('Jenis Database', 'MySQL / MariaDB'),
+                      _buildRow('Engine', 'MariaDB / MySQL'),
                       const Divider(height: 20),
-                      _buildRow('Server Host', '127.0.0.1'),
+                      _buildRow('Host', '127.0.0.1'),
                       const Divider(height: 20),
                       _buildRow('Port', '3306'),
                       const Divider(height: 20),
-                      _buildRow('User Default', 'root'),
+                      _buildRow('Username', 'root'),
                       const Divider(height: 20),
-                      _buildRow('Password', '(Kosong)'),
+                      _buildRow('Password', '(Tanpa password)'),
                     ],
                   ),
                 ),

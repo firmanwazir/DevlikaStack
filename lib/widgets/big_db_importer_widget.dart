@@ -267,7 +267,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Mengimpor query SQL langsung melalui pipeline streaming native MariaDB client. Dioptimalkan dengan 1 MB sequential batching dan safe InnoDB commit buffering untuk mencegah head-thrashing pada hard disk mekanis (HDD) serta performa kilat pada SSD.',
+                  'Import query SQL langsung melalui client MariaDB lokal dengan buffer sekuensial dan penanganan transaksi InnoDB yang optimal.',
                   style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4),
                 ),
                 const SizedBox(height: 18),
@@ -331,7 +331,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Gagal Melakukan Import',
+                                'Import Gagal',
                                 style: TextStyle(
                                   color: AppTheme.accentRed,
                                   fontSize: 13,
@@ -446,7 +446,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'File masif (${DbImporterService.formatBytes(_selectedFileSize)}): Mode Anti Head-Thrashing HDD & 512MB Buffer Pool aktif. Pastikan partisi hard disk memiliki sisa ruang ~4-6 GB untuk data dan indeks.',
+                              'Ukuran file: ${DbImporterService.formatBytes(_selectedFileSize)}. Pastikan partisi penyimpanan memiliki sisa ruang yang cukup untuk data dan indeks tabel.',
                               style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                             ),
                           ),
@@ -473,7 +473,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                             ),
                           ),
                           child: Text(
-                            '+ Buat Database Baru',
+                            '+ Database Baru',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -499,7 +499,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                             ),
                           ),
                           child: Text(
-                            'Gunakan Database Yang Ada',
+                            'Database yang Ada',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -595,7 +595,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                       onPressed: _startImport,
                       icon: const Icon(Icons.play_arrow_rounded, size: 20),
                       label: const Text(
-                        'Mulai Turbo Import Sekarang',
+                        'Mulai Import',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(

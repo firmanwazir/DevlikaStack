@@ -230,7 +230,7 @@ class HttpServerService {
       _fastCgiClients[versionKey] = FastCgiClient(port: port);
       _fastCgiPorts[versionKey] = port;
       _fastCgiReady[versionKey] = true;
-      _logController.add('[FastCGI] ⚡ Daemon ${phpModel.name} aktif di port $port (reuse).');
+      _logController.add('[FastCGI] Daemon ${phpModel.name} aktif di port $port (reuse).');
       return true;
     } catch (_) {
       // Port free, start daemon
@@ -312,7 +312,7 @@ class HttpServerService {
           testSocket.destroy();
           _fastCgiClients[versionKey] = FastCgiClient(port: port);
           _fastCgiReady[versionKey] = true;
-          _logController.add('[FastCGI] ⚡ Daemon ${phpModel.name} aktif di port $port — PHP turbo mode ON!');
+          _logController.add('[FastCGI] Daemon ${phpModel.name} siap di port $port.');
           return true;
         } catch (_) {}
       }
@@ -415,7 +415,7 @@ class HttpServerService {
     if (!Directory(phpMyAdminDir).existsSync()) {
       request.response.statusCode = 404;
       request.response.headers.contentType = ContentType.html;
-      request.response.write('<h2>phpMyAdmin Belum Terpasang</h2><p>Buka menu Komponen di Devlika Stack dan klik Install phpMyAdmin.</p>');
+      request.response.write('<h2>phpMyAdmin Belum Terpasang</h2><p>Buka menu Komponen Server di DevlikaStack untuk memasang phpMyAdmin.</p>');
       await request.response.close();
       return;
     }
@@ -1203,10 +1203,9 @@ class HttpServerService {
 </head>
 <body>
     <div class="card">
-        <div style="font-size: 48px; margin-bottom: 12px;">⚡</div>
-        <h1>Web Server Siap!</h1>
+        <h1>DevlikaStack</h1>
         <div class="badge">Host: $host</div>
-        <p>Domain ini belum dihubungkan ke folder proyek. Buka <b>Devlika Stack</b> di desktop lalu tambahkan domain ini ke daftar website.</p>
+        <p>Domain ini belum dikonfigurasi ke direktori root. Buka <b>DevlikaStack</b> lalu tambahkan konfigurasi virtual host untuk domain ini.</p>
     </div>
 </body>
 </html>''');

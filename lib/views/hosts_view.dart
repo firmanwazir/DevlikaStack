@@ -50,28 +50,28 @@ class _HostsViewState extends State<HostsView> {
                 children: [
                   _buildStatBadge(
                     icon: Icons.language_rounded,
-                    label: 'Total Website',
+                    label: 'Total Hosts',
                     value: '$totalCount',
                     color: AppTheme.accentCyan,
                   ),
                   const SizedBox(width: 12),
                   _buildStatBadge(
                     icon: Icons.check_circle_outline_rounded,
-                    label: 'Website Aktif',
+                    label: 'Aktif',
                     value: '$activeCount',
                     color: AppTheme.accentGreen,
                   ),
                   const SizedBox(width: 12),
                   _buildStatBadge(
                     icon: Icons.code_rounded,
-                    label: 'PHP Host',
+                    label: 'PHP Hosts',
                     value: '$phpCount',
                     color: AppTheme.accentPurple,
                   ),
                   const SizedBox(width: 12),
                   _buildStatBadge(
                     icon: Icons.alt_route_rounded,
-                    label: 'Reverse Proxy',
+                    label: 'Proxy Hosts',
                     value: '$proxyCount',
                     color: AppTheme.accentAmber,
                   ),
@@ -88,7 +88,7 @@ class _HostsViewState extends State<HostsView> {
                       onChanged: (val) => setState(() => _searchQuery = val),
                       style: const TextStyle(color: Colors.white, fontSize: 13),
                       decoration: InputDecoration(
-                        hintText: 'Cari website berdasarkan domain, path, atau versi PHP...',
+                        hintText: 'Cari berdasarkan domain, direktori root, atau versi PHP...',
                         hintStyle: const TextStyle(color: AppTheme.textMuted),
                         prefixIcon: const Icon(Icons.search, size: 18, color: AppTheme.textMuted),
                         suffixIcon: _searchQuery.isNotEmpty
@@ -123,7 +123,7 @@ class _HostsViewState extends State<HostsView> {
                       );
                     },
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Tambah Website (Host)'),
+                    label: const Text('Tambah Host'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentBlue,
                       foregroundColor: Colors.white,
@@ -214,14 +214,14 @@ class _HostsViewState extends State<HostsView> {
           ),
           const SizedBox(height: 16),
           Text(
-            isSearch ? 'Tidak ada website yang cocok dengan pencarian' : 'Belum Ada Website Lokal Terdaftar',
+            isSearch ? 'Tidak ada host yang cocok dengan pencarian' : 'Belum Ada Virtual Host',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 6),
           Text(
             isSearch
                 ? 'Coba gunakan kata kunci domain atau nama folder lainnya.'
-                : 'Daftarkan domain lokalmu agar bisa diakses langsung via browser (contoh: myproject.local).',
+                : 'Daftarkan domain host lokal (contoh: project.local) untuk diarahkan ke direktori proyek.',
             style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 20),
@@ -230,7 +230,7 @@ class _HostsViewState extends State<HostsView> {
               showDialog(context: context, builder: (_) => const AddHostDialog());
             },
             icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Tambah Website Sekarang'),
+            label: const Text('Tambah Virtual Host'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentBlue,
               foregroundColor: Colors.white,
@@ -267,9 +267,9 @@ class _HostsViewState extends State<HostsView> {
             child: Row(
               children: const [
                 SizedBox(width: 60, child: Text('STATUS', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 3, child: Text('DOMAIN LOKAL', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('ENGINE / VERSI', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 5, child: Text('FOLDER PROYEK / TARGET', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
+                Expanded(flex: 3, child: Text('DOMAIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Text('RUNTIME / TARGET', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
+                Expanded(flex: 5, child: Text('DOCUMENT ROOT / TARGET PROXY', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
                 SizedBox(width: 170, child: Text('AKSI', textAlign: TextAlign.right, style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
               ],
             ),
@@ -425,15 +425,15 @@ class _HostsViewState extends State<HostsView> {
                             if (site.type != 'proxy')
                               IconButton(
                                 icon: const Icon(Icons.folder_open_rounded, size: 16),
-                                tooltip: 'Buka Folder Proyek',
+                                tooltip: 'Buka Folder Root',
                                 color: AppTheme.textSecondary,
                                 onPressed: () => controller.openFolder(site.rootPath),
                               ),
 
-                            // EDIT WEBSITE BUTTON
+                            // EDIT HOST BUTTON
                             IconButton(
                               icon: const Icon(Icons.edit_outlined, size: 16),
-                              tooltip: 'Edit Konfigurasi Website',
+                              tooltip: 'Edit Konfigurasi Host',
                               color: AppTheme.accentBlue,
                               onPressed: () {
                                 showDialog(
@@ -443,10 +443,10 @@ class _HostsViewState extends State<HostsView> {
                               },
                             ),
 
-                            // Hapus Website
+                            // Hapus Host
                             IconButton(
                               icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                              tooltip: 'Hapus Website',
+                              tooltip: 'Hapus Host',
                               color: AppTheme.accentRed,
                               onPressed: () {
                                 _confirmDelete(context, controller, site);
@@ -479,7 +479,7 @@ class _HostsViewState extends State<HostsView> {
           children: const [
             Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 22),
             SizedBox(width: 10),
-            Text('Hapus Website', style: TextStyle(color: Colors.white, fontSize: 16)),
+            Text('Hapus Virtual Host', style: TextStyle(color: Colors.white, fontSize: 16)),
           ],
         ),
         content: Column(
@@ -487,12 +487,12 @@ class _HostsViewState extends State<HostsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Apakah kamu yakin ingin menghapus website ${site.domain}?',
+              'Konfirmasi penghapusan konfigurasi virtual host ${site.domain}?',
               style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Domain ini tidak akan diarahkan lagi oleh server lokal (file proyekmu tetap aman).',
+              'Routing untuk domain ini akan dinonaktifkan. File pada direktori proyek tidak akan dihapus.',
               style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
           ],
@@ -508,7 +508,7 @@ class _HostsViewState extends State<HostsView> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Website ${site.domain} telah dihapus.'),
+                  content: Text('Virtual host ${site.domain} telah dihapus.'),
                   backgroundColor: AppTheme.accentRed,
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -518,7 +518,7 @@ class _HostsViewState extends State<HostsView> {
               backgroundColor: AppTheme.accentRed,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Ya, Hapus'),
+            child: const Text('Hapus Host'),
           ),
         ],
       ),

@@ -158,8 +158,8 @@ class _MariaDbViewState extends State<MariaDbView> {
                             const SizedBox(height: 5),
                             Text(
                               controller.isMariaDbRunning
-                                  ? '🟢 Aktif pada Port 3306 (127.0.0.1) • Siap menerima koneksi database'
-                                  : (db.isInstalled ? '⚪ Server nonaktif. Klik tombol Start DB untuk menjalankan.' : '⚠️ MariaDB belum terpasang.'),
+                                  ? 'Berjalan di Port 3306 (127.0.0.1) • Siap menerima koneksi'
+                                  : (db.isInstalled ? 'Server tidak aktif.' : 'MariaDB belum terpasang.'),
                               style: TextStyle(
                                 color: controller.isMariaDbRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
                                 fontSize: 13,
@@ -178,7 +178,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                         ),
                         label: Text(
                           !db.isInstalled
-                              ? 'Install Sekarang'
+                              ? 'Pasang'
                               : (controller.isMariaDbRunning ? 'Stop Server' : 'Start Server'),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -242,7 +242,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                           Icon(Icons.dashboard_customize_rounded, size: 18, color: AppTheme.accentCyan),
                           SizedBox(width: 8),
                           Text(
-                            'Alat & Tindakan Cepat Database',
+                            'Alat Database',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ],
@@ -254,7 +254,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                             child: ElevatedButton.icon(
                               onPressed: () => controller.openPhpMyAdmin(),
                               icon: const Icon(Icons.table_chart_rounded, size: 18),
-                              label: const Text('Buka phpMyAdmin Web', style: TextStyle(fontWeight: FontWeight.bold)),
+                              label: const Text('Buka phpMyAdmin', style: TextStyle(fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.accentBlue,
                                 foregroundColor: Colors.white,
@@ -269,7 +269,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                               child: ElevatedButton.icon(
                                 onPressed: () => widget.onNavigate!(5), // Go to Turbo Importer View
                                 icon: const Icon(Icons.bolt_rounded, size: 20, color: Colors.amber),
-                                label: const Text('⚡ Buka Turbo Importer (1-5 GB)', style: TextStyle(fontWeight: FontWeight.bold)),
+                                label: const Text('SQL Importer', style: TextStyle(fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.cardHover,
                                   foregroundColor: Colors.white,
@@ -295,7 +295,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                           const SizedBox(width: 12),
                           IconButton(
                             icon: const Icon(Icons.folder_open_rounded, size: 20, color: AppTheme.accentCyan),
-                            tooltip: 'Buka Folder Data MariaDB',
+                            tooltip: 'Folder Data MariaDB',
                             style: IconButton.styleFrom(
                               backgroundColor: AppTheme.cardHover,
                               padding: const EdgeInsets.all(14),
@@ -333,19 +333,19 @@ class _MariaDbViewState extends State<MariaDbView> {
                 Icon(Icons.key_rounded, size: 18, color: AppTheme.accentAmber),
                 SizedBox(width: 8),
                 Text(
-                  'Kredensial & Parameter Koneksi',
+                  'Parameter Koneksi',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            _buildCopyableRow('Host / Hostname', '127.0.0.1 (localhost)', '127.0.0.1'),
+            _buildCopyableRow('Host', '127.0.0.1 (localhost)', '127.0.0.1'),
             const Divider(height: 16, color: AppTheme.borderDark),
-            _buildCopyableRow('Port Database', '3306 (MySQL/MariaDB)', '3306'),
+            _buildCopyableRow('Port', '3306', '3306'),
             const Divider(height: 16, color: AppTheme.borderDark),
-            _buildCopyableRow('Username Utama', 'root', 'root'),
+            _buildCopyableRow('Username', 'root', 'root'),
             const Divider(height: 16, color: AppTheme.borderDark),
-            _buildCopyableRow('Password', '(kosong / tanpa password)', ''),
+            _buildCopyableRow('Password', '(tanpa password)', ''),
             const Divider(height: 16, color: AppTheme.borderDark),
             Row(
               children: [

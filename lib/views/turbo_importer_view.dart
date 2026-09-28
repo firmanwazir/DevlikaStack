@@ -84,7 +84,7 @@ class TurboImporterView extends StatelessWidget {
                 Row(
                   children: [
                     const Text(
-                      'Big Database Turbo Importer Engine',
+                      'Database SQL Importer',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -100,7 +100,7 @@ class TurboImporterView extends StatelessWidget {
                         border: Border.all(color: AppTheme.accentGreen.withOpacity(0.4)),
                       ),
                       child: const Text(
-                        'DUAL-ENGINE ACTIVE',
+                        'OPTIMIZED CLI',
                         style: TextStyle(
                           color: AppTheme.accentGreen,
                           fontSize: 10,
@@ -113,7 +113,7 @@ class TurboImporterView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Pipeline streaming biner langsung ke MariaDB Client • 0 MB RAM Overflow • Anti Head-Thrashing HDD & 2000 IOPS SSD',
+                  'Streaming import langsung via MariaDB CLI client tanpa batasan memory limit PHP.',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppTheme.accentCyan.withOpacity(0.9),
@@ -131,7 +131,7 @@ class TurboImporterView extends StatelessWidget {
           const SizedBox(width: 8),
           _buildBadge(
             icon: Icons.memory_rounded,
-            label: '~15 MB RAM Flat',
+            label: 'Low RAM',
             color: AppTheme.accentCyan,
           ),
         ],
@@ -181,11 +181,11 @@ class TurboImporterView extends StatelessWidget {
                     child: _buildGuideCard(
                       icon: Icons.album_rounded,
                       iconColor: AppTheme.accentAmber,
-                      title: 'Kehandalan Khusus HDD',
+                      title: 'Optimasi I/O',
                       points: [
-                        'Kluster baca sekuensial 1 MB memotong lompatan jarum mekanis (head seek) hingga 16x.',
-                        'Mode safe commit (innodb_flush_log_at_trx_commit = 2) melompati batas 100 fsync/s piringan.',
-                        'Buffer pool 512 MB menampung B-Tree index dan dirty pages di RAM.',
+                        'Buffer pembacaan sekuensial untuk meminimalkan latensi disk.',
+                        'Pengaturan transaksi efisien (innodb_flush_log_at_trx_commit = 2).',
+                        'Buffer pool memadai untuk penulisan indeks dan halaman data.',
                       ],
                     ),
                   ),
@@ -194,11 +194,11 @@ class TurboImporterView extends StatelessWidget {
                     child: _buildGuideCard(
                       icon: Icons.flash_on_rounded,
                       iconColor: AppTheme.accentCyan,
-                      title: 'Akselerasi Penuh SSD',
+                      title: 'Performa Database',
                       points: [
-                        'Membuka batas bawaan MySQL dengan kapasitas I/O paralel 1000 - 2000 IOPS.',
-                        'Penyusunan indeks (sort & bulk insert) 64 MB langsung di RAM tanpa file sementara di disk.',
-                        'Throughput streaming mencapai kecepatan penuh drive tanpa memory bottleneck.',
+                        'Eksekusi batch query langsung ke socket MariaDB lokal.',
+                        'Alokasi memory sementara dioptimalkan untuk bulk insert.',
+                        'Throughput streaming stabil tanpa bottleneck parsing skrip.',
                       ],
                     ),
                   ),
@@ -207,11 +207,11 @@ class TurboImporterView extends StatelessWidget {
                     child: _buildGuideCard(
                       icon: Icons.shield_rounded,
                       iconColor: AppTheme.accentGreen,
-                      title: 'Proteksi File 2 GB+',
+                      title: 'Integritas Data',
                       points: [
-                        'Timeout koneksi diperpanjang otomatis hingga 1 jam (anti MySQL server gone away).',
-                        'Dukungan data biner BLOB (--binary-mode) menjamin gambar & dokumen tidak korup.',
-                        'Pencegahan crash InnoDB lock table size exceeded pada transaksi masif.',
+                        'Parameter timeout koneksi disesuaikan untuk proses import panjang.',
+                        'Dukungan mode biner (--binary-mode) untuk integritas data BLOB.',
+                        'Penanganan transaksi bertahap untuk mencegah lock wait timeout.',
                       ],
                     ),
                   ),
@@ -222,33 +222,33 @@ class TurboImporterView extends StatelessWidget {
                   _buildGuideCard(
                     icon: Icons.album_rounded,
                     iconColor: AppTheme.accentAmber,
-                    title: 'Kehandalan Khusus HDD',
+                    title: 'Optimasi I/O',
                     points: [
-                      'Kluster baca sekuensial 1 MB memotong lompatan jarum mekanis (head seek) hingga 16x.',
-                      'Mode safe commit (innodb_flush_log_at_trx_commit = 2) melompati batas 100 fsync/s piringan.',
-                      'Buffer pool 512 MB menampung B-Tree index dan dirty pages di RAM.',
+                      'Buffer pembacaan sekuensial untuk meminimalkan latensi disk.',
+                      'Pengaturan transaksi efisien (innodb_flush_log_at_trx_commit = 2).',
+                      'Buffer pool memadai untuk penulisan indeks dan halaman data.',
                     ],
                   ),
                   const SizedBox(height: 12),
                   _buildGuideCard(
                     icon: Icons.flash_on_rounded,
                     iconColor: AppTheme.accentCyan,
-                    title: 'Akselerasi Penuh SSD',
+                    title: 'Performa Database',
                     points: [
-                      'Membuka batas bawaan MySQL dengan kapasitas I/O paralel 1000 - 2000 IOPS.',
-                      'Penyusunan indeks (sort & bulk insert) 64 MB langsung di RAM tanpa file sementara di disk.',
-                      'Throughput streaming mencapai kecepatan penuh drive tanpa memory bottleneck.',
+                      'Eksekusi batch query langsung ke socket MariaDB lokal.',
+                      'Alokasi memory sementara dioptimalkan untuk bulk insert.',
+                      'Throughput streaming stabil tanpa bottleneck parsing skrip.',
                     ],
                   ),
                   const SizedBox(height: 12),
                   _buildGuideCard(
                     icon: Icons.shield_rounded,
                     iconColor: AppTheme.accentGreen,
-                    title: 'Proteksi File 2 GB+',
+                    title: 'Integritas Data',
                     points: [
-                      'Timeout koneksi diperpanjang otomatis hingga 1 jam (anti MySQL server gone away).',
-                      'Dukungan data biner BLOB (--binary-mode) menjamin gambar & dokumen tidak korup.',
-                      'Pencegahan crash InnoDB lock table size exceeded pada transaksi masif.',
+                      'Parameter timeout koneksi disesuaikan untuk proses import panjang.',
+                      'Dukungan mode biner (--binary-mode) untuk integritas data BLOB.',
+                      'Penanganan transaksi bertahap untuk mencegah lock wait timeout.',
                     ],
                   ),
                 ],
