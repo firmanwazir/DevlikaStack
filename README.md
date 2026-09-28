@@ -1,138 +1,63 @@
 # DevlikaStack
 
-A lightweight, portable local web development environment for Windows, built with Flutter desktop. Designed as a modular and modern alternative to traditional stacks like XAMPP and Laragon.
+Aplikasi desktop Windows (Flutter) untuk menjalankan dan mengelola web server lokal secara portabel tanpa instalasi sistem.
 
----
+## Fungsi Aplikasi
 
-## Overview
+### 1. Web Server Engine
+- **Native HTTP Engine**: Web server internal di port 80 dan 443 dengan persistent Keep-Alive, in-memory cache untuk asset statis, dan parser aturan `.htaccess` (RewriteRule, RewriteCond, Header, php_value).
+- **Pilihan Engine**: Mendukung pergantian engine web server antara Native HTTP Server, Nginx (1.26), atau Apache HTTPD (2.4) pada port 80 tanpa konflik socket.
+- **SSL / HTTPS**: Pembuatan sertifikat SSL lokal otomatis untuk pengujian HTTPS pada port 443.
 
-DevlikaStack provides a self-contained environment for running PHP, MariaDB, and web servers locally on Windows. It requires no system-wide installation or registry modifications, keeping all binaries, configurations, virtual hosts, and databases isolated within a single directory.
+### 2. Multi-PHP & FastCGI Daemon
+- Mendukung beberapa versi PHP aktif sekaligus (misalnya PHP 7.4, 8.1, 8.2, 8.3).
+- Pemilihan versi PHP dapat diatur berbeda untuk masing-masing virtual host / website.
+- Komunikasi PHP via daemon FastCGI (`php-cgi.exe`) dengan worker pool (`PHP_FCGI_CHILDREN`), menghindari overhead spawn process baru pada setiap HTTP request.
+- Konfigurasi dual-stack loopback dan optimasi realpath cache per-versi PHP.
 
----
+### 3. Database MariaDB & phpMyAdmin
+- Service MariaDB lokal berjalan di port 3306 dengan binding dual-stack loopback (`127.0.0.1,::1`) dan parameter `--skip-name-resolve` untuk menghindari timeout pada koneksi `localhost`.
+- Integrasi phpMyAdmin bawaan yang langsung terhubung ke service MariaDB lokal.
+- Fitur Import Database untuk file `.sql` berukuran besar dengan pembagian chunk transaksi bertahap agar tidak memicu memory limit atau connection timeout.
 
-## Features
+### 4. Virtual Host & Domain Lokal
+- Penambahan domain lokal kustom (contoh: `projek.local`, `siakad.test`).
+- Sinkronisasi otomatis ke file Windows hosts (`C:\Windows\System32\drivers\etc\hosts`) memetakan entri IPv4 (`127.0.0.1`) dan IPv6 (`::1`).
+- Deteksi otomatis document root folder proyek (`public/index.php` untuk Laravel, `public_html/index.php` untuk CodeIgniter atau arsitektur lama).
+- Dukungan reverse proxy untuk mengarahkan domain lokal ke port aplikasi lain (Node.js, Go, Python).
 
-### Multi-Engine Web Server
-- **Native HTTP Engine**: Built-in HTTP/HTTPS server with integrated `.htaccess` rewriting, persistent Keep-Alive connections, and an in-memory cache for static assets.
-- **Nginx Portable**: Pre-configured Nginx engine with automated virtual host generation.
-- **Apache HTTPD**: Apache 2.4 integration for environments requiring Apache modules.
-- **Engine Switching**: Switch active engines on port 80/443 directly from the dashboard without conflicting socket bindings.
+### 5. Portabilitas & System Tray
+- Berjalan mandiri (portabel): seluruh binary runtime, file database, dan konfigurasi tersimpan di dalam folder aplikasi tanpa mengubah registry Windows.
+- Integrasi System Tray Windows untuk memantau status servis dan kontrol cepat dari taskbar.
 
-### Multi-PHP Runtime & FastCGI Daemon Pool
-- Run multiple PHP versions simultaneously (e.g., PHP 7.4, 8.1, 8.2, 8.3).
-- Assign specific PHP versions on a per-site basis.
-- Persistent FastCGI worker processes with OPcache acceleration to minimize per-request process creation overhead.
-- Dual-stack loopback support (`127.0.0.1` and `::1`) with tuned realpath cache and OPcache configurations.
-
-### Database Management
-- **MariaDB Portable**: Runs locally on port 3306 with dual-stack loopback binding (`127.0.0.1,::1`) and DNS lookup bypass (`--skip-name-resolve`) to ensure instant local connection handshakes.
-- **Integrated phpMyAdmin**: Quick browser access with automatic credential management.
-- **High-Speed Database Importer**: Built-in SQL dump importer designed to handle large database files efficiently using chunked streaming and session-level optimizations (`max_allowed_packet`, bulk insert buffers, transaction commit tuning).
-
-### Virtual Hosts & Routing
-- Automatic synchronization with the Windows `hosts` file (`C:\Windows\System32\drivers\etc\hosts`) mapping both IPv4 and IPv6 loopback addresses.
-- Auto-detection of framework entry points (`public/index.php`, `public_html/index.php`) for frameworks like Laravel, CodeIgniter, and WordPress.
-- Reverse proxy support for Node.js, Python, Go, or other backend services.
-- Built-in `.htaccess` parser supporting URL rewrites, redirects, header rules, and access control.
-
-### SSL / HTTPS
-- Automated local SSL certificate generation for port 443.
-- Native HTTPS support across the built-in engine, Nginx, and Apache.
-
-### Portable & Desktop Native
-- Fully portable: runs directly from any folder or USB drive.
-- Windows System Tray integration with service status indicators and quick actions.
-- UAC manifest configuration requesting administrative privileges on launch to manage port 80 and the `hosts` file.
-
----
-
-## Directory Structure
+## Struktur Kode
 
 ```text
-DevlikaStack-Portable/
-├── DevlikaStack.exe              # Main application executable
-├── flutter_windows.dll           # Flutter Windows runtime
-├── data/                         # Application assets and AOT compiled code
-└── bin/                          # Isolated runtime binaries and storage
-    ├── php/                      # PHP runtimes (e.g., php-7.4, php-8.2)
-    │   ├── php-7.4/
-    │   └── php-8.2/
-    ├── mariadb/                  # MariaDB portable binaries
-    ├── nginx/                    # Nginx portable server and vhost configs
-    ├── apache/                   # Apache HTTPD server configuration
-    ├── tools/
-    │   └── phpmyadmin/           # phpMyAdmin installation
-    └── storage/                  # User databases, virtual host configs, and SSL certs
-        ├── mariadb/              # MariaDB data directory
-        ├── ssl/                  # Local SSL certificates
-        ├── sites.json            # Virtual host definitions
-        └── settings.json         # Application preferences
+lib/
+├── models/                       # Model data (site, PHP version, status komponen)
+├── services/                     # Logika servis (HTTP server, FastCGI client, MariaDB, Hosts, Engine switcher)
+├── theme/                        # Tema dan styling antarmuka
+├── views/                        # Tampilan halaman utama
+└── widgets/                      # Komponen dialog dan kontrol UI
+windows/                          # Runner native Windows C++ dan manifest UAC
+test/                             # Pengujian unit test otomatis
 ```
 
----
+## Menjalankan Proyek
 
-## Getting Started
+### Mode Development
+```bash
+flutter pub get
+flutter run -d windows
+```
 
-### Using the Portable Release
+### Menjalankan Unit Test
+```bash
+flutter test
+```
 
-1. Download or extract `DevlikaStack-Portable` to any directory of your choice (e.g., `D:\DevlikaStack`).
-2. Run `DevlikaStack.exe`. The application will request administrator privileges to bind low-numbered ports (80/443) and manage local domain entries in the `hosts` file.
-3. Open the **Environment / Components** tab to install or verify your desired PHP versions, MariaDB, and phpMyAdmin.
-4. Add your project in the **Hosts / Websites** section, configure the domain name (e.g., `myproject.local`), and select the desired PHP version.
-
-### Default Database Credentials
-
-- **Host**: `127.0.0.1` (or `localhost`)
-- **Port**: `3306`
-- **Username**: `root`
-- **Password**: *(empty / no password)*
-
----
-
-## Building from Source
-
-### Prerequisites
-
-- [Flutter SDK](https://flutter.dev/docs/get-started/install/windows) (version 3.12.0 or higher)
-- Visual Studio 2022 with the "Desktop development with C++" workload
-- Windows 10 or 11 (64-bit)
-
-### Build Steps
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/DevlikaStack.git
-   cd DevlikaStack
-   ```
-
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-
-3. Run automated tests:
-   ```bash
-   flutter test
-   ```
-
-4. Build the release binary:
-   ```bash
-   flutter build windows --release
-   ```
-
-The compiled binary and runtime files will be generated in `build/windows/x64/runner/Release/`.
-
----
-
-## Tech Stack
-
-- **UI & Application Core**: Flutter Desktop (Dart / C++ Runner)
-- **State Management & Architecture**: Singleton service pattern with reactive streams
-- **Desktop Plugins**: `window_manager`, `tray_manager`, `screen_retriever`, `url_launcher`
-- **Web Protocol Implementation**: Native FastCGI client, dual-stack HTTP/HTTPS server, `.htaccess` rule engine
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+### Kompilasi Release
+```bash
+flutter build windows --release
+```
+Hasil file executable dan runtime akan berada di `build/windows/x64/runner/Release/`.
