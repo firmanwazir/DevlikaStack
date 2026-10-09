@@ -29,10 +29,12 @@ class MariaDbManager {
   Future<bool> start() async {
     if (_isRunning) return true;
 
-    // Check if MariaDB is already open on port 3306
-    if (await checkPortOpen(3306)) {
+    final port = ConfigService.instance.mariaDbPort;
+
+    // Check if MariaDB is already open on configured port
+    if (await checkPortOpen(port)) {
       _isRunning = true;
-      _logController.add('[MariaDB] Port 3306 aktif dan siap digunakan.');
+      _logController.add('[MariaDB] Port $port aktif dan siap digunakan.');
       return true;
     }
 
@@ -51,7 +53,7 @@ class MariaDbManager {
       final args = [
         if (myIniPath != null) '--defaults-file=$myIniPath',
         '--datadir=${config.mariaDbDataDir}',
-        '--port=3306',
+        '--port=$port',
         '--bind-address=127.0.0.1,::1',
         '--skip-name-resolve',
         '--skip-host-cache',
@@ -85,12 +87,12 @@ class MariaDbManager {
         }
       });
 
-      // Poll until port 3306 is open (up to 4 seconds)
+      // Poll until port is open (up to 4 seconds)
       for (int i = 0; i < 20; i++) {
         await Future.delayed(const Duration(milliseconds: 200));
-        if (await checkPortOpen(3306)) {
+        if (await checkPortOpen(port)) {
           _isRunning = true;
-          _logController.add('[MariaDB] Berhasil berjalan di port 3306.');
+          _logController.add('[MariaDB] Berhasil berjalan di port $port.');
           return true;
         }
       }
@@ -105,6 +107,7 @@ class MariaDbManager {
 
   Future<void> stop() async {
     final config = ConfigService.instance;
+    final port = config.mariaDbPort;
     final mysqlAdmin = File(p.join(config.mariaDbDir, 'bin', 'mysqladmin.exe')).existsSync()
         ? p.join(config.mariaDbDir, 'bin', 'mysqladmin.exe')
         : (File(p.join(config.mariaDbDir, 'bin', 'mariadb-admin.exe')).existsSync()
@@ -117,13 +120,13 @@ class MariaDbManager {
         _logController.add('[MariaDB] Mengirim sinyal graceful shutdown...');
         await Process.run(
           mysqlAdmin,
-          ['-u', 'root', '--port=3306', 'shutdown'],
+          ['-u', 'root', '--port=$port', 'shutdown'],
         ).timeout(const Duration(seconds: 2));
 
         // Wait briefly for port to close
         for (int i = 0; i < 10; i++) {
           await Future.delayed(const Duration(milliseconds: 150));
-          if (!await checkPortOpen(3306)) break;
+          if (!await checkPortOpen(port)) break;
         }
       } catch (_) {}
     }
@@ -141,7 +144,7 @@ class MariaDbManager {
     }
 
     // 3. Fallback kill if port is still occupied
-    if (await checkPortOpen(3306) && Platform.isWindows) {
+    if (await checkPortOpen(port) && Platform.isWindows) {
       try {
         await Process.run('taskkill', ['/F', '/IM', 'mysqld.exe']);
       } catch (_) {}
@@ -179,6 +182,7 @@ class MariaDbManager {
 
   String? ensureMyIni() {
     final config = ConfigService.instance;
+    final port = config.mariaDbPort;
     final iniPath = p.join(config.mariaDbDir, 'my.ini');
     try {
       final file = File(iniPath);
@@ -186,7 +190,7 @@ class MariaDbManager {
         file.parent.createSync(recursive: true);
         file.writeAsStringSync('''# DevlikaStack MariaDB Turbo Configuration
 [mysqld]
-port = 3306
+port = $port
 bind-address = 127.0.0.1,::1
 
 # Network & DNS Optimization (Eliminates localhost / reverse DNS delay)
@@ -234,12 +238,21 @@ character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
 
 [client]
-port = 3306
+port = $port
 default-character-set = utf8mb4
 
 [mysql]
 default-character-set = utf8mb4
 ''');
+      } else {
+        // Sync port in existing my.ini if user updated it
+        try {
+          final content = file.readAsStringSync();
+          final updated = content.replaceAll(RegExp(r'port\s*=\s*\d+'), 'port = $port');
+          if (updated != content) {
+            file.writeAsStringSync(updated);
+          }
+        } catch (_) {}
       }
 
       // Clean up legacy my.ini in data dir if it contains stale hardcoded absolute paths

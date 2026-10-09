@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/server_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/add_host_dialog.dart';
+import '../widgets/port_settings_dialog.dart';
 
 class DashboardView extends StatelessWidget {
   final ValueChanged<int> onNavigate;
@@ -17,86 +18,93 @@ class DashboardView extends StatelessWidget {
         final comp = controller.components;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Missing Component Warning Banner
+              // 1. Missing Component Banner (If any)
               if (!comp.isAllInstalled) _buildMissingBanner(context, controller),
 
-              // Service Cards Row (Web Server & MariaDB)
+              // 2. Core Service Modules Row (Web Server & MariaDB)
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final isWide = constraints.maxWidth > 800;
+                  final isWide = constraints.maxWidth > 780;
                   return isWide
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(child: _buildWebServerCard(context, controller)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildMariaDbCard(context, controller)),
+                            Expanded(child: _buildWebServerModule(context, controller)),
+                            const SizedBox(width: 14),
+                            Expanded(child: _buildMariaDbModule(context, controller)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildWebServerCard(context, controller),
-                            const SizedBox(height: 16),
-                            _buildMariaDbCard(context, controller),
+                            _buildWebServerModule(context, controller),
+                            const SizedBox(height: 14),
+                            _buildMariaDbModule(context, controller),
                           ],
                         );
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Secondary Info Cards Row (PHP Engine & phpMyAdmin)
+              // 3. Runtime & Tools Module Row (PHP & phpMyAdmin)
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final isWide = constraints.maxWidth > 800;
+                  final isWide = constraints.maxWidth > 780;
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildPhpInfoCard(context, controller)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildPhpMyAdminCard(context, controller)),
+                            Expanded(child: _buildPhpModule(context, controller)),
+                            const SizedBox(width: 14),
+                            Expanded(child: _buildPhpMyAdminModule(context, controller)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildPhpInfoCard(context, controller),
-                            const SizedBox(height: 16),
-                            _buildPhpMyAdminCard(context, controller),
+                            _buildPhpModule(context, controller),
+                            const SizedBox(height: 14),
+                            _buildPhpMyAdminModule(context, controller),
                           ],
                         );
                 },
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
-              // Quick Websites Overview Section
+              // 4. Virtual Hosts Header & Quick List
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
                       const Text(
-                        'Virtual Hosts',
+                        'Virtual Hosts Aktif',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                          letterSpacing: -0.2,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppTheme.accentCyan.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppTheme.surfaceSubtle,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppTheme.borderDark),
                         ),
                         child: Text(
                           '${controller.sites.length}',
-                          style: const TextStyle(color: AppTheme.accentCyan, fontSize: 11, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontFamily: AppTheme.monoFont,
+                            color: AppTheme.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -104,12 +112,15 @@ class DashboardView extends StatelessWidget {
                   Row(
                     children: [
                       TextButton.icon(
-                        onPressed: () => onNavigate(1), // Go to Hosts view
-                        icon: const Icon(Icons.list_alt_rounded, size: 16),
-                        label: const Text('Lihat Semua'),
-                        style: TextButton.styleFrom(foregroundColor: AppTheme.textSecondary),
+                        onPressed: () => onNavigate(1),
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                        label: const Text('Kelola Semua'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.textSecondary,
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       ElevatedButton.icon(
                         onPressed: () {
                           showDialog(
@@ -117,20 +128,20 @@ class DashboardView extends StatelessWidget {
                             builder: (_) => const AddHostDialog(),
                           );
                         },
-                        icon: const Icon(Icons.add, size: 16),
+                        icon: const Icon(Icons.add_rounded, size: 15),
                         label: const Text('Tambah Host'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentBlue,
+                          backgroundColor: AppTheme.accentIndigo,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               _buildQuickSitesList(context, controller),
             ],
@@ -142,41 +153,31 @@ class DashboardView extends StatelessWidget {
 
   Widget _buildMissingBanner(BuildContext context, ServerController controller) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.accentAmber.withOpacity(0.12),
-        border: Border.all(color: AppTheme.accentAmber.withOpacity(0.4)),
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.accentAmber.withOpacity(0.08),
+        border: Border.all(color: AppTheme.accentAmber.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppTheme.accentAmber, size: 28),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Komponen Runtime Belum Lengkap',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Beberapa komponen runtime belum terpasang. Pasang komponen untuk menjalankan layanan.',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                ),
-              ],
+          const Icon(Icons.warning_amber_rounded, color: AppTheme.accentAmber, size: 20),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Beberapa runtime komponen server belum terpasang di sistem.',
+              style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w500),
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () => onNavigate(7), // Go to Environment / Components tab
-            icon: const Icon(Icons.download_rounded, size: 16),
-            label: const Text('Pasang Komponen'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentAmber,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          OutlinedButton.icon(
+            onPressed: () => onNavigate(7),
+            icon: const Icon(Icons.download_rounded, size: 14),
+            label: const Text('Pasang Komponen', style: TextStyle(fontSize: 11)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.accentAmber,
+              side: BorderSide(color: AppTheme.accentAmber.withOpacity(0.4)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             ),
           ),
         ],
@@ -184,383 +185,437 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildWebServerCard(BuildContext context, ServerController controller) {
+  Widget _buildWebServerModule(BuildContext context, ServerController controller) {
     final isInstalled = controller.components.php.isInstalled;
     final isRunning = controller.isWebRunning;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppTheme.borderDark),
+                    ),
+                    child: const Icon(Icons.hub_rounded, color: AppTheme.textPrimary, size: 17),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentCyan.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.dns_rounded, color: AppTheme.accentCyan, size: 24),
+                      Row(
+                        children: [
+                          const Text(
+                            'Web Server',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: AppTheme.borderDark),
+                            ),
+                            child: const Text(
+                              'HTTP Engine',
+                              style: TextStyle(fontFamily: AppTheme.monoFont, fontSize: 10, color: AppTheme.textSecondary),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('Web Server', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
-                            Text('Port 80 (HTTP) • Port 443 (HTTPS)', style: TextStyle(color: AppTheme.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Port ${controller.httpPort} (HTTP) • Port ${controller.httpsPort} (HTTPS)',
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 10),
-                Switch(
+                ],
+              ),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
                   value: isRunning,
-                  onChanged: isInstalled
-                      ? (val) => controller.toggleWebServer(val)
-                      : null,
+                  onChanged: isInstalled ? (val) => controller.toggleWebServer(val) : null,
                   activeColor: AppTheme.accentGreen,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(color: AppTheme.borderDark),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (!isInstalled)
-                  const Text('Komponen PHP belum terpasang', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
-                else
-                  Expanded(
-                    child: Text(
-                      isRunning ? 'Berjalan (Port 80)' : 'Berhenti',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppTheme.borderDark),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isRunning ? AppTheme.accentGreen : AppTheme.textMuted,
                     ),
                   ),
-                Row(
-                  children: [
-                    if (!isInstalled)
-                      InkWell(
-                        onTap: () => onNavigate(7),
-                        child: const Text('Pasang PHP', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                      )
-                    else
-                      InkWell(
-                        onTap: () => onNavigate(2), // Go to Web Server Engine view
-                        child: Row(
-                          children: const [
-                            Text('Pengaturan', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppTheme.accentCyan),
-                          ],
-                        ),
+                  const SizedBox(width: 6),
+                  Text(
+                    isRunning ? 'Running on 127.0.0.1:${controller.httpPort}' : 'Stopped',
+                    style: TextStyle(
+                      fontFamily: AppTheme.monoFont,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: isRunning ? AppTheme.accentGreen : AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () => onNavigate(2),
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  child: Row(
+                    children: const [
+                      Text(
+                        'Konfigurasi Engine',
+                        style: TextStyle(color: AppTheme.accentIndigo, fontSize: 11.5, fontWeight: FontWeight.w600),
                       ),
-                  ],
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 12, color: AppTheme.accentIndigo),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMariaDbCard(BuildContext context, ServerController controller) {
+  Widget _buildMariaDbModule(BuildContext context, ServerController controller) {
     final isInstalled = controller.components.mariaDb.isInstalled;
     final isRunning = controller.isMariaDbRunning;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppTheme.borderDark),
+                    ),
+                    child: const Icon(Icons.storage_rounded, color: AppTheme.textPrimary, size: 17),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentGreen.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.storage_rounded, color: AppTheme.accentGreen, size: 24),
+                      Row(
+                        children: [
+                          const Text(
+                            'MariaDB Server',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: AppTheme.borderDark),
+                            ),
+                            child: Text(
+                              'MySQL ${controller.mariaDbPort}',
+                              style: const TextStyle(fontFamily: AppTheme.monoFont, fontSize: 10, color: AppTheme.textSecondary),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('MariaDB Server', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white), overflow: TextOverflow.ellipsis),
-                            Text('Port 3306 • MySQL Compatible', style: TextStyle(color: AppTheme.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Loopback 127.0.0.1:${controller.mariaDbPort} • root:none',
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 10),
-                Switch(
+                ],
+              ),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
                   value: isRunning,
-                  onChanged: isInstalled
-                      ? (val) => controller.toggleMariaDb(val)
-                      : null,
+                  onChanged: isInstalled ? (val) => controller.toggleMariaDb(val) : null,
                   activeColor: AppTheme.accentGreen,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(color: AppTheme.borderDark),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (!isInstalled)
-                  const Text('MariaDB belum terpasang', style: TextStyle(color: AppTheme.accentAmber, fontSize: 12))
-                else
-                  Expanded(
-                    child: Text(
-                      isRunning ? 'Berjalan (Port 3306)' : 'Berhenti',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppTheme.borderDark),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isRunning ? AppTheme.accentGreen : AppTheme.textMuted,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    isRunning ? 'Running on 127.0.0.1:${controller.mariaDbPort}' : 'Stopped',
+                    style: TextStyle(
+                      fontFamily: AppTheme.monoFont,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: isRunning ? AppTheme.accentGreen : AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => onNavigate(5),
+                    borderRadius: BorderRadius.circular(4),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      child: Text(
+                        'SQL Importer',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 11.5, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
-                Row(
-                  children: [
-                    if (!isInstalled)
-                      InkWell(
-                        onTap: () => onNavigate(7),
-                        child: const Text('Pasang MariaDB', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                      )
-                    else ...[
-                      InkWell(
-                        onTap: () => onNavigate(5), // Go to Turbo Importer
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentAmber.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: AppTheme.accentAmber.withOpacity(0.3)),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () => onNavigate(4),
+                    borderRadius: BorderRadius.circular(4),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      child: Row(
+                        children: const [
+                          Text(
+                            'Kelola DB',
+                            style: TextStyle(color: AppTheme.accentIndigo, fontSize: 11.5, fontWeight: FontWeight.w600),
                           ),
-                          child: const Text(
-                            'SQL Importer',
-                            style: TextStyle(color: AppTheme.accentAmber, fontSize: 10, fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                          SizedBox(width: 4),
+                          Icon(Icons.arrow_forward_rounded, size: 12, color: AppTheme.accentIndigo),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      InkWell(
-                        onTap: () => onNavigate(4), // Go to MariaDB view
-                        child: Row(
-                          children: const [
-                            Text('Pengaturan', style: TextStyle(color: AppTheme.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppTheme.accentCyan),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPhpInfoCard(BuildContext context, ServerController controller) {
+  Widget _buildPhpModule(BuildContext context, ServerController controller) {
     final php = controller.components.php;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.accentPurple.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.code_rounded, color: AppTheme.accentPurple, size: 22),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceSubtle,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppTheme.borderDark),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('PHP Engine', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
-                  Text(
-                    php.isInstalled ? php.version : 'Belum Terpasang',
-                    style: TextStyle(
-                      color: php.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
-                      fontSize: 12,
-                    ),
+            child: const Icon(Icons.code_rounded, color: AppTheme.textSecondary, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('PHP Environment', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                const SizedBox(height: 1),
+                Text(
+                  php.isInstalled ? php.version : 'Belum Terpasang',
+                  style: TextStyle(
+                    fontFamily: AppTheme.monoFont,
+                    color: php.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
+                    fontSize: 11,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            OutlinedButton(
-              onPressed: () => onNavigate(3), // Go to PHP view
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.textSecondary,
-                side: const BorderSide(color: AppTheme.borderDark),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              ),
-              child: const Text('Detail', style: TextStyle(fontSize: 11)),
+          ),
+          OutlinedButton(
+            onPressed: () => onNavigate(3),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.textPrimary,
+              backgroundColor: AppTheme.surfaceSubtle,
+              side: const BorderSide(color: AppTheme.borderDark),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ],
-        ),
+            child: const Text('Detail', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPhpMyAdminCard(BuildContext context, ServerController controller) {
+  Widget _buildPhpMyAdminModule(BuildContext context, ServerController controller) {
     final pma = controller.components.phpMyAdmin;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.accentAmber.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.table_chart_rounded, color: AppTheme.accentAmber, size: 22),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceSubtle,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppTheme.borderDark),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('phpMyAdmin', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
-                  Text(
-                    pma.isInstalled ? 'Terpasang' : 'Belum Terpasang',
-                    style: TextStyle(
-                      color: pma.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Row(
+            child: const Icon(Icons.table_view_rounded, color: AppTheme.textSecondary, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (pma.isInstalled) ...[
-                  IconButton(
-                    icon: const Icon(Icons.info_outline_rounded, size: 18, color: AppTheme.textMuted),
-                    tooltip: 'Info phpMyAdmin',
-                    onPressed: () => onNavigate(6), // Go to PhpMyAdmin view
+                const Text('phpMyAdmin', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                const SizedBox(height: 1),
+                Text(
+                  pma.isInstalled ? 'Siap digunakan' : 'Belum Terpasang',
+                  style: TextStyle(
+                    color: pma.isInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
+                    fontSize: 11,
                   ),
-                  const SizedBox(width: 4),
-                ],
-                ElevatedButton(
-                  onPressed: pma.isInstalled
-                      ? () => controller.openPhpMyAdmin()
-                      : () => onNavigate(7),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: pma.isInstalled ? AppTheme.accentBlue : AppTheme.cardHover,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  child: Text(pma.isInstalled ? 'Buka' : 'Pasang', style: const TextStyle(fontSize: 11)),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          ElevatedButton(
+            onPressed: pma.isInstalled
+                ? () => controller.openPhpMyAdmin()
+                : () => onNavigate(7),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: pma.isInstalled ? AppTheme.cardHover : AppTheme.surfaceSubtle,
+              foregroundColor: AppTheme.textPrimary,
+              side: const BorderSide(color: AppTheme.borderDark),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              elevation: 0,
+            ),
+            child: Text(pma.isInstalled ? 'Buka GUI' : 'Pasang', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildQuickSitesList(BuildContext context, ServerController controller) {
     if (controller.sites.isEmpty) {
-      return Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppTheme.borderDark),
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppTheme.borderDark),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Center(
-            child: Column(
-              children: [
-                const Icon(Icons.language_rounded, size: 40, color: AppTheme.textMuted),
-                const SizedBox(height: 12),
-                const Text('Belum ada virtual host yang terdaftar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                const Text('Tambahkan virtual host untuk mengarahkan domain lokal ke direktori proyek.', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    showDialog(context: context, builder: (_) => const AddHostDialog());
-                  },
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Tambah Host'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentBlue,
-                    foregroundColor: Colors.white,
-                  ),
+        padding: const EdgeInsets.all(36),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.public_outlined, size: 36, color: AppTheme.textMuted),
+              const SizedBox(height: 12),
+              const Text(
+                'Belum Ada Virtual Host Terdaftar',
+                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Tambahkan virtual host untuk mengarahkan domain lokal ke folder proyek Anda.',
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  showDialog(context: context, builder: (_) => const AddHostDialog());
+                },
+                icon: const Icon(Icons.add_rounded, size: 15),
+                label: const Text('Tambah Virtual Host'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentIndigo,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
       child: ListView.separated(
         shrinkWrap: true,
@@ -570,40 +625,98 @@ class DashboardView extends StatelessWidget {
         itemBuilder: (context, index) {
           final site = controller.sites[index];
 
-          return ListTile(
-            leading: const Icon(Icons.public, color: AppTheme.accentCyan, size: 20),
-            title: Text(
-              site.domain,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-            ),
-            subtitle: Text(
-              site.type == 'proxy' ? 'Proxy -> Port ${site.proxyPort}' : site.rootPath,
-              style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
               children: [
+                // Domain & SSL Badge
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: AppTheme.borderDark),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.public, color: AppTheme.textSecondary, size: 15),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            site.domain,
+                            style: const TextStyle(
+                              fontFamily: AppTheme.monoFont,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(color: AppTheme.borderDark),
+                            ),
+                            child: Text(
+                              site.type == 'proxy' ? 'Proxy :${site.proxyPort}' : site.phpVersion,
+                              style: const TextStyle(
+                                fontFamily: AppTheme.monoFont,
+                                fontSize: 9.5,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        site.type == 'proxy' ? 'Reverse Proxy ke port ${site.proxyPort}' : site.rootPath,
+                        style: const TextStyle(
+                          fontFamily: AppTheme.monoFont,
+                          fontSize: 11,
+                          color: AppTheme.textMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Fast Action Buttons (Clean & Quiet)
                 IconButton(
-                  icon: const Icon(Icons.lock_outline_rounded, size: 16, color: AppTheme.accentGreen),
+                  icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
                   tooltip: 'Buka HTTPS (https://${site.domain})',
+                  splashRadius: 16,
                   onPressed: () => controller.openUrl('https://${site.domain}'),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.open_in_new_rounded, size: 16, color: AppTheme.accentCyan),
+                  icon: const Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
                   tooltip: 'Buka HTTP (http://${site.domain})',
+                  splashRadius: 16,
                   onPressed: () => controller.openUrl('http://${site.domain}'),
                 ),
                 if (site.type != 'proxy')
                   IconButton(
-                    icon: const Icon(Icons.folder_open_rounded, size: 16, color: AppTheme.textSecondary),
-                    tooltip: 'Buka Folder',
+                    icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
+                    tooltip: 'Buka Folder Dokumen',
+                    splashRadius: 16,
                     onPressed: () => controller.openFolder(site.rootPath),
                   ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 16, color: AppTheme.accentBlue),
-                  tooltip: 'Edit Website',
+                  icon: const Icon(Icons.tune_rounded, size: 15, color: AppTheme.textSecondary),
+                  tooltip: 'Pengaturan Virtual Host',
+                  splashRadius: 16,
                   onPressed: () {
                     showDialog(
                       context: context,

@@ -52,7 +52,6 @@ class _AddHostDialogState extends State<AddHostDialog> {
       dialogTitle: 'Pilih Direktori Root Host',
     );
     if (result != null) {
-      // Don't auto-redirect to public/ — _handleFileOrPhp() handles framework detection
       setState(() {
         _pathController.text = result;
       });
@@ -84,7 +83,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Virtual host $domain berhasil diperbarui.'),
-            backgroundColor: AppTheme.accentGreen,
+            backgroundColor: AppTheme.cardDark,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -104,7 +103,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Virtual host $domain berhasil ditambahkan.'),
-            backgroundColor: AppTheme.accentGreen,
+            backgroundColor: AppTheme.cardDark,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -119,12 +118,12 @@ class _AddHostDialogState extends State<AddHostDialog> {
     return Dialog(
       backgroundColor: AppTheme.cardDark,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         side: const BorderSide(color: AppTheme.borderDark),
       ),
       child: Container(
-        width: 520,
-        padding: const EdgeInsets.all(24),
+        width: 500,
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
@@ -139,168 +138,179 @@ class _AddHostDialogState extends State<AddHostDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isEditing ? 'Edit Virtual Host' : 'Tambah Virtual Host',
+                        isEditing ? 'Edit Virtual Host' : 'Tambah Virtual Host Baru',
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 2),
                       Text(
                         isEditing
-                            ? 'Perbarui konfigurasi domain dan direktori root'
-                            : 'Konfigurasi virtual host lokal baru',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            ? 'Perbarui konfigurasi domain dan direktori root proyek'
+                            : 'Konfigurasikan domain lokal dan runtime target',
+                        style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted),
                       ),
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: const Icon(Icons.close, size: 18, color: AppTheme.textMuted),
+                    splashRadius: 16,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
               // Domain Name
               const Text(
-                'Domain',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                'Domain Host Lokal',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
               ),
               const SizedBox(height: 6),
-              TextFormField(
-                controller: _domainController,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'contoh: app.local atau api.test',
-                  hintStyle: const TextStyle(color: AppTheme.textMuted),
-                  filled: true,
-                  fillColor: AppTheme.bgDark,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
+              SizedBox(
+                height: 38,
+                child: TextFormField(
+                  controller: _domainController,
+                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
+                  decoration: InputDecoration(
+                    hintText: 'contoh: project.local atau api.test',
+                    hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    filled: true,
+                    fillColor: AppTheme.surfaceSubtle,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
-                  ),
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Domain wajib diisi';
-                  final domain = val.trim().toLowerCase();
-                  final domainRegex = RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$');
-                  if (!domainRegex.hasMatch(domain)) {
-                    return 'Format domain tidak valid (gunakan huruf, angka, titik, atau strip)';
-                  }
-                  if (domain == 'localhost' || domain == '127.0.0.1') {
-                    return 'Nama domain $domain tidak dapat digunakan';
-                  }
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Domain wajib diisi';
+                    final domain = val.trim().toLowerCase();
+                    final domainRegex = RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$');
+                    if (!domainRegex.hasMatch(domain)) {
+                      return 'Format domain tidak valid';
+                    }
+                    if (domain == 'localhost' || domain == '127.0.0.1') {
+                      return 'Domain $domain tidak dapat digunakan';
+                    }
 
-                  // Check duplicate domain
-                  final existingSites = ServerController.instance.sites;
-                  final isDuplicate = existingSites.any((s) =>
-                      s.domain.toLowerCase() == domain &&
-                      (isEditing ? s.id != widget.siteToEdit!.id : true));
-                  if (isDuplicate) return 'Domain ini sudah terdaftar';
-                  return null;
-                },
+                    final existingSites = ServerController.instance.sites;
+                    final isDuplicate = existingSites.any((s) =>
+                        s.domain.toLowerCase() == domain &&
+                        (isEditing ? s.id != widget.siteToEdit!.id : true));
+                    if (isDuplicate) return 'Domain sudah terdaftar';
+                    return null;
+                  },
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Type Selector
               const Text(
-                'Tipe Host',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                'Tipe Runtime',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
                     child: _buildTypeOption(
-                      'PHP / Statis',
-                      'FastCGI & Document Root',
+                      'PHP / FastCGI',
+                      'Document Root & FastCGI Pool',
                       'php',
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildTypeOption(
                       'Reverse Proxy',
-                      'Forward ke port lokal (Node, Vite, dll)',
+                      'Forward ke port lokal (Node/Vite)',
                       'proxy',
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Target Folder (for PHP)
               if (_selectedType == 'php') ...[
                 const Text(
-                  'Document Root',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                  'Document Root (Direktori Proyek)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _pathController,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: r'D:\projects\my-app',
-                          hintStyle: const TextStyle(color: AppTheme.textMuted),
-                          filled: true,
-                          fillColor: AppTheme.bgDark,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                      child: SizedBox(
+                        height: 38,
+                        child: TextFormField(
+                          controller: _pathController,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
+                          decoration: InputDecoration(
+                            hintText: r'D:\WebServer\www\my-project',
+                            hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                            filled: true,
+                            fillColor: AppTheme.surfaceSubtle,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: const BorderSide(color: AppTheme.borderDark),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: const BorderSide(color: AppTheme.borderDark),
+                            ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
-                          ),
+                          validator: (val) {
+                            if (_selectedType == 'php' && (val == null || val.trim().isEmpty)) {
+                              return 'Direktori root wajib diisi';
+                            }
+                            if (_selectedType == 'php' && val != null && val.trim().isNotEmpty && !Directory(val.trim()).existsSync()) {
+                              return 'Direktori tidak ditemukan';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (val) {
-                          if (_selectedType == 'php' && (val == null || val.trim().isEmpty)) {
-                            return 'Direktori root wajib diisi';
-                          }
-                          if (_selectedType == 'php' && val != null && val.trim().isNotEmpty && !Directory(val.trim()).existsSync()) {
-                            return 'Direktori tidak ditemukan di lokasi ini';
-                          }
-                          return null;
-                        },
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: _pickFolder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.cardHover,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    SizedBox(
+                      height: 38,
+                      child: OutlinedButton(
+                        onPressed: _pickFolder,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.textPrimary,
+                          backgroundColor: AppTheme.surfaceSubtle,
+                          side: const BorderSide(color: AppTheme.borderDark),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                        child: const Text('Browse...', style: TextStyle(fontSize: 12)),
                       ),
-                      child: const Text('Browse...'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // PHP Version Selection
                 const Text(
                   'Versi PHP',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgDark,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppTheme.borderDark),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -308,31 +318,16 @@ class _AddHostDialogState extends State<AddHostDialog> {
                       value: _selectedPhpVersion,
                       dropdownColor: AppTheme.cardDark,
                       isExpanded: true,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
                       items: [
                         const DropdownMenuItem(
                           value: 'default',
-                          child: Text('Default (Sistem)'),
+                          child: Text('Default (Sistem Stack)'),
                         ),
                         ...PhpManager.instance.getVersions().map((v) {
                           return DropdownMenuItem(
                             value: v.versionKey,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  v.isInstalled ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                                  size: 14,
-                                  color: v.isInstalled ? AppTheme.accentGreen : AppTheme.textMuted,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${v.name} ${v.isInstalled ? "(v${v.exactVersion})" : "(Belum Terpasang)"}',
-                                  style: TextStyle(
-                                    color: v.isInstalled ? Colors.white : AppTheme.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            child: Text('${v.name} ${v.isInstalled ? "(v${v.exactVersion})" : "(Belum Ada)"}'),
                           );
                         }),
                       ],
@@ -349,49 +344,52 @@ class _AddHostDialogState extends State<AddHostDialog> {
               // Proxy Port (for Proxy)
               if (_selectedType == 'proxy') ...[
                 const Text(
-                  'Target Port (Localhost)',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                  'Target Port Localhost',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
                 const SizedBox(height: 6),
-                TextFormField(
-                  controller: _proxyPortController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: '3000 atau 5173',
-                    hintStyle: const TextStyle(color: AppTheme.textMuted),
-                    filled: true,
-                    fillColor: AppTheme.bgDark,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                SizedBox(
+                  height: 38,
+                  child: TextFormField(
+                    controller: _proxyPortController,
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: '3000 atau 5173',
+                      hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      filled: true,
+                      fillColor: AppTheme.surfaceSubtle,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppTheme.borderDark),
-                    ),
-                  ),
-                  validator: (val) {
-                    if (_selectedType == 'proxy') {
-                      final port = int.tryParse(val?.trim() ?? '');
-                      if (port == null || port <= 0 || port > 65535) {
-                        return 'Port harus berupa angka valid (1 - 65535)';
+                    validator: (val) {
+                      if (_selectedType == 'proxy') {
+                        final port = int.tryParse(val?.trim() ?? '');
+                        if (port == null || port <= 0 || port > 65535) {
+                          return 'Port harus angka 1 - 65535';
+                        }
                       }
-                    }
-                    return null;
-                  },
+                      return null;
+                    },
+                  ),
                 ),
               ],
 
               // Status Toggle (if editing)
               if (isEditing) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgDark,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppTheme.borderDark),
                   ),
                   child: Row(
@@ -399,33 +397,39 @@ class _AddHostDialogState extends State<AddHostDialog> {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            _isEnabled ? Icons.check_circle_rounded : Icons.pause_circle_filled_rounded,
-                            size: 18,
-                            color: _isEnabled ? AppTheme.accentGreen : AppTheme.textMuted,
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _isEnabled ? AppTheme.accentGreen : AppTheme.textMuted,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Status Host: ${_isEnabled ? "Aktif" : "Nonaktif"}',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: _isEnabled ? AppTheme.accentGreen : AppTheme.textMuted,
                             ),
                           ),
                         ],
                       ),
-                      Switch(
-                        value: _isEnabled,
-                        activeColor: AppTheme.accentGreen,
-                        onChanged: (val) => setState(() => _isEnabled = val),
+                      Transform.scale(
+                        scale: 0.72,
+                        child: Switch(
+                          value: _isEnabled,
+                          activeColor: AppTheme.accentGreen,
+                          onChanged: (val) => setState(() => _isEnabled = val),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
 
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
 
               // Actions
               Row(
@@ -433,20 +437,20 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary)),
+                    child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: _save,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentBlue,
+                      backgroundColor: AppTheme.accentIndigo,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                     ),
                     child: Text(
                       isEditing ? 'Simpan Perubahan' : 'Tambah Host',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                     ),
                   ),
                 ],
@@ -463,15 +467,15 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
     return InkWell(
       onTap: () => setState(() => _selectedType = type),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.accentBlue.withOpacity(0.12) : AppTheme.bgDark,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? const Color(0xFF1E2330) : AppTheme.surfaceSubtle,
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isSelected ? AppTheme.accentBlue : AppTheme.borderDark,
-            width: isSelected ? 1.5 : 1,
+            color: isSelected ? const Color(0xFF2E374A) : AppTheme.borderDark,
+            width: isSelected ? 1.2 : 1,
           ),
         ),
         child: Column(
@@ -480,15 +484,15 @@ class _AddHostDialogState extends State<AddHostDialog> {
             Text(
               title,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : AppTheme.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
               desc,
-              style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+              style: const TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
             ),
           ],
         ),

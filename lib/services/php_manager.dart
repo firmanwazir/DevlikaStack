@@ -1,14 +1,31 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 import '../models/php_version_model.dart';
+import '../models/php_extension_model.dart';
 import 'config_service.dart';
+import 'http_server_service.dart';
 import 'vhost_config_generator.dart';
 
 class PhpManager {
   static final PhpManager instance = PhpManager._();
   PhpManager._();
+
+  final Map<String, Future<void>> _locks = {};
+
+  Future<T> _synchronized<T>(String key, Future<T> Function() action) async {
+    final prev = _locks[key] ?? Future.value();
+    final completer = Completer<void>();
+    _locks[key] = completer.future;
+    try {
+      await prev;
+      return await action();
+    } finally {
+      completer.complete();
+    }
+  }
 
   final List<PhpVersionModel> _definitions = [
     const PhpVersionModel(
@@ -48,9 +65,12 @@ class PhpManager {
   List<PhpVersionModel>? _cachedVersions;
   final Map<String, String> _versionCache = {};
 
+  final Set<String> _optimizedDirs = {};
+
   void clearCache() {
     _cachedVersions = null;
     _versionCache.clear();
+    _optimizedDirs.clear();
   }
 
   List<PhpVersionModel> getVersions({bool forceReload = false}) {
@@ -75,7 +95,8 @@ class PhpManager {
         }
       }
 
-      if (isInstalled) {
+      if (isInstalled && !_optimizedDirs.contains(dir)) {
+        _optimizedDirs.add(dir);
         final ini = p.join(dir, 'php.ini');
         if (!File(ini).existsSync() || !File(ini).readAsStringSync().contains('opcache.memory_consumption=256')) {
           try {
@@ -89,7 +110,7 @@ class PhpManager {
         name: def.name,
         dirPath: dir,
         isInstalled: isInstalled,
-        exactVersion: isInstalled ? _detectExactVersion(exe) : def.exactVersion,
+        exactVersion: isInstalled ? _detectExactVersion(exe, def.exactVersion) : def.exactVersion,
         downloadUrl: def.downloadUrl,
       ));
     }
@@ -98,24 +119,24 @@ class PhpManager {
     return results;
   }
 
-  String _detectExactVersion(String exePath) {
+  String _detectExactVersion(String exePath, String fallbackVersion) {
     if (_versionCache.containsKey(exePath)) {
       return _versionCache[exePath]!;
     }
 
-    try {
-      final res = Process.runSync(exePath, ['-v'], runInShell: false);
+    _versionCache[exePath] = fallbackVersion;
+    // Asynchronously detect in background without stalling the main UI thread
+    Process.run(exePath, ['-v'], runInShell: false).then((res) {
       if (res.exitCode == 0) {
         final line = res.stdout.toString().split('\n').first;
         final match = RegExp(r'PHP\s+([0-9\.]+)').firstMatch(line);
         if (match != null) {
           _versionCache[exePath] = match.group(1)!;
-          return match.group(1)!;
         }
       }
-    } catch (_) {}
-    _versionCache[exePath] = 'Portable';
-    return 'Portable';
+    }).catchError((_) {});
+
+    return fallbackVersion;
   }
 
   Future<void> installVersion(
@@ -419,6 +440,15 @@ class PhpManager {
     file.writeAsStringSync(content);
   }
 
+  bool writeDirectives(String iniPath, Map<String, String> newValues) {
+    try {
+      saveDirectives(iniPath, newValues);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   String _replaceDirective(String content, String key, String value) {
     final reg = RegExp('^;?\\s*${RegExp.escape(key)}\\s*=.*\$', multiLine: true);
     if (reg.hasMatch(content)) {
@@ -426,5 +456,525 @@ class PhpManager {
     } else {
       return '$content\n$key = $value';
     }
+  }
+
+  // =========================================================================
+  // PHP EXTENSION SWITCH MANAGER & PRESETS
+  // =========================================================================
+
+  static const List<Map<String, dynamic>> knownExtensionsMetadata = [
+    // Database
+    {
+      'key': 'pdo_mysql',
+      'name': 'PDO MySQL',
+      'category': 'Database',
+      'description': 'Driver database relasional standar modern untuk MySQL & MariaDB (Laravel, CodeIgniter, Yii).',
+      'isZend': false,
+    },
+    {
+      'key': 'mysqli',
+      'name': 'MySQLi',
+      'category': 'Database',
+      'description': 'Konektor native MySQL klasik & modern yang wajib untuk CMS WordPress, Joomla, dan script legacy.',
+      'isZend': false,
+    },
+    {
+      'key': 'pdo_sqlite',
+      'name': 'PDO SQLite',
+      'category': 'Database',
+      'description': 'Driver database SQLite via PDO, ideal untuk development cepat & unit testing lokal tanpa MySQL.',
+      'isZend': false,
+    },
+    {
+      'key': 'sqlite3',
+      'name': 'SQLite 3',
+      'category': 'Database',
+      'description': 'Library direct interface SQLite 3 untuk manipulasi database file tanpa server terpisah.',
+      'isZend': false,
+    },
+    {
+      'key': 'pdo_pgsql',
+      'name': 'PDO PostgreSQL',
+      'category': 'Database',
+      'description': 'Driver koneksi database PostgreSQL berbasis PDO untuk aplikasi enterprise.',
+      'isZend': false,
+    },
+    {
+      'key': 'pgsql',
+      'name': 'PostgreSQL',
+      'category': 'Database',
+      'description': 'Driver native PostgreSQL procedural untuk eksekusi query langsung ke database Postgres.',
+      'isZend': false,
+    },
+
+    // Web & Network
+    {
+      'key': 'curl',
+      'name': 'cURL (Client URL)',
+      'category': 'Web & API',
+      'description': 'Mengizinkan request HTTP/HTTPS ke luar (REST API, Guzzle, webhook, payment gateway).',
+      'isZend': false,
+    },
+    {
+      'key': 'soap',
+      'name': 'SOAP Web Services',
+      'category': 'Web & API',
+      'description': 'Protokol XML SOAP untuk integrasi webservice legacy, perbankan, dan logistik.',
+      'isZend': false,
+    },
+    {
+      'key': 'sockets',
+      'name': 'Sockets (Low-level TCP/UDP)',
+      'category': 'Web & API',
+      'description': 'Komunikasi low-level socket, dibutuhkan oleh server WebSocket, Ratchet, dan worker background.',
+      'isZend': false,
+    },
+    {
+      'key': 'ldap',
+      'name': 'LDAP (Directory Access)',
+      'category': 'Web & API',
+      'description': 'Koneksi ke Active Directory / OpenLDAP untuk autentikasi single sign-on (SSO).',
+      'isZend': false,
+    },
+
+    // Media & Files
+    {
+      'key': 'gd',
+      'name': 'GD (Image Processing)',
+      'category': 'Media & File',
+      'description': 'Manipulasi gambar (crop, resize, watermark, thumbnail) untuk upload foto dan captcha. (Otomatis gd2 di PHP 7.4).',
+      'isZend': false,
+    },
+    {
+      'key': 'zip',
+      'name': 'Zip Archive',
+      'category': 'Media & File',
+      'description': 'Membuka, membaca, dan membuat file .zip. Wajib untuk Composer package download & CMS backup.',
+      'isZend': false,
+    },
+    {
+      'key': 'fileinfo',
+      'name': 'FileInfo (MIME Detector)',
+      'category': 'Media & File',
+      'description': 'Mendeteksi tipe MIME file upload secara akurat berdasarkan magic bytes (validasi upload Laravel/WP).',
+      'isZend': false,
+    },
+    {
+      'key': 'exif',
+      'name': 'EXIF (Photo Metadata)',
+      'category': 'Media & File',
+      'description': 'Membaca metadata kamera, orientasi foto, dan timestamp dari file gambar JPEG/TIFF.',
+      'isZend': false,
+    },
+    {
+      'key': 'bz2',
+      'name': 'Bzip2 Compression',
+      'category': 'Media & File',
+      'description': 'Kompresi dan dekompresi file arsip .bz2 berdensitas tinggi.',
+      'isZend': false,
+    },
+
+    // Security & Crypto
+    {
+      'key': 'openssl',
+      'name': 'OpenSSL Cryptography',
+      'category': 'Security & Crypto',
+      'description': 'Enkripsi SSL/TLS, token signing, JWT, enkripsi password, dan HTTPS stream request.',
+      'isZend': false,
+    },
+    {
+      'key': 'sodium',
+      'name': 'Sodium (Modern Crypto)',
+      'category': 'Security & Crypto',
+      'description': 'Library kriptografi modern standar industri (ChaCha20, Argon2id, ed25519) bawaan PHP.',
+      'isZend': false,
+    },
+
+    // Framework & Text
+    {
+      'key': 'intl',
+      'name': 'Intl (Internationalization)',
+      'category': 'Framework & Text',
+      'description': 'Format mata uang, tanggal multibahasa, dan ICU transliteration. Wajib untuk Laravel Filament & Symfony.',
+      'isZend': false,
+    },
+    {
+      'key': 'mbstring',
+      'name': 'Mbstring (Multibyte String)',
+      'category': 'Framework & Text',
+      'description': 'Penanganan karakter non-ASCII (UTF-8, emoji, aksara asing). Wajib untuk hampir semua framework modern.',
+      'isZend': false,
+    },
+    {
+      'key': 'bcmath',
+      'name': 'BCMath (Arbitrary Precision)',
+      'category': 'Framework & Text',
+      'description': 'Kalkulasi presisi floating point tinggi tanpa rounding error (sistem finansial, kalkulasi akuntansi).',
+      'isZend': false,
+    },
+    {
+      'key': 'gmp',
+      'name': 'GMP (GNU Multiple Precision)',
+      'category': 'Framework & Text',
+      'description': 'Kalkulasi angka integer berukuran raksasa untuk matematika tingkat tinggi dan kriptografi public-key.',
+      'isZend': false,
+    },
+    {
+      'key': 'tidy',
+      'name': 'Tidy (HTML Repair)',
+      'category': 'Framework & Text',
+      'description': 'Pembersih dan pemformat sintaks markup HTML/XHTML otomatis.',
+      'isZend': false,
+    },
+
+    // Performance & Debug
+    {
+      'key': 'opcache',
+      'name': 'Zend OPcache (Accelerator)',
+      'category': 'Performance & Debug',
+      'description': 'Menyimpan bytecode terkompilasi dalam RAM. Mempercepat eksekusi PHP hingga 3x-5x lipat.',
+      'isZend': true,
+    },
+    {
+      'key': 'xdebug',
+      'name': 'Xdebug (Profiler & Debugger)',
+      'category': 'Performance & Debug',
+      'description': 'Step debugging untuk VS Code / PHPStorm, profiling performa (cachegrind), dan code coverage.',
+      'isZend': true,
+    },
+  ];
+
+  static const Map<String, List<String>> extensionPresets = {
+    'laravel': [
+      'curl', 'intl', 'gd', 'fileinfo', 'mbstring', 'openssl',
+      'pdo_mysql', 'zip', 'sodium', 'pdo_sqlite', 'sqlite3', 'bcmath', 'opcache'
+    ],
+    'wordpress': [
+      'curl', 'gd', 'intl', 'mbstring', 'mysqli', 'openssl',
+      'zip', 'exif', 'fileinfo', 'opcache'
+    ],
+    'minimal': [
+      'pdo_mysql', 'mbstring', 'openssl', 'curl'
+    ],
+  };
+
+  /// Returns extension list for a specific PHP version with enabled state and disk availability
+  List<PhpExtensionModel> getExtensions(String versionKey) {
+    final versions = getVersions();
+    final version = versions.where((v) => v.versionKey == versionKey).firstOrNull;
+    if (version == null || !version.isInstalled) {
+      return knownExtensionsMetadata.map((meta) => PhpExtensionModel(
+        key: meta['key'] as String,
+        name: meta['name'] as String,
+        category: meta['category'] as String,
+        description: meta['description'] as String,
+        isZend: meta['isZend'] as bool,
+        isEnabled: false,
+        isAvailableOnDisk: false,
+      )).toList();
+    }
+
+    final iniFile = File(version.phpIni);
+    final content = iniFile.existsSync() ? iniFile.readAsStringSync() : '';
+    final isPhp74 = versionKey == '7.4' || version.dirPath.contains('7.4');
+
+    // Scan available DLLs in ext/ folder
+    final extDir = Directory(p.join(version.dirPath, 'ext'));
+    final availableDlls = <String>{};
+    if (extDir.existsSync()) {
+      for (final entity in extDir.listSync()) {
+        if (entity is File && entity.path.toLowerCase().endsWith('.dll')) {
+          availableDlls.add(p.basename(entity.path).toLowerCase());
+        }
+      }
+    }
+
+    final results = <PhpExtensionModel>[];
+    final processedKeys = <String>{};
+
+    for (final meta in knownExtensionsMetadata) {
+      final key = meta['key'] as String;
+      final isZend = meta['isZend'] as bool;
+      processedKeys.add(key);
+
+      bool available = true;
+      if (extDir.existsSync()) {
+        if (isZend && key == 'opcache') {
+          // OPcache is either a DLL or built directly into php.exe
+          available = availableDlls.contains('php_opcache.dll') || !isPhp74;
+        } else if (key == 'gd') {
+          available = isPhp74
+              ? (availableDlls.contains('php_gd2.dll') || availableDlls.contains('php_gd.dll'))
+              : availableDlls.contains('php_gd.dll');
+        } else {
+          available = availableDlls.contains('php_$key.dll');
+        }
+      }
+
+      final enabled = isExtensionEnabled(content, key, isZend: isZend, isPhp74: isPhp74);
+
+      results.add(PhpExtensionModel(
+        key: key,
+        name: meta['name'] as String,
+        category: meta['category'] as String,
+        description: meta['description'] as String,
+        isZend: isZend,
+        isEnabled: enabled,
+        isAvailableOnDisk: available,
+      ));
+    }
+
+    // Auto-detect extra DLLs in ext/ folder not in known list
+    if (extDir.existsSync()) {
+      for (final dll in availableDlls) {
+        if (dll.startsWith('php_') && dll.endsWith('.dll')) {
+          final rawKey = dll.substring(4, dll.length - 4);
+          if (rawKey == 'gd2') continue;
+          if (!processedKeys.contains(rawKey)) {
+            final isEnabled = isExtensionEnabled(content, rawKey, isZend: false, isPhp74: isPhp74);
+            results.add(PhpExtensionModel(
+              key: rawKey,
+              name: rawKey.toUpperCase(),
+              category: 'Ekstensi Ekstra',
+              description: 'Modul binary tambahan di folder ext/$dll',
+              isZend: false,
+              isEnabled: isEnabled,
+              isAvailableOnDisk: true,
+            ));
+            processedKeys.add(rawKey);
+          }
+        }
+      }
+    }
+
+    return results;
+  }
+
+  /// Checks if an extension is currently enabled in php.ini content
+  bool isExtensionEnabled(String content, String key, {required bool isZend, required bool isPhp74}) {
+    if (content.isEmpty) return false;
+    const lookahead = r'''(?:\.dll)?["']?(?=\s*(?:[;#\r\n]|$))''';
+    if (isZend) {
+      final reg = RegExp(
+        r'''^\s*zend_extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead,
+        multiLine: true,
+        caseSensitive: false,
+      );
+      return reg.hasMatch(content);
+    }
+
+    if (key == 'gd') {
+      final gdTarget = isPhp74 ? 'gd2' : 'gd';
+      final reg = RegExp(
+        r'''^\s*extension\s*=\s*["']?(?:php_)?''' + gdTarget + lookahead,
+        multiLine: true,
+        caseSensitive: false,
+      );
+      return reg.hasMatch(content);
+    }
+
+    final reg = RegExp(
+      r'''^\s*extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead,
+      multiLine: true,
+      caseSensitive: false,
+    );
+    return reg.hasMatch(content);
+  }
+
+  /// Toggles an extension inside php.ini string content without corrupting other directives
+  String toggleExtensionInContent(String content, String key, bool enable, {required bool isZend, required bool isPhp74}) {
+    const lookahead = r'''(?:\.dll)?["']?(?=\s*(?:[;#\r\n]|$))''';
+    final newline = content.contains('\r\n') ? '\r\n' : '\n';
+
+    if (isZend) {
+      if (enable) {
+        if (isExtensionEnabled(content, key, isZend: true, isPhp74: isPhp74)) {
+          return content;
+        }
+        final commentedReg = RegExp(
+          r'''^;\s*(zend_extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead + r''')''',
+          multiLine: true,
+          caseSensitive: false,
+        );
+        bool replaced = false;
+        if (commentedReg.hasMatch(content)) {
+          content = content.replaceAllMapped(commentedReg, (m) {
+            if (!replaced) {
+              replaced = true;
+              return 'zend_extension=$key';
+            }
+            return m.group(0)!;
+          });
+          if (key == 'opcache') {
+            content = _replaceDirective(content, 'opcache.enable', '1');
+            content = _replaceDirective(content, 'opcache.enable_cli', '1');
+          }
+          return content;
+        }
+        final trailing = content.endsWith('\n') ? '' : newline;
+        content = '$content$trailing' 'zend_extension=$key$newline';
+        if (key == 'opcache') {
+          content = _replaceDirective(content, 'opcache.enable', '1');
+          content = _replaceDirective(content, 'opcache.enable_cli', '1');
+        }
+        return content;
+      } else {
+        final activeReg = RegExp(
+          r'''^\s*(zend_extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead + r''')''',
+          multiLine: true,
+          caseSensitive: false,
+        );
+        content = content.replaceAllMapped(activeReg, (m) => ';${m.group(1)}');
+        if (key == 'opcache') {
+          content = _replaceDirective(content, 'opcache.enable', '0');
+          content = _replaceDirective(content, 'opcache.enable_cli', '0');
+        }
+        return content;
+      }
+    }
+
+    // Regular extension
+    final targetExtName = (key == 'gd' && isPhp74) ? 'gd2' : key;
+
+    if (enable) {
+      if (isExtensionEnabled(content, key, isZend: false, isPhp74: isPhp74)) {
+        return content;
+      }
+
+      if (key == 'gd') {
+        final wrongVariant = isPhp74 ? 'gd' : 'gd2';
+        final wrongReg = RegExp(
+          r'''^\s*(extension\s*=\s*["']?(?:php_)?''' + wrongVariant + lookahead + r''')''',
+          multiLine: true,
+          caseSensitive: false,
+        );
+        content = content.replaceAllMapped(wrongReg, (m) => ';${m.group(1)}');
+
+        final commentedGd = RegExp(
+          r'''^;\s*(extension\s*=\s*["']?(?:php_)?(gd|gd2)''' + lookahead + r''')''',
+          multiLine: true,
+          caseSensitive: false,
+        );
+        bool replaced = false;
+        if (commentedGd.hasMatch(content)) {
+          return content.replaceAllMapped(commentedGd, (m) {
+            if (!replaced) {
+              replaced = true;
+              return 'extension=$targetExtName';
+            }
+            return m.group(0)!;
+          });
+        }
+        final trailing = content.endsWith('\n') ? '' : newline;
+        return '$content$trailing' 'extension=$targetExtName$newline';
+      }
+
+      final commentedReg = RegExp(
+        r'''^;\s*(extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead + r''')''',
+        multiLine: true,
+        caseSensitive: false,
+      );
+      bool replaced = false;
+      if (commentedReg.hasMatch(content)) {
+        return content.replaceAllMapped(commentedReg, (m) {
+          if (!replaced) {
+            replaced = true;
+            return 'extension=$key';
+          }
+          return m.group(0)!;
+        });
+      }
+      final trailing = content.endsWith('\n') ? '' : newline;
+      return '$content$trailing' 'extension=$key$newline';
+    } else {
+      // Disable
+      if (key == 'gd') {
+        final activeGd = RegExp(
+          r'''^\s*(extension\s*=\s*["']?(?:php_)?(gd|gd2)''' + lookahead + r''')''',
+          multiLine: true,
+          caseSensitive: false,
+        );
+        return content.replaceAllMapped(activeGd, (m) => ';${m.group(1)}');
+      }
+
+      final activeReg = RegExp(
+        r'''^\s*(extension\s*=\s*["']?(?:php_)?''' + RegExp.escape(key) + lookahead + r''')''',
+        multiLine: true,
+        caseSensitive: false,
+      );
+      return content.replaceAllMapped(activeReg, (m) => ';${m.group(1)}');
+    }
+  }
+
+  /// Sets an extension enabled or disabled on disk and triggers FastCGI worker hot-reload
+  Future<bool> setExtension({
+    required String versionKey,
+    required String extensionKey,
+    required bool enable,
+    bool reloadFastCgi = true,
+  }) async {
+    return _synchronized(versionKey, () async {
+      final versions = getVersions();
+      final version = versions.where((v) => v.versionKey == versionKey).firstOrNull;
+      if (version == null || !version.isInstalled) return false;
+
+      final iniFile = File(version.phpIni);
+      if (!iniFile.existsSync()) {
+        optimizePhpIni(version.dirPath);
+      }
+      if (!iniFile.existsSync()) return false;
+
+      final isPhp74 = versionKey == '7.4' || version.dirPath.contains('7.4');
+      final meta = knownExtensionsMetadata.where((m) => m['key'] == extensionKey).firstOrNull;
+      final isZend = meta != null ? (meta['isZend'] as bool) : (extensionKey == 'opcache' || extensionKey == 'xdebug');
+
+      var content = iniFile.readAsStringSync();
+      content = toggleExtensionInContent(content, extensionKey, enable, isZend: isZend, isPhp74: isPhp74);
+      iniFile.writeAsStringSync(content);
+
+      if (reloadFastCgi) {
+        await HttpServerService.instance.restartFastCgiPool(versionKey);
+      }
+      return true;
+    });
+  }
+
+  /// Applies a preset bundle (laravel, wordpress, minimal) to the selected PHP version
+  Future<bool> applyPreset({
+    required String versionKey,
+    required String presetName,
+    bool reloadFastCgi = true,
+  }) async {
+    return _synchronized(versionKey, () async {
+      final presetKey = presetName.toLowerCase().trim();
+      final targetExts = extensionPresets[presetKey];
+      if (targetExts == null) return false;
+
+      final versions = getVersions();
+      final version = versions.where((v) => v.versionKey == versionKey).firstOrNull;
+      if (version == null || !version.isInstalled) return false;
+
+      final iniFile = File(version.phpIni);
+      if (!iniFile.existsSync()) {
+        optimizePhpIni(version.dirPath);
+      }
+      if (!iniFile.existsSync()) return false;
+
+      final isPhp74 = versionKey == '7.4' || version.dirPath.contains('7.4');
+      var content = iniFile.readAsStringSync();
+
+      for (final extKey in targetExts) {
+        final meta = knownExtensionsMetadata.where((m) => m['key'] == extKey).firstOrNull;
+        final isZend = meta != null ? (meta['isZend'] as bool) : (extKey == 'opcache' || extKey == 'xdebug');
+        content = toggleExtensionInContent(content, extKey, true, isZend: isZend, isPhp74: isPhp74);
+      }
+
+      iniFile.writeAsStringSync(content);
+
+      if (reloadFastCgi) {
+        await HttpServerService.instance.restartFastCgiPool(versionKey);
+      }
+      return true;
+    });
   }
 }

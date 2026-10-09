@@ -169,17 +169,18 @@ class WebServerEngineManager extends ChangeNotifier {
         runInShell: false,
       );
 
-      // Verify port 80 is listening
+      // Verify HTTP port is listening
+      final httpPort = config.httpPort;
       for (int i = 0; i < 15; i++) {
         await Future.delayed(const Duration(milliseconds: 200));
-        if (await checkPortOpen(80)) {
+        if (await checkPortOpen(httpPort)) {
           _isNginxRunning = true;
           notifyListeners();
           return true;
         }
       }
 
-      _isNginxRunning = await checkPortOpen(80);
+      _isNginxRunning = await checkPortOpen(httpPort);
       notifyListeners();
       return _isNginxRunning;
     } catch (_) {
@@ -234,16 +235,17 @@ class WebServerEngineManager extends ChangeNotifier {
         runInShell: false,
       );
 
+      final httpPort = config.httpPort;
       for (int i = 0; i < 20; i++) {
         await Future.delayed(const Duration(milliseconds: 200));
-        if (await checkPortOpen(80)) {
+        if (await checkPortOpen(httpPort)) {
           _isApacheRunning = true;
           notifyListeners();
           return true;
         }
       }
 
-      _isApacheRunning = await checkPortOpen(80);
+      _isApacheRunning = await checkPortOpen(httpPort);
       notifyListeners();
       return _isApacheRunning;
     } catch (_) {

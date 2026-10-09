@@ -5,6 +5,7 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'server_controller.dart';
+import 'config_service.dart';
 
 class TrayService with TrayListener, WindowListener {
   static final TrayService instance = TrayService._();
@@ -73,12 +74,12 @@ class TrayService with TrayListener, WindowListener {
           MenuItem.separator(),
           MenuItem(
             key: 'status_web',
-            label: 'Web Server: ${isWebRunning ? "Running (Port 80/443)" : "Stopped"}',
+            label: 'Web Server: ${isWebRunning ? "Running (Port ${ConfigService.instance.httpPort})" : "Stopped"}',
             disabled: true,
           ),
           MenuItem(
             key: 'status_db',
-            label: 'MariaDB: ${isDbRunning ? "Running (Port 3306)" : "Stopped"}',
+            label: 'MariaDB: ${isDbRunning ? "Running (Port ${ConfigService.instance.mariaDbPort})" : "Stopped"}',
             disabled: true,
           ),
           MenuItem.separator(),
@@ -153,7 +154,9 @@ class TrayService with TrayListener, WindowListener {
         break;
       case 'open_browser':
         try {
-          await launchUrl(Uri.parse('http://127.0.0.1/'));
+          final port = ConfigService.instance.httpPort;
+          final portSuffix = port == 80 ? '' : ':$port';
+          await launchUrl(Uri.parse('http://127.0.0.1$portSuffix/'));
         } catch (_) {}
         break;
       case 'open_pma':

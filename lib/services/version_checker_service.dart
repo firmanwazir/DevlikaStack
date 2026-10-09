@@ -70,8 +70,8 @@ class VersionCheckerService extends ChangeNotifier {
 
     try {
       await Future.wait([
-        checkMariaDb(),
-        checkPhp(),
+        checkMariaDb(checkOnline: true),
+        checkPhp(checkOnline: true),
       ]);
       _lastCheckedTime = DateTime.now();
     } catch (e) {
@@ -83,7 +83,7 @@ class VersionCheckerService extends ChangeNotifier {
   }
 
   /// Detect & Check MariaDB Version
-  Future<MariaDbVersionInfo> checkMariaDb() async {
+  Future<MariaDbVersionInfo> checkMariaDb({bool checkOnline = false}) async {
     final exe = ConfigService.instance.mariaDbExe;
     String installedVer = 'Belum Terpasang';
     String arch = 'x64';
@@ -106,30 +106,30 @@ class VersionCheckerService extends ChangeNotifier {
       }
     }
 
-    String latestStable = '12.0.2';
+    String latestStable = '12.0.2 (Portable)';
     bool hasUpdate = false;
     String status = 'Terkini & Stabil';
 
-    // Query official MariaDB REST API
-    try {
-      final res = await http.get(
-        Uri.parse('https://downloads.mariadb.org/rest-api/mariadb/'),
-      ).timeout(const Duration(seconds: 4));
+    // Query official MariaDB REST API only if checkOnline requested
+    if (checkOnline) {
+      try {
+        final res = await http.get(
+          Uri.parse('https://downloads.mariadb.org/rest-api/mariadb/'),
+        ).timeout(const Duration(seconds: 4));
 
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        final majorReleases = data['major_releases'] as List?;
-        if (majorReleases != null && majorReleases.isNotEmpty) {
-          // Find first stable LTS release
-          final stableList = majorReleases.where((r) => r['release_status'] == 'Stable').toList();
-          if (stableList.isNotEmpty) {
-            latestStable = '${stableList.first['release_name']} LTS';
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          final majorReleases = data['major_releases'] as List?;
+          if (majorReleases != null && majorReleases.isNotEmpty) {
+            final stableList = majorReleases.where((r) => r['release_status'] == 'Stable').toList();
+            if (stableList.isNotEmpty) {
+              latestStable = '${stableList.first['release_name']} LTS';
+            }
           }
         }
+      } catch (_) {
+        latestStable = '12.0.2 (Portable)';
       }
-    } catch (_) {
-      // Use fallback
-      latestStable = '12.0.2 (Portable)';
     }
 
     if (installedVer != 'Belum Terpasang') {
@@ -157,7 +157,7 @@ class VersionCheckerService extends ChangeNotifier {
   }
 
   /// Detect & Check PHP Versions
-  Future<List<PhpUpdateInfo>> checkPhp() async {
+  Future<List<PhpUpdateInfo>> checkPhp({bool checkOnline = false}) async {
     final installedList = PhpManager.instance.getVersions();
 
     // Default latest known versions
@@ -177,34 +177,33 @@ class VersionCheckerService extends ChangeNotifier {
       '8.4': 'https://windows.php.net/downloads/releases/php-8.4.4-nts-Win32-vs17-x64.zip',
     };
 
-    // Query windows.php.net releases JSON if connected
-    try {
-      final res = await http.get(
-        Uri.parse('https://windows.php.net/downloads/releases/releases.json'),
-      ).timeout(const Duration(seconds: 4));
+    // Query windows.php.net releases JSON only if checkOnline requested
+    if (checkOnline) {
+      try {
+        final res = await http.get(
+          Uri.parse('https://windows.php.net/downloads/releases/releases.json'),
+        ).timeout(const Duration(seconds: 4));
 
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as Map<String, dynamic>;
-        data.forEach((seriesKey, details) {
-          if (details is Map && details.containsKey('version')) {
-            final ver = details['version'].toString();
-            latestMap[seriesKey] = ver;
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body) as Map<String, dynamic>;
+          data.forEach((seriesKey, details) {
+            if (details is Map && details.containsKey('version')) {
+              final ver = details['version'].toString();
+              latestMap[seriesKey] = ver;
 
-            // Find nts-vs...-x64 download zip
-            for (var buildKey in ['nts-vs17-x64', 'nts-vs16-x64']) {
-              if (details.containsKey(buildKey) && details[buildKey] is Map) {
-                final zipInfo = details[buildKey]['zip'];
-                if (zipInfo is Map && zipInfo.containsKey('path')) {
-                  downloadUrlMap[seriesKey] = 'https://windows.php.net/downloads/releases/${zipInfo['path']}';
-                  break;
+              for (var buildKey in ['nts-vs17-x64', 'nts-vs16-x64']) {
+                if (details.containsKey(buildKey) && details[buildKey] is Map) {
+                  final zipInfo = details[buildKey]['zip'];
+                  if (zipInfo is Map && zipInfo.containsKey('path')) {
+                    downloadUrlMap[seriesKey] = 'https://windows.php.net/downloads/releases/${zipInfo['path']}';
+                    break;
+                  }
                 }
               }
             }
-          }
-        });
-      }
-    } catch (_) {
-      // Use fallback catalog
+          });
+        }
+      } catch (_) {}
     }
 
     final results = <PhpUpdateInfo>[];

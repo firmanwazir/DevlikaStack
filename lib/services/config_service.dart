@@ -212,6 +212,51 @@ class ConfigService {
     }
   }
 
+  int get httpPort {
+    final settings = _loadSettings();
+    final p = settings['http_port'];
+    if (p is int && p > 0 && p <= 65535) return p;
+    return 80;
+  }
+
+  void setHttpPort(int port) {
+    if (port > 0 && port <= 65535) {
+      final settings = Map<String, dynamic>.from(_loadSettings());
+      settings['http_port'] = port;
+      _saveSettings(settings);
+    }
+  }
+
+  int get httpsPort {
+    final settings = _loadSettings();
+    final p = settings['https_port'];
+    if (p is int && p > 0 && p <= 65535) return p;
+    return 443;
+  }
+
+  void setHttpsPort(int port) {
+    if (port > 0 && port <= 65535) {
+      final settings = Map<String, dynamic>.from(_loadSettings());
+      settings['https_port'] = port;
+      _saveSettings(settings);
+    }
+  }
+
+  int get mariaDbPort {
+    final settings = _loadSettings();
+    final p = settings['mariadb_port'];
+    if (p is int && p > 0 && p <= 65535) return p;
+    return 3306;
+  }
+
+  void setMariaDbPort(int port) {
+    if (port > 0 && port <= 65535) {
+      final settings = Map<String, dynamic>.from(_loadSettings());
+      settings['mariadb_port'] = port;
+      _saveSettings(settings);
+    }
+  }
+
   String _detectBinDir() {
     final exeDir = p.dirname(Platform.resolvedExecutable);
 

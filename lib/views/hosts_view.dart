@@ -43,102 +43,100 @@ class _HostsViewState extends State<HostsView> {
         final proxyCount = allSites.where((s) => s.type == 'proxy').length;
 
         return Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Quick Stats Summary
-              Row(
-                children: [
-                  _buildStatBadge(
-                    icon: Icons.language_rounded,
-                    label: 'Total Hosts',
-                    value: '$totalCount',
-                    color: AppTheme.accentCyan,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildStatBadge(
-                    icon: Icons.check_circle_outline_rounded,
-                    label: 'Aktif',
-                    value: '$activeCount',
-                    color: AppTheme.accentGreen,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildStatBadge(
-                    icon: Icons.code_rounded,
-                    label: 'PHP Hosts',
-                    value: '$phpCount',
-                    color: AppTheme.accentPurple,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildStatBadge(
-                    icon: Icons.alt_route_rounded,
-                    label: 'Proxy Hosts',
-                    value: '$proxyCount',
-                    color: AppTheme.accentAmber,
-                  ),
-                ],
+              // 1. High-Density Technical Metric Strip (Developer Tool Style)
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.cardDark,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.borderDark),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    _buildMetricItem('TOTAL HOSTS', '$totalCount', null),
+                    _buildVerticalDivider(),
+                    _buildMetricItem('AKTIF', '$activeCount', AppTheme.accentGreen),
+                    _buildVerticalDivider(),
+                    _buildMetricItem('PHP RUNTIME', '$phpCount', null),
+                    _buildVerticalDivider(),
+                    _buildMetricItem('REVERSE PROXY', '$proxyCount', null),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
 
-              // Search & Add Bar
+              // 2. Search & Add Toolbar
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) => setState(() => _searchQuery = val),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'Cari berdasarkan domain, direktori root, atau versi PHP...',
-                        hintStyle: const TextStyle(color: AppTheme.textMuted),
-                        prefixIcon: const Icon(Icons.search, size: 18, color: AppTheme.textMuted),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.close, size: 16, color: AppTheme.textMuted),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: AppTheme.cardDark,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppTheme.borderDark),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppTheme.borderDark),
+                    child: SizedBox(
+                      height: 38,
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Cari domain, folder root, atau runtime...',
+                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12.5),
+                          prefixIcon: const Icon(Icons.search, size: 16, color: AppTheme.textMuted),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.close, size: 14, color: AppTheme.textMuted),
+                                  splashRadius: 14,
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: AppTheme.cardDark,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const AddHostDialog(),
-                      );
-                    },
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Tambah Host'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentBlue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 2,
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 38,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const AddHostDialog(),
+                        );
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 15),
+                      label: const Text('Tambah Virtual Host', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentIndigo,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
 
-              // Sites Table / Empty State
+              // 3. Data Table or Empty State
               Expanded(
                 child: filteredSites.isEmpty
                     ? _buildEmptyState(context, isSearch: _searchQuery.isNotEmpty)
@@ -151,48 +149,54 @@ class _HostsViewState extends State<HostsView> {
     );
   }
 
-  Widget _buildStatBadge({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
+  Widget _buildMetricItem(String label, String value, Color? statusDot) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppTheme.borderDark),
-        ),
-        child: Row(
-          children: [
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (statusDot != null) ...[
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 18, color: color),
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: statusDot),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                Text(
-                  label,
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                ),
-              ],
-            ),
+            const SizedBox(width: 8),
           ],
-        ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textMuted,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontFamily: AppTheme.monoFont,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      width: 1,
+      height: 24,
+      color: AppTheme.borderDark,
     );
   }
 
@@ -202,44 +206,46 @@ class _HostsViewState extends State<HostsView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppTheme.cardDark,
               border: Border.all(color: AppTheme.borderDark),
             ),
             child: Icon(
-              isSearch ? Icons.search_off_rounded : Icons.language_rounded,
-              size: 48,
+              isSearch ? Icons.search_off_rounded : Icons.public_off_rounded,
+              size: 32,
               color: AppTheme.textMuted,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             isSearch ? 'Tidak ada host yang cocok dengan pencarian' : 'Belum Ada Virtual Host',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             isSearch
                 ? 'Coba gunakan kata kunci domain atau nama folder lainnya.'
-                : 'Daftarkan domain host lokal (contoh: project.local) untuk diarahkan ke direktori proyek.',
-            style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                : 'Daftarkan domain lokal (contoh: project.local) untuk diarahkan ke folder proyek.',
+            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: () {
-              showDialog(context: context, builder: (_) => const AddHostDialog());
-            },
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Tambah Virtual Host'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentBlue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          if (!isSearch) ...[
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                showDialog(context: context, builder: (_) => const AddHostDialog());
+              },
+              icon: const Icon(Icons.add_rounded, size: 15),
+              label: const Text('Tambah Virtual Host', style: TextStyle(fontSize: 12.5)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentIndigo,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -250,29 +256,29 @@ class _HostsViewState extends State<HostsView> {
     ServerController controller,
     List<SiteModel> sites,
   ) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.borderDark),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderDark),
       ),
       child: Column(
         children: [
           // Table Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
             decoration: const BoxDecoration(
-              color: Color(0xFF131823),
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              color: AppTheme.surfaceSubtle,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
               border: Border(bottom: BorderSide(color: AppTheme.borderDark)),
             ),
             child: Row(
               children: const [
-                SizedBox(width: 60, child: Text('STATUS', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 3, child: Text('DOMAIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('RUNTIME / TARGET', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 5, child: Text('DOCUMENT ROOT / TARGET PROXY', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 245, child: Text('AKSI', textAlign: TextAlign.right, style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold))),
+                SizedBox(width: 48, child: Text('STATUS', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
+                Expanded(flex: 3, child: Text('DOMAIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
+                Expanded(flex: 2, child: Text('RUNTIME', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
+                Expanded(flex: 5, child: Text('DOCUMENT ROOT / PROXY TARGET', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
+                SizedBox(width: 220, child: Text('AKSI', textAlign: TextAlign.right, style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
               ],
             ),
           ),
@@ -286,21 +292,22 @@ class _HostsViewState extends State<HostsView> {
                 final site = sites[index];
 
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
-                      // Status Switch (Toggle Aktif / Nonaktif)
+                      // Status Switch
                       SizedBox(
-                        width: 60,
+                        width: 48,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Switch(
-                            value: site.isEnabled,
-                            activeColor: AppTheme.accentGreen,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onChanged: (val) {
-                              controller.toggleSite(site.id, val);
-                            },
+                          child: Transform.scale(
+                            scale: 0.72,
+                            child: Switch(
+                              value: site.isEnabled,
+                              activeColor: AppTheme.accentGreen,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onChanged: (val) => controller.toggleSite(site.id, val),
+                            ),
                           ),
                         ),
                       ),
@@ -315,16 +322,16 @@ class _HostsViewState extends State<HostsView> {
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               children: [
-                                const Icon(Icons.language_rounded, size: 15, color: AppTheme.accentCyan),
+                                const Icon(Icons.public, size: 14, color: AppTheme.textMuted),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     site.domain,
                                     style: const TextStyle(
-                                      fontFamily: 'Consolas',
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.accentCyan,
-                                      fontSize: 13,
+                                      fontFamily: AppTheme.monoFont,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 12.5,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -342,44 +349,28 @@ class _HostsViewState extends State<HostsView> {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: site.type == 'proxy'
-                                  ? AppTheme.accentAmber.withOpacity(0.12)
-                                  : AppTheme.accentPurple.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: site.type == 'proxy'
-                                    ? AppTheme.accentAmber.withOpacity(0.3)
-                                    : AppTheme.accentPurple.withOpacity(0.3),
-                              ),
+                              color: AppTheme.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: AppTheme.borderDark),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  site.type == 'proxy' ? Icons.alt_route_rounded : Icons.code_rounded,
-                                  size: 12,
-                                  color: site.type == 'proxy' ? AppTheme.accentAmber : AppTheme.accentPurple,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  site.type == 'proxy'
-                                      ? 'PROXY :${site.proxyPort}'
-                                      : (site.phpVersion == 'default' ? 'PHP Default' : 'PHP ${site.phpVersion}'),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: site.type == 'proxy' ? AppTheme.accentAmber : AppTheme.accentPurple,
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              site.type == 'proxy'
+                                  ? 'PROXY :${site.proxyPort}'
+                                  : (site.phpVersion == 'default' ? 'PHP Default' : 'PHP ${site.phpVersion}'),
+                              style: const TextStyle(
+                                fontFamily: AppTheme.monoFont,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textSecondary,
+                              ),
                             ),
                           ),
                         ),
                       ),
 
-                      // Folder / Port
+                      // Document Root / Proxy Port
                       Expanded(
                         flex: 5,
                         child: Tooltip(
@@ -391,9 +382,9 @@ class _HostsViewState extends State<HostsView> {
                                 ? 'Reverse Proxy -> 127.0.0.1:${site.proxyPort}'
                                 : site.rootPath,
                             style: const TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 12,
-                              fontFamily: 'Consolas',
+                              color: AppTheme.textMuted,
+                              fontSize: 11.5,
+                              fontFamily: AppTheme.monoFont,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -401,13 +392,13 @@ class _HostsViewState extends State<HostsView> {
                         ),
                       ),
 
-                      // Actions: Tunnel (Cloudflare), Open Browser, Open Folder, Edit, Delete
+                      // Actions
                       SizedBox(
-                        width: 245,
+                        width: 220,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            // Cloudflare Quick Tunnel (Preview Online ke Klien)
+                            // Cloudflare Quick Tunnel Button
                             AnimatedBuilder(
                               animation: TunnelService.instance,
                               builder: (context, _) {
@@ -419,15 +410,16 @@ class _HostsViewState extends State<HostsView> {
                                   icon: Icon(
                                     isActive
                                         ? Icons.cloud_done_rounded
-                                        : (isStarting ? Icons.cloud_sync_rounded : Icons.cloud_upload_outlined),
-                                    size: 16,
+                                        : (isStarting ? Icons.cloud_sync_rounded : Icons.cloud_outlined),
+                                    size: 15,
                                   ),
+                                  splashRadius: 15,
                                   tooltip: isActive
                                       ? 'Tunnel Aktif (${tunnel.publicUrl}) - Klik info'
-                                      : 'Bagikan ke Internet (Cloudflare Quick Tunnel)',
+                                      : 'Bagikan ke Internet (Cloudflare Tunnel)',
                                   color: isActive
                                       ? AppTheme.accentGreen
-                                      : (isStarting ? AppTheme.accentAmber : AppTheme.accentPurple),
+                                      : (isStarting ? AppTheme.accentAmber : AppTheme.textSecondary),
                                   onPressed: () {
                                     showDialog(
                                       context: context,
@@ -438,36 +430,40 @@ class _HostsViewState extends State<HostsView> {
                               },
                             ),
 
-                            // Buka HTTPS
+                            // HTTPS
                             IconButton(
-                              icon: const Icon(Icons.lock_outline_rounded, size: 16),
+                              icon: const Icon(Icons.lock_outline_rounded, size: 14),
                               tooltip: 'Buka HTTPS (https://${site.domain})',
+                              splashRadius: 15,
                               color: AppTheme.accentGreen,
                               onPressed: () => controller.openUrl('https://${site.domain}'),
                             ),
 
-                            // Buka HTTP
+                            // HTTP
                             IconButton(
-                              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                              icon: const Icon(Icons.open_in_new_rounded, size: 14),
                               tooltip: 'Buka HTTP (http://${site.domain})',
-                              color: AppTheme.accentCyan,
+                              splashRadius: 15,
+                              color: AppTheme.textSecondary,
                               onPressed: () => controller.openUrl('http://${site.domain}'),
                             ),
 
-                            // Buka Folder Proyek
+                            // Open Folder
                             if (site.type != 'proxy')
                               IconButton(
-                                icon: const Icon(Icons.folder_open_rounded, size: 16),
+                                icon: const Icon(Icons.folder_open_outlined, size: 14),
                                 tooltip: 'Buka Folder Root',
+                                splashRadius: 15,
                                 color: AppTheme.textSecondary,
                                 onPressed: () => controller.openFolder(site.rootPath),
                               ),
 
-                            // EDIT HOST BUTTON
+                            // Edit Host
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 16),
+                              icon: const Icon(Icons.tune_rounded, size: 14),
                               tooltip: 'Edit Konfigurasi Host',
-                              color: AppTheme.accentBlue,
+                              splashRadius: 15,
+                              color: AppTheme.textSecondary,
                               onPressed: () {
                                 showDialog(
                                   context: context,
@@ -476,14 +472,13 @@ class _HostsViewState extends State<HostsView> {
                               },
                             ),
 
-                            // Hapus Host
+                            // Delete Host
                             IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                              icon: const Icon(Icons.delete_outline_rounded, size: 14),
                               tooltip: 'Hapus Host',
+                              splashRadius: 15,
                               color: AppTheme.accentRed,
-                              onPressed: () {
-                                _confirmDelete(context, controller, site);
-                              },
+                              onPressed: () => _confirmDelete(context, controller, site),
                             ),
                           ],
                         ),
@@ -505,14 +500,14 @@ class _HostsViewState extends State<HostsView> {
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.cardDark,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: AppTheme.borderDark),
         ),
         title: Row(
           children: const [
-            Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 22),
-            SizedBox(width: 10),
-            Text('Hapus Virtual Host', style: TextStyle(color: Colors.white, fontSize: 16)),
+            Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 20),
+            SizedBox(width: 8),
+            Text('Hapus Virtual Host', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           ],
         ),
         content: Column(
@@ -523,9 +518,9 @@ class _HostsViewState extends State<HostsView> {
               'Konfirmasi penghapusan konfigurasi virtual host ${site.domain}?',
               style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
-              'Routing untuk domain ini akan dinonaktifkan. File pada direktori proyek tidak akan dihapus.',
+              'Routing domain ini akan dinonaktifkan. File pada folder proyek Anda tidak akan dihapus.',
               style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
           ],
@@ -533,7 +528,7 @@ class _HostsViewState extends State<HostsView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary)),
+            child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -542,7 +537,7 @@ class _HostsViewState extends State<HostsView> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Virtual host ${site.domain} telah dihapus.'),
-                  backgroundColor: AppTheme.accentRed,
+                  backgroundColor: AppTheme.cardDark,
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -550,8 +545,10 @@ class _HostsViewState extends State<HostsView> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentRed,
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
             ),
-            child: const Text('Hapus Host'),
+            child: const Text('Hapus Host', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),

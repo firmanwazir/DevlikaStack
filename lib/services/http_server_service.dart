@@ -68,22 +68,25 @@ class HttpServerService {
   Future<bool> start() async {
     if (_isRunning) return true;
 
+    final httpPort = ConfigService.instance.httpPort;
+    final httpsPort = ConfigService.instance.httpsPort;
+
     try {
-      _server = await HttpServer.bind(InternetAddress.loopbackIPv4, 80);
+      _server = await HttpServer.bind(InternetAddress.loopbackIPv4, httpPort);
       _server!.autoCompress = true;
       // Enable persistent connections (Keep-Alive) to reduce TCP handshake overhead
       _server!.idleTimeout = const Duration(seconds: 15);
       _isRunning = true;
-      _logController.add('[Web Server] Berjalan pada http://127.0.0.1:80');
+      _logController.add('[Web Server] Berjalan pada http://127.0.0.1:$httpPort');
 
       _server!.listen(
         _handleRequest,
         onError: (e) => _logController.add('[Web Server Error] $e'),
       );
 
-      // Also bind IPv6 loopback [::1] on port 80 to eliminate Windows IPv6 TCP timeout
+      // Also bind IPv6 loopback [::1] on configured port to eliminate Windows IPv6 TCP timeout
       try {
-        _serverIpv6 = await HttpServer.bind(InternetAddress.loopbackIPv6, 80);
+        _serverIpv6 = await HttpServer.bind(InternetAddress.loopbackIPv6, httpPort);
         _serverIpv6!.autoCompress = true;
         _serverIpv6!.idleTimeout = const Duration(seconds: 15);
         _serverIpv6!.listen(
@@ -95,7 +98,7 @@ class HttpServerService {
       // Start FastCGI daemons for all configured PHP versions
       await _startAllConfiguredFastCgiDaemons();
 
-      // Start HTTPS Server on Port 443 with SSL
+      // Start HTTPS Server with SSL
       try {
         final ssl = SslService.instance;
         await ssl.ensureCertificate();
@@ -105,7 +108,7 @@ class HttpServerService {
             ..usePrivateKey(ssl.keyPath);
           _secureServer = await HttpServer.bindSecure(
             InternetAddress.loopbackIPv4,
-            443,
+            httpsPort,
             sec,
           );
           _secureServer!.autoCompress = true;
@@ -114,12 +117,12 @@ class HttpServerService {
             _handleRequest,
             onError: (e) => _logController.add('[Web Server HTTPS Error] $e'),
           );
-          _logController.add('[Web Server] Berjalan pada https://127.0.0.1:443 (SSL Aktif)');
+          _logController.add('[Web Server] Berjalan pada https://127.0.0.1:$httpsPort (SSL Aktif)');
 
           try {
             _secureServerIpv6 = await HttpServer.bindSecure(
               InternetAddress.loopbackIPv6,
-              443,
+              httpsPort,
               sec,
             );
             _secureServerIpv6!.autoCompress = true;
@@ -131,12 +134,12 @@ class HttpServerService {
           } catch (_) {}
         }
       } catch (sslErr) {
-        _logController.add('[Web Server SSL Warning] HTTPS Port 443 tidak aktif: $sslErr');
+        _logController.add('[Web Server SSL Warning] HTTPS Port $httpsPort tidak aktif: $sslErr');
       }
 
       return true;
     } catch (e) {
-      _logController.add('[Web Server Error] Gagal bind port 80: $e');
+      _logController.add('[Web Server Error] Gagal bind port $httpPort: $e');
       _isRunning = false;
       return false;
     }
@@ -174,11 +177,6 @@ class HttpServerService {
     _opcacheDirExistsCache.clear();
     _phpBaseArgsCache.clear();
     _logController.add('[Web Server] Berhenti.');
-  }
-
-  /// Deterministic FastCGI port mapping per PHP version
-  int _getPortForPhpVersion(String versionKey) {
-    return VhostConfigGenerator.getFastCgiPort(versionKey);
   }
 
   /// Start FastCGI worker pools for all PHP versions needed by enabled sites + default PHP
@@ -367,6 +365,78 @@ class HttpServerService {
           'Get-NetTCPConnection -LocalPort @($ports) -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }'
         ]);
       } catch (_) {}
+    }
+  }
+
+  final Map<String, Timer?> _fastCgiDebounceTimers = {};
+  final Map<String, Completer<void>?> _fastCgiRestartLocks = {};
+
+  /// Hot-reloads the FastCGI worker pool for a specific PHP version (e.g. after editing php.ini or toggling extensions)
+  Future<void> restartFastCgiPool(String versionKey, {bool debounce = true}) async {
+    if (debounce) {
+      final completer = Completer<void>();
+      _fastCgiDebounceTimers[versionKey]?.cancel();
+      _fastCgiDebounceTimers[versionKey] = Timer(const Duration(milliseconds: 250), () async {
+        try {
+          await _executeRestartFastCgiPool(versionKey);
+          if (!completer.isCompleted) completer.complete();
+        } catch (e) {
+          if (!completer.isCompleted) completer.completeError(e);
+        }
+      });
+      return completer.future;
+    } else {
+      return _executeRestartFastCgiPool(versionKey);
+    }
+  }
+
+  Future<void> _executeRestartFastCgiPool(String versionKey) async {
+    while (_fastCgiRestartLocks[versionKey] != null) {
+      await _fastCgiRestartLocks[versionKey]!.future;
+    }
+    final lock = Completer<void>();
+    _fastCgiRestartLocks[versionKey] = lock;
+
+    try {
+      final procs = _fastCgiDaemons[versionKey];
+      if (procs != null) {
+        for (var proc in procs) {
+          try {
+            proc.kill();
+          } catch (_) {}
+        }
+        procs.clear();
+      }
+
+      final ports = VhostConfigGenerator.getFastCgiPorts(versionKey);
+      if (Platform.isWindows && ports.isNotEmpty) {
+        final portList = ports.join(',');
+        try {
+          await Process.run('powershell', [
+            '-NoProfile',
+            '-Command',
+            'Get-NetTCPConnection -LocalPort @($portList) -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }'
+          ]);
+        } catch (_) {}
+      }
+
+      _fastCgiPools[versionKey]?.clear();
+      _fastCgiReady.remove(versionKey);
+      _poolIndex[versionKey] = 0;
+      _phpBaseArgsCache.remove(versionKey);
+      _phpModelCache.clear();
+
+      _logController.add('[FastCGI] Worker pool PHP $versionKey dimuat ulang.');
+
+      if (_isRunning) {
+        final phpModel = ConfigService.instance.getPhpForSite(versionKey);
+        if (phpModel.isInstalled) {
+          await _startFastCgiDaemonFor(phpModel);
+        }
+      }
+    } finally {
+      lock.complete();
+      _fastCgiRestartLocks.remove(versionKey);
     }
   }
 
@@ -762,7 +832,7 @@ class HttpServerService {
       'DOCUMENT_ROOT': docRoot,
       'SERVER_NAME': host,
       'HTTP_HOST': host,
-      'SERVER_PORT': isHttps ? '443' : '${request.connectionInfo?.localPort ?? 80}',
+      'SERVER_PORT': isHttps ? '${ConfigService.instance.httpsPort}' : '${request.connectionInfo?.localPort ?? ConfigService.instance.httpPort}',
       'SERVER_ADDR': '127.0.0.1',
       'REMOTE_ADDR': request.connectionInfo?.remoteAddress.address ?? '127.0.0.1',
       'REMOTE_PORT': '${request.connectionInfo?.remotePort ?? 0}',

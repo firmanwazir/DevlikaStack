@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/server_controller.dart';
+import 'port_settings_dialog.dart';
 
 class HeaderBar extends StatelessWidget {
   final String title;
@@ -21,66 +22,88 @@ class HeaderBar extends StatelessWidget {
         final isAllRunning = controller.isWebRunning && controller.isMariaDbRunning;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: const BoxDecoration(
-            color: AppTheme.cardDark,
+            color: AppTheme.bgDark,
             border: Border(
               bottom: BorderSide(color: AppTheme.borderDark, width: 1),
             ),
           ),
           child: Row(
             children: [
-              // Page Titles
+              // Page Title & Concise Breadcrumb
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
                   children: [
                     Text(
                       title,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 1,
+                      height: 12,
+                      color: AppTheme.borderDark,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        subtitle,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMuted,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(width: 12),
-
-              // Quick Status Chips
-              _buildPortChip('Web: 80', controller.isWebRunning),
-              const SizedBox(width: 8),
-              _buildPortChip('DB: 3306', controller.isMariaDbRunning),
               const SizedBox(width: 16),
 
-              // phpMyAdmin Quick Link
-              OutlinedButton.icon(
-                onPressed: () => controller.openPhpMyAdmin(),
-                icon: const Icon(Icons.table_chart_rounded, size: 16),
-                label: const Text('phpMyAdmin'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.accentCyan,
-                  side: const BorderSide(color: AppTheme.borderDark),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              // Technical Status Chips (Monospace & Compact, Interactive)
+              InkWell(
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (ctx) => const PortSettingsDialog(),
                 ),
+                borderRadius: BorderRadius.circular(4),
+                child: _buildPortPill('HTTP: ${controller.httpPort}', controller.isWebRunning),
+              ),
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (ctx) => const PortSettingsDialog(),
+                ),
+                borderRadius: BorderRadius.circular(4),
+                child: _buildPortPill('DB: ${controller.mariaDbPort}', controller.isMariaDbRunning),
               ),
               const SizedBox(width: 12),
 
-              // Master Start / Stop Button
+              // phpMyAdmin Quick Link (Clean Outlined)
+              OutlinedButton.icon(
+                onPressed: () => controller.openPhpMyAdmin(),
+                icon: const Icon(Icons.table_view_outlined, size: 14, color: AppTheme.textSecondary),
+                label: const Text('phpMyAdmin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.textPrimary,
+                  backgroundColor: AppTheme.cardDark,
+                  side: const BorderSide(color: AppTheme.borderDark),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Master Action Button
               ElevatedButton.icon(
                 onPressed: () {
                   if (isAllRunning) {
@@ -91,17 +114,17 @@ class HeaderBar extends StatelessWidget {
                 },
                 icon: Icon(
                   isAllRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  size: 18,
+                  size: 15,
+                  color: Colors.white,
                 ),
                 label: Text(
                   isAllRunning ? 'Stop All' : 'Start All',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isAllRunning ? AppTheme.accentRed : AppTheme.accentGreen,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  backgroundColor: isAllRunning ? const Color(0xFFBE123C) : const Color(0xFF047857),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   elevation: 0,
                 ),
               ),
@@ -112,26 +135,26 @@ class HeaderBar extends StatelessWidget {
     );
   }
 
-  Widget _buildPortChip(String label, bool isRunning) {
+  Widget _buildPortPill(String label, bool isRunning) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isRunning
-            ? AppTheme.accentGreen.withOpacity(0.12)
-            : Colors.white.withOpacity(0.04),
+            ? AppTheme.accentGreen.withOpacity(0.08)
+            : AppTheme.surfaceSubtle,
         border: Border.all(
           color: isRunning
-              ? AppTheme.accentGreen.withOpacity(0.3)
+              ? AppTheme.accentGreen.withOpacity(0.25)
               : AppTheme.borderDark,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6,
-            height: 6,
+            width: 5,
+            height: 5,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isRunning ? AppTheme.accentGreen : AppTheme.textMuted,
@@ -141,6 +164,7 @@ class HeaderBar extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
+              fontFamily: AppTheme.monoFont,
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: isRunning ? AppTheme.accentGreen : AppTheme.textSecondary,

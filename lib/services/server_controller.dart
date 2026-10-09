@@ -12,6 +12,7 @@ import 'component_downloader.dart';
 import 'db_importer_service.dart';
 import 'web_server_engine_manager.dart';
 import 'tray_service.dart';
+import 'port_checker_service.dart';
 
 class ServerController extends ChangeNotifier {
   static final ServerController instance = ServerController._();
@@ -24,6 +25,49 @@ class ServerController extends ChangeNotifier {
   bool isBatchInstalling = false;
   double batchInstallProgress = 0.0;
   String batchInstallMessage = '';
+
+  int get httpPort => ConfigService.instance.httpPort;
+  int get httpsPort => ConfigService.instance.httpsPort;
+  int get mariaDbPort => ConfigService.instance.mariaDbPort;
+
+  Future<void> setHttpPort(int port) async {
+    final wasRunning = isWebRunning;
+    if (wasRunning) {
+      await toggleWebServer(false);
+    }
+    ConfigService.instance.setHttpPort(port);
+    refreshStatus();
+    if (wasRunning) {
+      await toggleWebServer(true);
+    }
+    notifyListeners();
+  }
+
+  Future<void> setHttpsPort(int port) async {
+    final wasRunning = isWebRunning;
+    if (wasRunning) {
+      await toggleWebServer(false);
+    }
+    ConfigService.instance.setHttpsPort(port);
+    refreshStatus();
+    if (wasRunning) {
+      await toggleWebServer(true);
+    }
+    notifyListeners();
+  }
+
+  Future<void> setMariaDbPort(int port) async {
+    final wasRunning = isMariaDbRunning;
+    if (wasRunning) {
+      await toggleMariaDb(false);
+    }
+    ConfigService.instance.setMariaDbPort(port);
+    refreshStatus();
+    if (wasRunning) {
+      await toggleMariaDb(true);
+    }
+    notifyListeners();
+  }
 
   List<SiteModel> sites = [];
   final LogsNotifier logsNotifier = LogsNotifier();
@@ -41,7 +85,7 @@ class ServerController extends ChangeNotifier {
       mariaDb: ComponentItem(
         id: 'mariadb',
         name: 'MariaDB (MySQL) Database',
-        description: 'Server basis data SQL lokal pada port 3306.',
+        description: 'Server basis data SQL lokal.',
       ),
       phpMyAdmin: ComponentItem(
         id: 'phpmyadmin',
@@ -73,9 +117,6 @@ class ServerController extends ChangeNotifier {
 
   void _addLog(String msg) {
     logsNotifier.addLog(msg);
-    // Note: Do NOT call notifyListeners() here.
-    // LogsNotifier notifies only the LogsView listeners,
-    // avoiding expensive full-app UI rebuilds during high-frequency HTTP requests.
   }
 
   void clearLogs() {
@@ -97,7 +138,7 @@ class ServerController extends ChangeNotifier {
     final hasMariaDb = File(config.mariaDbExe).existsSync();
     components.mariaDb.isInstalled = hasMariaDb;
     components.mariaDb.path = hasMariaDb ? config.mariaDbExe : '';
-    components.mariaDb.version = hasMariaDb ? 'MariaDB 11.x (Port 3306)' : 'Belum Terpasang';
+    components.mariaDb.version = hasMariaDb ? 'MariaDB 11.x (Port $mariaDbPort)' : 'Belum Terpasang';
 
     // Check phpMyAdmin
     final hasPma = Directory(config.phpMyAdminDir).existsSync();
@@ -109,13 +150,13 @@ class ServerController extends ChangeNotifier {
     final hasNginx = File(config.nginxExe).existsSync();
     components.nginx.isInstalled = hasNginx;
     components.nginx.path = hasNginx ? config.nginxExe : '';
-    components.nginx.version = hasNginx ? 'Nginx 1.26 (Port 80)' : 'Belum Terpasang';
+    components.nginx.version = hasNginx ? 'Nginx 1.26 (Port $httpPort)' : 'Belum Terpasang';
 
     // Check Apache
     final hasApache = File(config.apacheExe).existsSync();
     components.apache.isInstalled = hasApache;
     components.apache.path = hasApache ? config.apacheExe : '';
-    components.apache.version = hasApache ? 'Apache 2.4 (Port 80)' : 'Belum Terpasang';
+    components.apache.version = hasApache ? 'Apache 2.4 (Port $httpPort)' : 'Belum Terpasang';
 
     isWebRunning = WebServerEngineManager.instance.isRunning;
     isMariaDbRunning = MariaDbManager.instance.isRunning;
@@ -126,6 +167,7 @@ class ServerController extends ChangeNotifier {
 
   Future<void> toggleWebServer(bool enable) async {
     final engineMgr = WebServerEngineManager.instance;
+    final currentHttpPort = httpPort;
     if (enable) {
       if (engineMgr.activeEngine == 'nginx' && !components.nginx.isInstalled) {
         _addLog('[Peringatan] Nginx belum terpasang. Unduh Nginx terlebih dahulu di Pusat Komponen.');
@@ -139,11 +181,19 @@ class ServerController extends ChangeNotifier {
         _addLog('[Peringatan] PHP belum terpasang. Silakan install PHP terlebih dahulu.');
         return;
       }
+
+      // Pre-flight port conflict check
+      final portStatus = await PortCheckerService.instance.checkPort(currentHttpPort);
+      if (!portStatus.isFree && !engineMgr.isRunning) {
+        _addLog('[Web Server Konflik] Port $currentHttpPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
+        _addLog('[Web Server Solusi] Ubah port HTTP ke 8080 di Pengaturan Port atau matikan aplikasi tersebut.');
+      }
+
       final success = await engineMgr.start();
       isWebRunning = success;
       if (success) {
         await syncHosts();
-        _addLog('[Web Server] ${engineMgr.activeEngineDisplayName} aktif pada port 80.');
+        _addLog('[Web Server] ${engineMgr.activeEngineDisplayName} aktif pada port $currentHttpPort.');
         cleanOldSessions();
       }
     } else {
@@ -164,11 +214,20 @@ class ServerController extends ChangeNotifier {
   }
 
   Future<void> toggleMariaDb(bool enable) async {
+    final currentDbPort = mariaDbPort;
     if (enable) {
       if (!components.mariaDb.isInstalled) {
         _addLog('[Peringatan] MariaDB belum terpasang. Silakan install MariaDB terlebih dahulu.');
         return;
       }
+
+      // Pre-flight port conflict check
+      final portStatus = await PortCheckerService.instance.checkPort(currentDbPort);
+      if (!portStatus.isFree && !MariaDbManager.instance.isRunning) {
+        _addLog('[MariaDB Konflik] Port $currentDbPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
+        _addLog('[MariaDB Solusi] Ubah port MariaDB ke 3307 di Pengaturan Port atau matikan MySQL/XAMPP.');
+      }
+
       final success = await MariaDbManager.instance.start();
       isMariaDbRunning = success;
     } else {
@@ -376,9 +435,34 @@ class ServerController extends ChangeNotifier {
     }
   }
 
+  String formatSiteUrl(String domain, {bool isHttps = false}) {
+    if (isHttps) {
+      final portSuffix = httpsPort == 443 ? '' : ':$httpsPort';
+      return 'https://$domain$portSuffix';
+    } else {
+      final portSuffix = httpPort == 80 ? '' : ':$httpPort';
+      return 'http://$domain$portSuffix';
+    }
+  }
+
+  String resolveSiteUrl(String rawUrl) {
+    try {
+      final uri = Uri.parse(rawUrl);
+      if (uri.hasPort) return rawUrl;
+      if (uri.scheme == 'http' && httpPort != 80) {
+        return uri.replace(port: httpPort).toString();
+      }
+      if (uri.scheme == 'https' && httpsPort != 443) {
+        return uri.replace(port: httpsPort).toString();
+      }
+    } catch (_) {}
+    return rawUrl;
+  }
+
   Future<void> openUrl(String url) async {
     try {
-      final uri = Uri.parse(url);
+      final resolved = resolveSiteUrl(url);
+      final uri = Uri.parse(resolved);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       _addLog('[Browser Error] Gagal membuka $url: $e');
@@ -402,7 +486,8 @@ class ServerController extends ChangeNotifier {
     if (!isMariaDbRunning && components.mariaDb.isInstalled) {
       await toggleMariaDb(true);
     }
-    await openUrl('http://127.0.0.1/__phpmyadmin/');
+    final portSuffix = httpPort == 80 ? '' : ':$httpPort';
+    await openUrl('http://127.0.0.1$portSuffix/__phpmyadmin/');
   }
 
   /// Automatically clean stale PHP session files older than 7 days

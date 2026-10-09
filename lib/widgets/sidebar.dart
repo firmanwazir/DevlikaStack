@@ -22,10 +22,11 @@ class Sidebar extends StatelessWidget {
         final isWebOn = controller.isWebRunning;
         final isDbOn = controller.isMariaDbRunning;
         final isAllOn = isWebOn && isDbOn;
-        final activeSitesCount = controller.sites.where((s) => s.isEnabled).length;
+        final isTunnelOn = TunnelService.instance.isRunning;
+        final activeSitesCount = controller.sites.length;
 
         return Container(
-          width: 250,
+          width: 240,
           decoration: const BoxDecoration(
             color: AppTheme.sidebarDark,
             border: Border(
@@ -34,38 +35,28 @@ class Sidebar extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // 1. Brand Logo Header
+              // 1. Sleek Brand Header (Developer Tool Identity)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                 child: Row(
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.accentCyan, AppTheme.accentBlue],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentCyan.withOpacity(0.35),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: const Color(0xFF1E2330),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF2E364A), width: 1),
                       ),
                       child: const Center(
                         child: Icon(
-                          Icons.layers_rounded,
-                          color: Colors.white,
-                          size: 20,
+                          Icons.dns_rounded,
+                          color: AppTheme.accentIndigo,
+                          size: 18,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,9 +70,9 @@ class Sidebar extends StatelessWidget {
                                   'DevlikaStack',
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: -0.2,
                                   ),
                                 ),
@@ -90,24 +81,28 @@ class Sidebar extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.accentCyan.withOpacity(0.15),
+                                  color: AppTheme.surfaceSubtle,
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: AppTheme.accentCyan.withOpacity(0.3)),
+                                  border: Border.all(color: AppTheme.borderDark),
                                 ),
                                 child: const Text(
                                   'v2.1',
-                                  style: TextStyle(color: AppTheme.accentCyan, fontSize: 9, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 1),
-                          Text(
-                            'Portable Server Stack',
-                            overflow: TextOverflow.ellipsis,
+                          const Text(
+                            'Local Server Suite',
                             style: TextStyle(
-                              color: AppTheme.textSecondary.withOpacity(0.8),
-                              fontSize: 10,
+                              color: AppTheme.textMuted,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -119,109 +114,94 @@ class Sidebar extends StatelessWidget {
 
               const Divider(height: 1, color: AppTheme.borderDark),
 
-              // 2. FlyEnv Categorized Navigation List
+              // 2. Minimalist, Quiet Navigation (No Badge Fatigue)
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   children: [
                     // CATEGORY: OVERVIEW
-                    _buildSectionHeader('OVERVIEW'),
+                    _buildSectionHeader('WORKSPACE'),
                     _buildNavItem(
                       index: 0,
                       title: 'Dashboard',
-                      icon: Icons.dashboard_rounded,
-                      badge: isAllOn
-                          ? 'Running'
-                          : (isWebOn || isDbOn ? 'Partial' : null),
-                      badgeColor: isAllOn
+                      icon: Icons.dashboard_outlined,
+                      activeIcon: Icons.dashboard_rounded,
+                      statusColor: isAllOn
                           ? AppTheme.accentGreen
                           : (isWebOn || isDbOn ? AppTheme.accentAmber : null),
                     ),
-
-                    const SizedBox(height: 6),
-
-                    // CATEGORY: PROJECTS
-                    _buildSectionHeader('PROJECTS'),
                     _buildNavItem(
                       index: 1,
                       title: 'Virtual Hosts',
-                      icon: Icons.language_rounded,
-                      badge: '$activeSitesCount Hosts',
-                      badgeColor: AppTheme.accentCyan,
+                      icon: Icons.public_outlined,
+                      activeIcon: Icons.public,
+                      countBadge: activeSitesCount > 0 ? '$activeSitesCount' : null,
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
 
-                    // CATEGORY: SERVERS
+                    // CATEGORY: RUNTIME
                     _buildSectionHeader('SERVERS & RUNTIME'),
                     _buildNavItem(
                       index: 2,
                       title: 'Web Server',
-                      icon: Icons.dns_rounded,
-                      badge: isWebOn ? 'Port 80' : 'Stopped',
-                      badgeColor: isWebOn ? AppTheme.accentGreen : AppTheme.textMuted,
-                      isServiceRunning: isWebOn,
+                      icon: Icons.hub_outlined,
+                      activeIcon: Icons.hub_rounded,
+                      statusColor: isWebOn ? AppTheme.accentGreen : null,
                     ),
                     _buildNavItem(
                       index: 3,
                       title: 'PHP Environment',
                       icon: Icons.code_rounded,
-                      badge: 'PHP 8.2',
-                      badgeColor: AppTheme.accentPurple,
+                      activeIcon: Icons.code_rounded,
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
 
                     // CATEGORY: DATABASE
                     _buildSectionHeader('DATABASE'),
                     _buildNavItem(
                       index: 4,
                       title: 'MariaDB Server',
-                      icon: Icons.storage_rounded,
-                      badge: isDbOn ? 'Port 3306' : 'Stopped',
-                      badgeColor: isDbOn ? AppTheme.accentGreen : AppTheme.textMuted,
-                      isServiceRunning: isDbOn,
+                      icon: Icons.storage_outlined,
+                      activeIcon: Icons.storage_rounded,
+                      statusColor: isDbOn ? AppTheme.accentGreen : null,
                     ),
                     _buildNavItem(
                       index: 5,
                       title: 'SQL Importer',
-                      icon: Icons.bolt_rounded,
-                      badge: 'Dump',
-                      badgeColor: AppTheme.accentAmber,
+                      icon: Icons.bolt_outlined,
+                      activeIcon: Icons.bolt_rounded,
                     ),
                     _buildNavItem(
                       index: 6,
                       title: 'phpMyAdmin',
-                      icon: Icons.table_chart_rounded,
-                      badge: 'Web GUI',
-                      badgeColor: AppTheme.accentBlue,
+                      icon: Icons.table_view_outlined,
+                      activeIcon: Icons.table_view_rounded,
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
 
                     // CATEGORY: SYSTEM
                     _buildSectionHeader('SYSTEM & TOOLS'),
                     _buildNavItem(
                       index: 9,
                       title: 'Cloudflare Tunnel',
-                      icon: Icons.cloud_upload_rounded,
-                      badge: TunnelService.instance.isRunning ? 'Online' : 'Tunnel',
-                      badgeColor: TunnelService.instance.isRunning ? AppTheme.accentGreen : AppTheme.accentPurple,
-                      isServiceRunning: TunnelService.instance.isRunning,
+                      icon: Icons.cloud_outlined,
+                      activeIcon: Icons.cloud_rounded,
+                      statusColor: isTunnelOn ? AppTheme.accentGreen : null,
                     ),
                     _buildNavItem(
                       index: 7,
-                      title: 'Komponen Server',
-                      icon: Icons.inventory_2_rounded,
-                      badge: controller.components.isAllInstalled ? 'Ready' : 'Download',
-                      badgeColor: controller.components.isAllInstalled ? AppTheme.accentGreen : AppTheme.accentAmber,
+                      title: 'Pusat Komponen',
+                      icon: Icons.widgets_outlined,
+                      activeIcon: Icons.widgets_rounded,
                     ),
                     _buildNavItem(
                       index: 8,
                       title: 'Log Aktivitas',
-                      icon: Icons.terminal_rounded,
-                      badge: 'Live',
-                      badgeColor: AppTheme.accentCyan,
+                      icon: Icons.terminal_outlined,
+                      activeIcon: Icons.terminal_rounded,
                     ),
                   ],
                 ),
@@ -229,29 +209,22 @@ class Sidebar extends StatelessWidget {
 
               const Divider(height: 1, color: AppTheme.borderDark),
 
-              // 3. Bottom Master Control Toolbar (FlyEnv Style)
+              // 3. Compact Native Control Bar
               Container(
-                padding: const EdgeInsets.all(12),
-                color: AppTheme.bgDark.withOpacity(0.6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                color: AppTheme.surfaceSubtle,
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: 7,
+                          height: 7,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isAllOn
                                 ? AppTheme.accentGreen
-                                : (isWebOn || isDbOn ? AppTheme.accentAmber : AppTheme.accentRed),
-                            boxShadow: [
-                              if (isAllOn || isWebOn || isDbOn)
-                                BoxShadow(
-                                  color: (isAllOn ? AppTheme.accentGreen : AppTheme.accentAmber).withOpacity(0.6),
-                                  blurRadius: 6,
-                                ),
-                            ],
+                                : (isWebOn || isDbOn ? AppTheme.accentAmber : AppTheme.textMuted),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -259,7 +232,7 @@ class Sidebar extends StatelessWidget {
                           child: Text(
                             isAllOn
                                 ? 'Semua Layanan Berjalan'
-                                : (isWebOn || isDbOn ? 'Sebagian Berjalan' : 'Semua Layanan Berhenti'),
+                                : (isWebOn || isDbOn ? 'Sebagian Layanan Aktif' : 'Semua Layanan Berhenti'),
                             style: const TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11,
@@ -270,36 +243,34 @@ class Sidebar extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: ElevatedButton.icon(
+                          child: OutlinedButton.icon(
                             onPressed: () => controller.startAll(),
-                            icon: const Icon(Icons.play_arrow_rounded, size: 14),
-                            label: const Text('Start All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentGreen.withOpacity(0.18),
-                              foregroundColor: AppTheme.accentGreen,
-                              side: BorderSide(color: AppTheme.accentGreen.withOpacity(0.35)),
+                            icon: const Icon(Icons.play_arrow_rounded, size: 14, color: AppTheme.accentGreen),
+                            label: const Text('Start', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.textPrimary,
+                              backgroundColor: AppTheme.cardDark,
+                              side: const BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(vertical: 8),
-                              elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Expanded(
-                          child: ElevatedButton.icon(
+                          child: OutlinedButton.icon(
                             onPressed: () => controller.stopAll(),
-                            icon: const Icon(Icons.stop_rounded, size: 14),
-                            label: const Text('Stop All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentRed.withOpacity(0.18),
-                              foregroundColor: AppTheme.accentRed,
-                              side: BorderSide(color: AppTheme.accentRed.withOpacity(0.35)),
+                            icon: const Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
+                            label: const Text('Stop', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.textPrimary,
+                              backgroundColor: AppTheme.cardDark,
+                              side: const BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(vertical: 8),
-                              elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
                           ),
@@ -318,14 +289,14 @@ class Sidebar extends StatelessWidget {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 4),
+      padding: const EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 4),
       child: Text(
         title,
         style: const TextStyle(
           color: AppTheme.textMuted,
           fontSize: 9.5,
           fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -335,75 +306,79 @@ class Sidebar extends StatelessWidget {
     required int index,
     required String title,
     required IconData icon,
-    String? badge,
-    Color? badgeColor,
-    bool isServiceRunning = false,
+    required IconData activeIcon,
+    Color? statusColor,
+    String? countBadge,
   }) {
     final isSelected = selectedIndex == index;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1.5),
+      padding: const EdgeInsets.symmetric(vertical: 1),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           onTap: () => onItemSelected(index),
           hoverColor: AppTheme.cardHover,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
             decoration: BoxDecoration(
-              color: isSelected ? AppTheme.accentBlue.withOpacity(0.18) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+              color: isSelected ? const Color(0xFF1E2330) : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
               border: isSelected
-                  ? Border.all(color: AppTheme.accentCyan.withOpacity(0.4), width: 1)
+                  ? Border.all(color: const Color(0xFF2E374A), width: 1)
                   : null,
             ),
             child: Row(
               children: [
                 Icon(
-                  icon,
-                  size: 17,
+                  isSelected ? activeIcon : icon,
+                  size: 16,
                   color: isSelected
-                      ? AppTheme.accentCyan
-                      : (isServiceRunning ? AppTheme.accentGreen : AppTheme.textSecondary),
+                      ? AppTheme.accentIndigo
+                      : AppTheme.textSecondary,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 9),
                 Expanded(
                   child: Text(
                     title,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : AppTheme.textSecondary,
+                      color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
                       fontSize: 12.5,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),
-                if (badge != null)
+                // Clean Status Dot (For running services)
+                if (statusColor != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.only(left: 6),
                     decoration: BoxDecoration(
-                      color: (badgeColor ?? AppTheme.textSecondary).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: (badgeColor ?? AppTheme.textSecondary).withOpacity(0.3), width: 0.8),
-                    ),
-                    child: Text(
-                      badge,
-                      style: TextStyle(
-                        color: badgeColor ?? AppTheme.textSecondary,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      shape: BoxShape.circle,
+                      color: statusColor,
                     ),
                   ),
-                if (isSelected && badge == null)
+                // Quiet Count Badge (For virtual hosts count)
+                if (countBadge != null)
                   Container(
-                    width: 4,
-                    height: 12,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentCyan,
-                      borderRadius: BorderRadius.circular(2),
+                      color: AppTheme.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: AppTheme.borderDark),
+                    ),
+                    child: Text(
+                      countBadge,
+                      style: const TextStyle(
+                        fontFamily: AppTheme.monoFont,
+                        color: AppTheme.textSecondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
               ],
