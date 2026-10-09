@@ -22,9 +22,15 @@ class ServerController extends ChangeNotifier {
 
   bool isWebRunning = false;
   bool isMariaDbRunning = false;
+  bool isStartingAll = false;
+  bool isStoppingAll = false;
+  bool isWebToggling = false;
+  bool isMariaDbToggling = false;
   bool isBatchInstalling = false;
   double batchInstallProgress = 0.0;
   String batchInstallMessage = '';
+
+  bool get isOperatingAll => isStartingAll || isStoppingAll;
 
   int get httpPort => ConfigService.instance.httpPort;
   int get httpsPort => ConfigService.instance.httpsPort;
@@ -166,43 +172,51 @@ class ServerController extends ChangeNotifier {
   }
 
   Future<void> toggleWebServer(bool enable) async {
-    final engineMgr = WebServerEngineManager.instance;
-    final currentHttpPort = httpPort;
-    if (enable) {
-      if (engineMgr.activeEngine == 'nginx' && !components.nginx.isInstalled) {
-        _addLog('[Peringatan] Nginx belum terpasang. Unduh Nginx terlebih dahulu di Pusat Komponen.');
-        return;
-      }
-      if (engineMgr.activeEngine == 'apache' && !components.apache.isInstalled) {
-        _addLog('[Peringatan] Apache belum terpasang. Unduh Apache terlebih dahulu di Pusat Komponen.');
-        return;
-      }
-      if (engineMgr.activeEngine == 'builtin' && !components.php.isInstalled) {
-        _addLog('[Peringatan] PHP belum terpasang. Silakan install PHP terlebih dahulu.');
-        return;
-      }
-
-      // Pre-flight port conflict check
-      final portStatus = await PortCheckerService.instance.checkPort(currentHttpPort);
-      if (!portStatus.isFree && !engineMgr.isRunning) {
-        _addLog('[Web Server Konflik] Port $currentHttpPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
-        _addLog('[Web Server Solusi] Ubah port HTTP ke 8080 di Pengaturan Port atau matikan aplikasi tersebut.');
-      }
-
-      final success = await engineMgr.start();
-      isWebRunning = success;
-      if (success) {
-        await syncHosts();
-        _addLog('[Web Server] ${engineMgr.activeEngineDisplayName} aktif pada port $currentHttpPort.');
-        cleanOldSessions();
-      }
-    } else {
-      await engineMgr.stop();
-      isWebRunning = false;
-      _addLog('[Web Server] Web server dihentikan.');
-    }
-    TrayService.instance.updateTrayMenu();
+    if (isWebToggling) return;
+    isWebToggling = true;
     notifyListeners();
+
+    try {
+      final engineMgr = WebServerEngineManager.instance;
+      final currentHttpPort = httpPort;
+      if (enable) {
+        if (engineMgr.activeEngine == 'nginx' && !components.nginx.isInstalled) {
+          _addLog('[Peringatan] Nginx belum terpasang. Unduh Nginx terlebih dahulu di Pusat Komponen.');
+          return;
+        }
+        if (engineMgr.activeEngine == 'apache' && !components.apache.isInstalled) {
+          _addLog('[Peringatan] Apache belum terpasang. Unduh Apache terlebih dahulu di Pusat Komponen.');
+          return;
+        }
+        if (engineMgr.activeEngine == 'builtin' && !components.php.isInstalled) {
+          _addLog('[Peringatan] PHP belum terpasang. Silakan install PHP terlebih dahulu.');
+          return;
+        }
+
+        // Pre-flight port conflict check
+        final portStatus = await PortCheckerService.instance.checkPort(currentHttpPort);
+        if (!portStatus.isFree && !engineMgr.isRunning) {
+          _addLog('[Web Server Konflik] Port $currentHttpPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
+          _addLog('[Web Server Solusi] Ubah port HTTP ke 8080 di Pengaturan Port atau matikan aplikasi tersebut.');
+        }
+
+        final success = await engineMgr.start();
+        isWebRunning = success;
+        if (success) {
+          await syncHosts();
+          _addLog('[Web Server] ${engineMgr.activeEngineDisplayName} aktif pada port $currentHttpPort.');
+          cleanOldSessions();
+        }
+      } else {
+        await engineMgr.stop();
+        isWebRunning = false;
+        _addLog('[Web Server] Web server dihentikan.');
+      }
+      TrayService.instance.updateTrayMenu();
+    } finally {
+      isWebToggling = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> switchWebEngine(String engine) async {
@@ -214,50 +228,76 @@ class ServerController extends ChangeNotifier {
   }
 
   Future<void> toggleMariaDb(bool enable) async {
-    final currentDbPort = mariaDbPort;
-    if (enable) {
-      if (!components.mariaDb.isInstalled) {
-        _addLog('[Peringatan] MariaDB belum terpasang. Silakan install MariaDB terlebih dahulu.');
-        return;
-      }
-
-      // Pre-flight port conflict check
-      final portStatus = await PortCheckerService.instance.checkPort(currentDbPort);
-      if (!portStatus.isFree && !MariaDbManager.instance.isRunning) {
-        _addLog('[MariaDB Konflik] Port $currentDbPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
-        _addLog('[MariaDB Solusi] Ubah port MariaDB ke 3307 di Pengaturan Port atau matikan MySQL/XAMPP.');
-      }
-
-      final success = await MariaDbManager.instance.start();
-      isMariaDbRunning = success;
-    } else {
-      if (DbImporterService.instance.isImporting) {
-        DbImporterService.instance.cancelImport();
-      }
-      await MariaDbManager.instance.stop();
-      isMariaDbRunning = false;
-    }
-    TrayService.instance.updateTrayMenu();
+    if (isMariaDbToggling) return;
+    isMariaDbToggling = true;
     notifyListeners();
+
+    try {
+      final currentDbPort = mariaDbPort;
+      if (enable) {
+        if (!components.mariaDb.isInstalled) {
+          _addLog('[Peringatan] MariaDB belum terpasang. Silakan install MariaDB terlebih dahulu.');
+          return;
+        }
+
+        // Pre-flight port conflict check
+        final portStatus = await PortCheckerService.instance.checkPort(currentDbPort);
+        if (!portStatus.isFree && !MariaDbManager.instance.isRunning) {
+          _addLog('[MariaDB Konflik] Port $currentDbPort sedang digunakan oleh ${portStatus.friendlyName ?? portStatus.processName ?? "aplikasi lain"} (PID: ${portStatus.pid ?? "Unknown"}).');
+          _addLog('[MariaDB Solusi] Ubah port MariaDB ke 3307 di Pengaturan Port atau matikan MySQL/XAMPP.');
+        }
+
+        final success = await MariaDbManager.instance.start();
+        isMariaDbRunning = success;
+      } else {
+        if (DbImporterService.instance.isImporting) {
+          DbImporterService.instance.cancelImport();
+        }
+        await MariaDbManager.instance.stop();
+        isMariaDbRunning = false;
+      }
+      TrayService.instance.updateTrayMenu();
+    } finally {
+      isMariaDbToggling = false;
+      notifyListeners();
+    }
   }
 
   Future<void> startAll() async {
-    if (!components.php.isInstalled && !components.mariaDb.isInstalled) {
-      _addLog('[Peringatan] Komponen belum terpasang. Install komponen terlebih dahulu.');
-      return;
-    }
+    if (isStartingAll || isStoppingAll) return;
+    isStartingAll = true;
+    notifyListeners();
 
-    if (components.php.isInstalled) {
-      await toggleWebServer(true);
-    }
-    if (components.mariaDb.isInstalled) {
-      await toggleMariaDb(true);
+    try {
+      if (!components.php.isInstalled && !components.mariaDb.isInstalled) {
+        _addLog('[Peringatan] Komponen belum terpasang. Install komponen terlebih dahulu.');
+        return;
+      }
+
+      if (components.php.isInstalled) {
+        await toggleWebServer(true);
+      }
+      if (components.mariaDb.isInstalled) {
+        await toggleMariaDb(true);
+      }
+    } finally {
+      isStartingAll = false;
+      notifyListeners();
     }
   }
 
   Future<void> stopAll() async {
-    await toggleWebServer(false);
-    await toggleMariaDb(false);
+    if (isStartingAll || isStoppingAll) return;
+    isStoppingAll = true;
+    notifyListeners();
+
+    try {
+      await toggleWebServer(false);
+      await toggleMariaDb(false);
+    } finally {
+      isStoppingAll = false;
+      notifyListeners();
+    }
   }
 
   Future<void> addSite(SiteModel site) async {

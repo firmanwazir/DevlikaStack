@@ -11,6 +11,8 @@ A lightweight, portable local web server and database development environment fo
 * ⚡ **Visual PHP Extension Switch & php.ini Manager**: Toggle PHP extensions on/off with visual switches and instant FastCGI hot-reload (no server restart required). Includes 1-click presets for **Laravel**, **WordPress**, and **Minimal**, automated Zend OPcache directive synchronization, and cross-version GD variant resolution (PHP 7.4 vs 8.x).
 * 🚀 **0ms In-Memory Extensions Search & Multi-Sorting**: Filter extensions instantly with zero disk I/O stutter. Supports sorting by **Aktif di Atas (Active first)**, **Nama (A - Z)**, **Nama (Z - A)**, and **Kategori**, plus status filters (**Hanya Aktif** / **Hanya Nonaktif**) and responsive `Wrap` category chips.
 * 🛡️ **Custom Port Conflict Management (Anti-Bentrok XAMPP)**: Automatically detects occupied ports (such as port 80 or 3306 used by XAMPP) and suggests free alternative socket ports (e.g. 8080, 3307) with full settings persistence.
+* 🔒 **Single-Instance Protection (Anti-Bentrok Instance)**: Native Win32 Mutex and Dart loopback guard prevent opening duplicate application instances, cleanly restoring and focusing the active window without process or database contention.
+* 💫 **Interactive Loading Feedback**: Instant lightweight loading spinners and dynamic status updates on "Start All", "Stop All", and individual service toggles to prevent double-clicks and reassure users.
 * 🎨 **Modern Obsidian/Zinc UI Overhaul**: Sleek dark aesthetic across all views, cards, modals, and logs.
 * 🧪 **Comprehensive Test Coverage**: 53 unit tests covering extensions parser, port conflict manager, Cloudflare tunnels, virtual hosts, and reverse proxy routing.
 

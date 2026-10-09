@@ -103,26 +103,46 @@ class HeaderBar extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // Master Action Button
+              // Master Action Button with lightweight animation & busy indicator
               ElevatedButton.icon(
-                onPressed: () {
-                  if (isAllRunning) {
-                    controller.stopAll();
-                  } else {
-                    controller.startAll();
-                  }
-                },
-                icon: Icon(
-                  isAllRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  size: 15,
-                  color: Colors.white,
-                ),
+                onPressed: controller.isOperatingAll
+                    ? null
+                    : () {
+                        if (isAllRunning) {
+                          controller.stopAll();
+                        } else {
+                          controller.startAll();
+                        }
+                      },
+                icon: controller.isOperatingAll
+                    ? const SizedBox(
+                        width: 13,
+                        height: 13,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        isAllRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                        size: 15,
+                        color: Colors.white,
+                      ),
                 label: Text(
-                  isAllRunning ? 'Stop All' : 'Start All',
+                  controller.isStartingAll
+                      ? 'Memulai...'
+                      : controller.isStoppingAll
+                          ? 'Menghentikan...'
+                          : (isAllRunning ? 'Stop All' : 'Start All'),
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isAllRunning ? const Color(0xFFBE123C) : const Color(0xFF047857),
+                  backgroundColor: controller.isStoppingAll || (isAllRunning && !controller.isStartingAll)
+                      ? const Color(0xFFBE123C)
+                      : const Color(0xFF047857),
+                  disabledBackgroundColor: controller.isStoppingAll || isAllRunning
+                      ? const Color(0xFFBE123C).withOpacity(0.7)
+                      : const Color(0xFF047857).withOpacity(0.7),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   elevation: 0,

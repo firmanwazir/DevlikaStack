@@ -248,14 +248,26 @@ class DashboardView extends StatelessWidget {
                   ),
                 ],
               ),
-              Transform.scale(
-                scale: 0.8,
-                child: Switch(
-                  value: isRunning,
-                  onChanged: isInstalled ? (val) => controller.toggleWebServer(val) : null,
-                  activeColor: AppTheme.accentGreen,
-                ),
-              ),
+              controller.isWebToggling
+                  ? const SizedBox(
+                      width: 36,
+                      height: 24,
+                      child: Center(
+                        child: SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGreen),
+                        ),
+                      ),
+                    )
+                  : Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: isRunning,
+                        onChanged: isInstalled ? (val) => controller.toggleWebServer(val) : null,
+                        activeColor: AppTheme.accentGreen,
+                      ),
+                    ),
             ],
           ),
           const SizedBox(height: 12),
@@ -373,14 +385,26 @@ class DashboardView extends StatelessWidget {
                   ),
                 ],
               ),
-              Transform.scale(
-                scale: 0.8,
-                child: Switch(
-                  value: isRunning,
-                  onChanged: isInstalled ? (val) => controller.toggleMariaDb(val) : null,
-                  activeColor: AppTheme.accentGreen,
-                ),
-              ),
+              controller.isMariaDbToggling
+                  ? const SizedBox(
+                      width: 36,
+                      height: 24,
+                      child: Center(
+                        child: SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGreen),
+                        ),
+                      ),
+                    )
+                  : Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: isRunning,
+                        onChanged: isInstalled ? (val) => controller.toggleMariaDb(val) : null,
+                        activeColor: AppTheme.accentGreen,
+                      ),
+                    ),
             ],
           ),
           const SizedBox(height: 12),

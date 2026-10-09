@@ -24,6 +24,20 @@ void main() async {
   if (!kIsWeb &&
       !Platform.environment.containsKey('FLUTTER_TEST') &&
       (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    // Secondary single-instance guard
+    if (Platform.isWindows) {
+      try {
+        await ServerSocket.bind(InternetAddress.loopbackIPv4, 48999);
+      } on SocketException catch (_) {
+        try {
+          await windowManager.ensureInitialized();
+          await windowManager.show();
+          await windowManager.focus();
+        } catch (_) {}
+        exit(0);
+      }
+    }
+
     try {
       await windowManager.ensureInitialized();
       await windowManager.setSize(const Size(1280, 720));

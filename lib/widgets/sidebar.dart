@@ -222,17 +222,23 @@ class Sidebar extends StatelessWidget {
                           height: 7,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isAllOn
-                                ? AppTheme.accentGreen
-                                : (isWebOn || isDbOn ? AppTheme.accentAmber : AppTheme.textMuted),
+                            color: controller.isOperatingAll
+                                ? AppTheme.accentCyan
+                                : (isAllOn
+                                    ? AppTheme.accentGreen
+                                    : (isWebOn || isDbOn ? AppTheme.accentAmber : AppTheme.textMuted)),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            isAllOn
-                                ? 'Semua Layanan Berjalan'
-                                : (isWebOn || isDbOn ? 'Sebagian Layanan Aktif' : 'Semua Layanan Berhenti'),
+                            controller.isStartingAll
+                                ? 'Sedang Memulai Layanan...'
+                                : controller.isStoppingAll
+                                    ? 'Sedang Menghentikan Layanan...'
+                                    : (isAllOn
+                                        ? 'Semua Layanan Berjalan'
+                                        : (isWebOn || isDbOn ? 'Sebagian Layanan Aktif' : 'Semua Layanan Berhenti')),
                             style: const TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11,
@@ -248,9 +254,18 @@ class Sidebar extends StatelessWidget {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => controller.startAll(),
-                            icon: const Icon(Icons.play_arrow_rounded, size: 14, color: AppTheme.accentGreen),
-                            label: const Text('Start', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            onPressed: controller.isOperatingAll ? null : () => controller.startAll(),
+                            icon: controller.isStartingAll
+                                ? const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGreen),
+                                  )
+                                : const Icon(Icons.play_arrow_rounded, size: 14, color: AppTheme.accentGreen),
+                            label: Text(
+                              controller.isStartingAll ? 'Memulai...' : 'Start',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.cardDark,
@@ -263,9 +278,18 @@ class Sidebar extends StatelessWidget {
                         const SizedBox(width: 6),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => controller.stopAll(),
-                            icon: const Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
-                            label: const Text('Stop', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            onPressed: controller.isOperatingAll ? null : () => controller.stopAll(),
+                            icon: controller.isStoppingAll
+                                ? const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentRed),
+                                  )
+                                : const Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
+                            label: Text(
+                              controller.isStoppingAll ? 'Menghentikan...' : 'Stop',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.cardDark,
