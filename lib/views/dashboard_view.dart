@@ -635,123 +635,121 @@ class DashboardView extends StatelessWidget {
       );
     }
 
+    final sites = controller.sites;
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.cardDark,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.borderDark),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.sites.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: AppTheme.borderDark),
-        itemBuilder: (context, index) {
-          final site = controller.sites[index];
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                // Domain & SSL Badge
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceSubtle,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: AppTheme.borderDark),
+      child: Column(
+        children: [
+          for (int index = 0; index < sites.length; index++) ...[
+            if (index > 0) const Divider(height: 1, color: AppTheme.borderDark),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  // Domain & SSL Badge
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: AppTheme.borderDark),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.public, color: AppTheme.textSecondary, size: 15),
+                    ),
                   ),
-                  child: const Center(
-                    child: Icon(Icons.public, color: AppTheme.textSecondary, size: 15),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            site.domain,
-                            style: const TextStyle(
-                              fontFamily: AppTheme.monoFont,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppTheme.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceSubtle,
-                              borderRadius: BorderRadius.circular(3),
-                              border: Border.all(color: AppTheme.borderDark),
-                            ),
-                            child: Text(
-                              site.type == 'proxy' ? 'Proxy :${site.proxyPort}' : site.phpVersion,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              sites[index].domain,
                               style: const TextStyle(
                                 fontFamily: AppTheme.monoFont,
-                                fontSize: 9.5,
-                                color: AppTheme.textSecondary,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        site.type == 'proxy' ? 'Reverse Proxy ke port ${site.proxyPort}' : site.rootPath,
-                        style: const TextStyle(
-                          fontFamily: AppTheme.monoFont,
-                          fontSize: 11,
-                          color: AppTheme.textMuted,
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceSubtle,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(color: AppTheme.borderDark),
+                              ),
+                              child: Text(
+                                sites[index].type == 'proxy' ? 'Proxy :${sites[index].proxyPort}' : sites[index].phpVersion,
+                                style: const TextStyle(
+                                  fontFamily: AppTheme.monoFont,
+                                  fontSize: 9.5,
+                                  color: AppTheme.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          sites[index].type == 'proxy' ? 'Reverse Proxy ke port ${sites[index].proxyPort}' : sites[index].rootPath,
+                          style: const TextStyle(
+                            fontFamily: AppTheme.monoFont,
+                            fontSize: 11,
+                            color: AppTheme.textMuted,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Fast Action Buttons (Clean & Quiet)
-                IconButton(
-                  icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
-                  tooltip: 'Buka HTTPS (https://${site.domain})',
-                  splashRadius: 16,
-                  onPressed: () => controller.openUrl('https://${site.domain}'),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
-                  tooltip: 'Buka HTTP (http://${site.domain})',
-                  splashRadius: 16,
-                  onPressed: () => controller.openUrl('http://${site.domain}'),
-                ),
-                if (site.type != 'proxy')
+                  // Fast Action Buttons (Clean & Quiet)
                   IconButton(
-                    icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
-                    tooltip: 'Buka Folder Dokumen',
+                    icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
+                    tooltip: 'Buka HTTPS (https://${sites[index].domain})',
                     splashRadius: 16,
-                    onPressed: () => controller.openFolder(site.rootPath),
+                    onPressed: () => controller.openUrl('https://${sites[index].domain}'),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.tune_rounded, size: 15, color: AppTheme.textSecondary),
-                  tooltip: 'Pengaturan Virtual Host',
-                  splashRadius: 16,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => AddHostDialog(siteToEdit: site),
-                    );
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
+                    tooltip: 'Buka HTTP (http://${sites[index].domain})',
+                    splashRadius: 16,
+                    onPressed: () => controller.openUrl('http://${sites[index].domain}'),
+                  ),
+                  if (sites[index].type != 'proxy')
+                    IconButton(
+                      icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
+                      tooltip: 'Buka Folder Dokumen',
+                      splashRadius: 16,
+                      onPressed: () => controller.openFolder(sites[index].rootPath),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.tune_rounded, size: 15, color: AppTheme.textSecondary),
+                    tooltip: 'Pengaturan Virtual Host',
+                    splashRadius: 16,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddHostDialog(siteToEdit: sites[index]),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          );
-        },
+          ],
+        ],
       ),
     );
   }

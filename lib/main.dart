@@ -17,17 +17,18 @@ import 'views/logs_view.dart';
 import 'views/tunnel_view.dart';
 import 'services/tray_service.dart';
 
+ServerSocket? _singleInstanceSocket;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Instant desktop window initialization (Zero delay, no transparent composition lag)
+  // Desktop single-instance guard and window setup
   if (!kIsWeb &&
       !Platform.environment.containsKey('FLUTTER_TEST') &&
       (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-    // Secondary single-instance guard
     if (Platform.isWindows) {
       try {
-        await ServerSocket.bind(InternetAddress.loopbackIPv4, 48999);
+        _singleInstanceSocket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 48999);
       } on SocketException catch (_) {
         try {
           await windowManager.ensureInitialized();
@@ -40,11 +41,18 @@ void main() async {
 
     try {
       await windowManager.ensureInitialized();
-      await windowManager.setSize(const Size(1280, 720));
-      await windowManager.setMinimumSize(const Size(960, 600));
-      await windowManager.center();
-      await windowManager.show();
-      await windowManager.focus();
+      const windowOptions = WindowOptions(
+        size: Size(1280, 720),
+        minimumSize: Size(960, 600),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.normal,
+      );
+      windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
     } catch (_) {}
   }
 

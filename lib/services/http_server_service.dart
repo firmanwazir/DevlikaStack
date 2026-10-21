@@ -520,6 +520,9 @@ class HttpServerService {
 
     var subPath = request.uri.path.replaceFirst('/__phpmyadmin', '');
     if (subPath.isEmpty || subPath == '/') subPath = '/index.php';
+    if (subPath.contains('?')) {
+      subPath = subPath.split('?')[0];
+    }
 
     final relativeSafe = subPath.startsWith('/') ? subPath.substring(1) : subPath;
     final normalizedPmaDir = p.normalize(phpMyAdminDir);
@@ -533,7 +536,7 @@ class HttpServerService {
     }
     final targetFile = File(targetPath);
 
-    if (targetFile.existsSync() && !targetPath.endsWith('.php')) {
+    if (_cachedFileExists(targetPath) && !targetPath.endsWith('.php')) {
       await _serveStaticFile(request, targetFile);
       return;
     }

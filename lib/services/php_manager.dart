@@ -73,7 +73,7 @@ class PhpManager {
     _optimizedDirs.clear();
   }
 
-  List<PhpVersionModel> getVersions({bool forceReload = false}) {
+  List<PhpVersionModel> getVersions({bool forceReload = false, bool detectProcessVersions = false}) {
     if (!forceReload && _cachedVersions != null) {
       return _cachedVersions!;
     }
@@ -96,13 +96,7 @@ class PhpManager {
       }
 
       if (isInstalled && !_optimizedDirs.contains(dir)) {
-        _optimizedDirs.add(dir);
-        final ini = p.join(dir, 'php.ini');
-        if (!File(ini).existsSync() || !File(ini).readAsStringSync().contains('opcache.memory_consumption=256')) {
-          try {
-            optimizePhpIni(dir);
-          } catch (_) {}
-        }
+        _scheduleBackgroundOptimization(dir);
       }
 
       results.add(PhpVersionModel(
@@ -110,7 +104,7 @@ class PhpManager {
         name: def.name,
         dirPath: dir,
         isInstalled: isInstalled,
-        exactVersion: isInstalled ? _detectExactVersion(exe, def.exactVersion) : def.exactVersion,
+        exactVersion: isInstalled ? _detectExactVersion(exe, def.exactVersion, runProcess: detectProcessVersions) : def.exactVersion,
         downloadUrl: def.downloadUrl,
       ));
     }
@@ -130,12 +124,15 @@ class PhpManager {
                 final key = match.group(1)!;
                 if (!knownKeys.contains(key)) {
                   knownKeys.add(key);
+                  if (!_optimizedDirs.contains(entity.path)) {
+                    _scheduleBackgroundOptimization(entity.path);
+                  }
                   results.add(PhpVersionModel(
                     versionKey: key,
                     name: 'PHP $key',
                     dirPath: entity.path,
                     isInstalled: true,
-                    exactVersion: _detectExactVersion(exe, key),
+                    exactVersion: _detectExactVersion(exe, key, runProcess: detectProcessVersions),
                     downloadUrl: '',
                   ));
                 }
@@ -150,22 +147,36 @@ class PhpManager {
     return results;
   }
 
-  String _detectExactVersion(String exePath, String fallbackVersion) {
+  void _scheduleBackgroundOptimization(String dir) {
+    if (_optimizedDirs.contains(dir)) return;
+    _optimizedDirs.add(dir);
+    Future.microtask(() {
+      try {
+        final ini = p.join(dir, 'php.ini');
+        if (!File(ini).existsSync() || !File(ini).readAsStringSync().contains('opcache.memory_consumption=256')) {
+          optimizePhpIni(dir);
+        }
+      } catch (_) {}
+    });
+  }
+
+  String _detectExactVersion(String exePath, String fallbackVersion, {bool runProcess = false}) {
     if (_versionCache.containsKey(exePath)) {
       return _versionCache[exePath]!;
     }
 
     _versionCache[exePath] = fallbackVersion;
-    // Asynchronously detect in background without stalling the main UI thread
-    Process.run(exePath, ['-v'], runInShell: false).then((res) {
-      if (res.exitCode == 0) {
-        final line = res.stdout.toString().split('\n').first;
-        final match = RegExp(r'PHP\s+([0-9\.]+)').firstMatch(line);
-        if (match != null) {
-          _versionCache[exePath] = match.group(1)!;
+    if (runProcess) {
+      Process.run(exePath, ['-v'], runInShell: false).then((res) {
+        if (res.exitCode == 0) {
+          final line = res.stdout.toString().split('\n').first;
+          final match = RegExp(r'PHP\s+([0-9\.]+)').firstMatch(line);
+          if (match != null) {
+            _versionCache[exePath] = match.group(1)!;
+          }
         }
-      }
-    }).catchError((_) {});
+      }).catchError((_) {});
+    }
 
     return fallbackVersion;
   }

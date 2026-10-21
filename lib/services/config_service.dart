@@ -36,8 +36,18 @@ class ConfigService {
 
   String get phpBaseDir => p.join(binDir, 'php');
 
+  PhpVersionModel? _cachedDefaultPhp;
+
+  void invalidatePhpCache() {
+    _cachedDefaultPhp = null;
+    PhpManager.instance.clearCache();
+  }
+
   PhpVersionModel getPhpForSite(String? versionKey) {
     final normalized = normalizePhpVersionKey(versionKey);
+    if (normalized == 'default' && _cachedDefaultPhp != null) {
+      return _cachedDefaultPhp!;
+    }
     final list = PhpManager.instance.getVersions();
 
     // 1. If exact or normalized version requested
@@ -88,14 +98,18 @@ class ConfigService {
     final installed = list.where((v) => v.isInstalled || File(p.join(v.dirPath, 'php.exe')).existsSync()).toList();
     if (installed.isNotEmpty) {
       for (var v in installed) {
-        if (v.versionKey == '8.2') return v;
+        if (v.versionKey == '8.2') {
+          _cachedDefaultPhp = v;
+          return v;
+        }
       }
+      _cachedDefaultPhp = installed.first;
       return installed.first;
     }
 
     // 3. Fallback to unversioned bin/php if present directly
     if (File(p.join(phpBaseDir, 'php.exe')).existsSync()) {
-      return PhpVersionModel(
+      final fallback = PhpVersionModel(
         versionKey: 'default',
         name: 'PHP Default (Portable)',
         dirPath: phpBaseDir,
@@ -103,9 +117,13 @@ class ConfigService {
         exactVersion: 'Portable',
         downloadUrl: '',
       );
+      _cachedDefaultPhp = fallback;
+      return fallback;
     }
 
-    return list.first;
+    final fallback = list.first;
+    _cachedDefaultPhp = fallback;
+    return fallback;
   }
 
   String get phpDir => getPhpForSite('default').dirPath;
@@ -323,8 +341,6 @@ class ConfigService {
     if (_directoriesEnsured && !force && Directory(storageDir).existsSync()) return;
     try {
       Directory(binDir).createSync(recursive: true);
-      Directory(phpDir).createSync(recursive: true);
-      Directory(mariaDbDir).createSync(recursive: true);
       Directory(toolsDir).createSync(recursive: true);
       Directory(storageDir).createSync(recursive: true);
       Directory(mariaDbDataDir).createSync(recursive: true);
