@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'config_service.dart';
 import 'php_manager.dart';
 
@@ -332,7 +333,15 @@ class VersionCheckerService extends ChangeNotifier {
     for (final k in allKeys) {
       final installed = installedMap[k];
       final isInstalled = installed?.isInstalled ?? false;
-      final installedVer = isInstalled ? installed?.exactVersion : null;
+      var installedVer = isInstalled ? installed?.exactVersion : null;
+
+      if (isInstalled && installed != null) {
+        final exe = p.join(installed.dirPath, 'php.exe');
+        if (File(exe).existsSync()) {
+          installedVer = await PhpManager.instance.detectExactVersionAsync(exe, installed.exactVersion);
+        }
+      }
+
       final latestVer = latestMap[k] ?? (installedVer ?? k);
       final downloadUrl = downloadUrlMap[k] ?? (installed?.downloadUrl ?? '');
       final isUpstream = latestMap.containsKey(k);
@@ -369,6 +378,13 @@ class VersionCheckerService extends ChangeNotifier {
     try {
       final lParts = latest.split('.').map((e) => int.tryParse(e) ?? 0).toList();
       final iParts = installed.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+      // If installed only has major.minor (e.g. "8.5") and latest is from the exact same major.minor series
+      if (iParts.length < 3 && lParts.length >= 2 && iParts.length >= 2) {
+        if (lParts[0] == iParts[0] && lParts[1] == iParts[1]) {
+          return false;
+        }
+      }
 
       for (int i = 0; i < 3; i++) {
         final l = i < lParts.length ? lParts[i] : 0;

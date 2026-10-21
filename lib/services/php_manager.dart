@@ -167,17 +167,29 @@ class PhpManager {
 
     _versionCache[exePath] = fallbackVersion;
     if (runProcess) {
-      Process.run(exePath, ['-v'], runInShell: false).then((res) {
-        if (res.exitCode == 0) {
-          final line = res.stdout.toString().split('\n').first;
-          final match = RegExp(r'PHP\s+([0-9\.]+)').firstMatch(line);
-          if (match != null) {
-            _versionCache[exePath] = match.group(1)!;
-          }
-        }
-      }).catchError((_) {});
+      detectExactVersionAsync(exePath, fallbackVersion);
     }
 
+    return fallbackVersion;
+  }
+
+  Future<String> detectExactVersionAsync(String exePath, String fallbackVersion) async {
+    if (_versionCache.containsKey(exePath) && _versionCache[exePath] != fallbackVersion) {
+      return _versionCache[exePath]!;
+    }
+
+    try {
+      final res = await Process.run(exePath, ['-v'], runInShell: false);
+      final out = '${res.stdout}\n${res.stderr}';
+      final match = RegExp(r'PHP\s+([0-9]+\.[0-9]+\.[0-9]+[a-zA-Z0-9\.\-]*)').firstMatch(out);
+      if (match != null) {
+        final ver = match.group(1)!;
+        _versionCache[exePath] = ver;
+        return ver;
+      }
+    } catch (_) {}
+
+    _versionCache[exePath] = fallbackVersion;
     return fallbackVersion;
   }
 
@@ -190,16 +202,22 @@ class PhpManager {
     final targetDir = p.join(phpBase, 'php-$versionKey');
     Directory(targetDir).createSync(recursive: true);
 
-    // 1. Look for local sources first
-    final localCandidates = _getLocalCandidates(versionKey);
-    for (var src in localCandidates) {
-      if (File(p.join(src, 'php.exe')).existsSync() && File(p.join(src, 'php-cgi.exe')).existsSync()) {
-        onProgress('Menyalin PHP $versionKey dari sistem lokal...', 0.4);
-        await _copyDirectory(Directory(src), Directory(targetDir));
-        optimizePhpIni(targetDir);
-        clearCache();
-        onProgress('PHP $versionKey siap digunakan!', 1.0);
-        return;
+    // 1. Look for local sources first ONLY if no custom download URL is specified
+    if (customDownloadUrl == null || customDownloadUrl.isEmpty) {
+      final localCandidates = _getLocalCandidates(versionKey);
+      for (var src in localCandidates) {
+        if (File(p.join(src, 'php.exe')).existsSync() && File(p.join(src, 'php-cgi.exe')).existsSync()) {
+          onProgress('Menyalin PHP $versionKey dari sistem lokal...', 0.4);
+          await _copyDirectory(Directory(src), Directory(targetDir));
+          optimizePhpIni(targetDir);
+          clearCache();
+          final newExe = p.join(targetDir, 'php.exe');
+          if (File(newExe).existsSync()) {
+            await detectExactVersionAsync(newExe, versionKey);
+          }
+          onProgress('PHP $versionKey siap digunakan!', 1.0);
+          return;
+        }
       }
     }
 
@@ -283,6 +301,10 @@ class PhpManager {
 
       optimizePhpIni(targetDir);
       clearCache();
+      final newExe = p.join(targetDir, 'php.exe');
+      if (File(newExe).existsSync()) {
+        await detectExactVersionAsync(newExe, versionKey);
+      }
       onProgress('PHP $versionKey berhasil dipasang!', 1.0);
     } catch (e) {
       onProgress('Gagal mengunduh PHP $versionKey: $e', 0.0);
@@ -450,6 +472,23 @@ class PhpManager {
     content = content.replaceAll('extension=php_pdo_pgsql.dll', ';extension=php_pdo_pgsql.dll');
     content = content.replaceAll('extension=php_pgsql.dll', ';extension=php_pgsql.dll');
     content = content.replaceAll(RegExp(r'^error_log\s*=.*$', multiLine: true), ';error_log = "logs/php_error.log"');
+
+    // If php_opcache.dll does not exist in ext, comment zend_extension=opcache
+    // to avoid PHP loading an incompatible opcache from system PATH
+    if (!availableDlls.contains('php_opcache.dll')) {
+      content = content.replaceAll(RegExp(r'^\s*zend_extension\s*=\s*opcache\b', multiLine: true), ';zend_extension=opcache');
+    }
+
+    // Deduplicate active extension directives to prevent PHP "Module already loaded" warnings
+    final seenExts = <String>{};
+    content = content.replaceAllMapped(RegExp(r'^\s*extension\s*=\s*([a-zA-Z0-9_\.]+)\s*$', multiLine: true), (m) {
+      final name = m.group(1)!.toLowerCase().replaceAll('php_', '').replaceAll('.dll', '');
+      if (seenExts.contains(name)) {
+        return ';extension=${m.group(1)}';
+      }
+      seenExts.add(name);
+      return m.group(0)!;
+    });
 
     // Ensure portable session and upload dirs (use Windows default temp)
     content = content.replaceAll(RegExp(r'^session\.save_path\s*=.*$', multiLine: true), ';session.save_path = ""');

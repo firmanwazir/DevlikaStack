@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/php_extension_model.dart';
+import '../services/config_service.dart';
 import '../services/http_server_service.dart';
 import '../services/php_manager.dart';
 import '../services/server_controller.dart';
@@ -244,15 +245,19 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
       );
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
-        setState(() {});
-        _loadCurrentIniValues();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('PHP $versionKey berhasil dipasang.'),
-            backgroundColor: AppTheme.cardDark,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ConfigService.instance.invalidatePhpCache();
+        await VersionCheckerService.instance.checkPhp(checkOnline: false);
+        if (mounted) {
+          setState(() {});
+          _loadCurrentIniValues();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('PHP $versionKey berhasil dipasang.'),
+              backgroundColor: AppTheme.cardDark,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -295,10 +300,12 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
 
     if (confirm == true) {
       await PhpManager.instance.uninstallVersion(versionKey);
-      setState(() {
-        _initSelectedVersion();
-      });
+      ConfigService.instance.invalidatePhpCache();
+      await VersionCheckerService.instance.checkPhp(checkOnline: false);
       if (mounted) {
+        setState(() {
+          _initSelectedVersion();
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('PHP $versionKey berhasil dihapus.'),
@@ -479,7 +486,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                 final installed = installedMap[key];
                 final updateInfo = updateMap[key];
                 final isInstalled = installed?.isInstalled ?? false;
-                final exactInstalled = isInstalled ? installed?.exactVersion : null;
+                final exactInstalled = isInstalled ? (updateInfo?.installedVersion ?? installed?.exactVersion) : null;
                 final latestVer = updateInfo?.latestVersion ?? (exactInstalled ?? key);
                 final hasUpdate = isInstalled && (updateInfo?.hasUpdate ?? false);
                 final downloadUrl = updateInfo?.downloadUrl ?? (installed?.downloadUrl ?? '');
