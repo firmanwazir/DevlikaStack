@@ -65,7 +65,8 @@ class VhostConfigGenerator {
     final ssl = SslService.instance;
     await ssl.ensureCertificate(sites: sites);
     final hasSsl = ssl.hasCertificate;
-    final sslCert = _toForwardSlash(ssl.certPath);
+    final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
+    final sslCert = _toForwardSlash(certFile);
     final sslKey = _toForwardSlash(ssl.keyPath);
 
     // 1. Ensure mime.types and fastcgi_params exist
@@ -340,7 +341,8 @@ server {
     final ssl = SslService.instance;
     await ssl.ensureCertificate(sites: sites);
     final hasSsl = ssl.hasCertificate;
-    final sslCert = _toForwardSlash(ssl.certPath);
+    final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
+    final sslCert = _toForwardSlash(certFile);
     final sslKey = _toForwardSlash(ssl.keyPath);
 
     for (var site in sites) {

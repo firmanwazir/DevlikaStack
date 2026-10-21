@@ -117,10 +117,14 @@ class HttpServerService {
       // Start HTTPS Server with SSL
       try {
         final ssl = SslService.instance;
-        await ssl.ensureCertificate();
+        final sites = ConfigService.instance.loadSites();
+        await ssl.ensureCertificate(sites: sites);
         if (ssl.hasCertificate) {
+          final certToUse = File(ssl.fullChainCertPath).existsSync()
+              ? ssl.fullChainCertPath
+              : ssl.certPath;
           final sec = SecurityContext()
-            ..useCertificateChain(ssl.certPath)
+            ..useCertificateChain(certToUse)
             ..usePrivateKey(ssl.keyPath);
           _secureServer = await HttpServer.bindSecure(
             InternetAddress.loopbackIPv4,

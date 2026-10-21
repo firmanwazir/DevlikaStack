@@ -20,6 +20,19 @@ class WebServerView extends StatefulWidget {
 
 class _WebServerViewState extends State<WebServerView> {
   bool _isSyncingHosts = false;
+  bool _isSslTrusted = false;
+  bool _isTrustingSsl = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSslTrustStatus();
+  }
+
+  Future<void> _checkSslTrustStatus() async {
+    final trusted = await SslService.instance.isCertificateTrusted();
+    if (mounted) setState(() => _isSslTrusted = trusted);
+  }
 
   Future<void> _syncHosts() async {
     setState(() => _isSyncingHosts = true);
@@ -299,25 +312,54 @@ class _WebServerViewState extends State<WebServerView> {
                       children: [
                         if (isRunning) ...[
                           OutlinedButton.icon(
-                            onPressed: () async {
-                              final ok = await SslService.instance.installCertificateToWindowsStore();
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(ok
-                                        ? 'Sertifikat SSL berhasil dipasang ke Windows Trusted Store!'
-                                        : 'Pemasangan sertifikat dibatalkan atau selesai.'),
-                                    backgroundColor: AppTheme.cardDark,
+                            onPressed: _isTrustingSsl
+                                ? null
+                                : () async {
+                                    setState(() => _isTrustingSsl = true);
+                                    final ok = await SslService.instance.installCertificateToWindowsStore();
+                                    if (mounted) {
+                                      setState(() {
+                                        _isTrustingSsl = false;
+                                        _isSslTrusted = ok;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(ok
+                                              ? 'Sertifikat SSL Devlika berhasil dipasang! Silakan restart browser (Chrome/Edge) agar sertifikat aktif.'
+                                              : 'Pemasangan sertifikat dibatalkan atau selesai.'),
+                                          backgroundColor: AppTheme.cardDark,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  },
+                            icon: _isTrustingSsl
+                                ? const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.textPrimary),
+                                  )
+                                : Icon(
+                                    _isSslTrusted ? Icons.verified_rounded : Icons.shield_outlined,
+                                    size: 14,
+                                    color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
                                   ),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.verified_user_rounded, size: 14),
-                            label: const Text('Trust SSL', style: TextStyle(fontSize: 11.5)),
+                            label: Text(
+                              _isTrustingSsl
+                                  ? 'Memasang...'
+                                  : (_isSslTrusted ? 'SSL Trusted' : 'Trust SSL'),
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
+                                fontWeight: _isSslTrusted ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.surfaceSubtle,
-                              side: const BorderSide(color: AppTheme.borderDark),
+                              side: BorderSide(
+                                color: _isSslTrusted ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
+                              ),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                             ),
                           ),
