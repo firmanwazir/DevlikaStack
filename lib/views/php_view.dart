@@ -168,13 +168,20 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
 
   Future<void> _checkPhpUpdates() async {
     setState(() => _isCheckingPhpUpdates = true);
-    await VersionCheckerService.instance.checkPhp(checkOnline: true);
+    final results = await VersionCheckerService.instance.checkPhp(checkOnline: true);
     if (mounted) {
       setState(() => _isCheckingPhpUpdates = false);
+      final error = VersionCheckerService.instance.errorMessage;
+      final upstream = results.where((u) => u.isUpstreamDiscovered).map((u) => u.versionKey).toList();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pemeriksaan versi PHP selesai.'),
-          backgroundColor: AppTheme.cardDark,
+        SnackBar(
+          content: Text(
+            error != null
+                ? error
+                : 'Pemeriksaan php.net selesai! Terdeteksi versi resmi: ${upstream.join(", ")}.',
+          ),
+          backgroundColor: error != null ? AppTheme.accentRed : AppTheme.cardDark,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -454,7 +461,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.refresh_rounded, size: 14),
-                      label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Cek php.net', style: const TextStyle(fontSize: 11.5)),
+                      label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Cek Pembaruan', style: const TextStyle(fontSize: 11.5)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textPrimary,
                         backgroundColor: AppTheme.surfaceSubtle,

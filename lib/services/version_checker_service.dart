@@ -173,12 +173,27 @@ class VersionCheckerService extends ChangeNotifier {
     // 1. Query live upstream release information from php.net official API if checkOnline requested
     if (checkOnline) {
       try {
-        final res = await http.get(
-          Uri.parse('https://www.php.net/releases/index.php?json'),
-          headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
-        ).timeout(const Duration(seconds: 5));
+        final endpoints = [
+          'https://www.php.net/releases/index.php?json',
+          'https://my.php.net/releases/index.php?json',
+          'https://secure.php.net/releases/index.php?json',
+        ];
 
-        if (res.statusCode == 200) {
+        http.Response? res;
+        for (final ep in endpoints) {
+          try {
+            final r = await http.get(
+              Uri.parse(ep),
+              headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
+            ).timeout(const Duration(seconds: 10));
+            if (r.statusCode == 200) {
+              res = r;
+              break;
+            }
+          } catch (_) {}
+        }
+
+        if (res != null && res.statusCode == 200) {
           final data = jsonDecode(res.body) as Map<String, dynamic>;
           final versionsToQuery = <String>{};
 
@@ -186,11 +201,21 @@ class VersionCheckerService extends ChangeNotifier {
           for (final majorKey in data.keys) {
             final entry = data[majorKey];
             if (entry is Map<String, dynamic>) {
+              // Ignore ancient museum versions (like PHP 3, 4, 5)
+              if (entry['museum'] == true) continue;
+              final majorNum = int.tryParse(majorKey) ?? 0;
+              if (majorNum < 7) continue;
+
               // Extract supported minor versions array (e.g. ["8.2", "8.3", "8.4", "8.5"])
               final supp = entry['supported_versions'];
               if (supp is List) {
                 for (final v in supp) {
-                  versionsToQuery.add(v.toString());
+                  final s = v.toString();
+                  versionsToQuery.add(s);
+                  // Ensure supported series is added immediately
+                  if (!latestMap.containsKey(s)) {
+                    latestMap[s] = s;
+                  }
                 }
               }
               // Extract current latest version of this major branch
@@ -215,7 +240,7 @@ class VersionCheckerService extends ChangeNotifier {
               final vRes = await http.get(
                 Uri.parse('https://www.php.net/releases/index.php?json&version=$series'),
                 headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
-              ).timeout(const Duration(seconds: 4));
+              ).timeout(const Duration(seconds: 8));
               if (vRes.statusCode == 200) {
                 final vData = jsonDecode(vRes.body) as Map<String, dynamic>;
                 final exact = vData['version']?.toString();
@@ -229,8 +254,12 @@ class VersionCheckerService extends ChangeNotifier {
               }
             } catch (_) {}
           }));
+        } else {
+          _errorMessage = 'Tidak dapat menghubungi server php.net. Periksa koneksi internet Anda.';
         }
-      } catch (_) {}
+      } catch (e) {
+        _errorMessage = 'Gagal memeriksa php.net: $e';
+      }
 
       // Also try windows.php.net if available to get exact binary zip paths
       try {
