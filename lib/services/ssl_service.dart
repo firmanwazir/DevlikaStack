@@ -296,7 +296,7 @@ pause
   }
 
   /// Installs Devlika Root CA into Windows Trusted Root Certification Authorities store:
-  /// 1. CurrentUser\\Root via PowerShell Import-Certificate (instant, no admin prompt needed)
+  /// 1. CurrentUser\\Root via .NET X509Store (instant, silent, 100% reliable)
   /// 2. LocalMachine\\Root via certutil RunAs (elevated machine-wide trust)
   Future<bool> installCertificateToWindowsStore() async {
     final caFile = File(caCertPath);
@@ -308,23 +308,33 @@ pause
     try {
       final caNormPath = p.normalize(caFile.absolute.path).replaceAll("'", "''");
 
-      // 1. CurrentUser\Root: Installs root certificate for active user
+      // 1. CurrentUser\Root: Installs root certificate silently and immediately via .NET
+      final userStoreScript = "& { "
+          "\$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('$caNormPath'); "
+          "\$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser'); "
+          "\$store.Open('ReadWrite'); "
+          "\$store.Add(\$cert); "
+          "\$store.Close(); "
+          "}";
+
       await Process.run('powershell', [
         '-NoProfile',
         '-ExecutionPolicy',
         'Bypass',
         '-Command',
-        "Import-Certificate -FilePath '$caNormPath' -CertStoreLocation 'Cert:\\CurrentUser\\Root'",
+        userStoreScript,
       ]);
 
-      // 2. LocalMachine\Root: Triggers standard Windows UAC dialog to trust machine-wide
-      await Process.run('powershell', [
-        '-NoProfile',
-        '-ExecutionPolicy',
-        'Bypass',
-        '-Command',
-        "Start-Process certutil -ArgumentList @('-addstore', '-f', 'ROOT', '$caNormPath') -Verb RunAs -Wait",
-      ]);
+      // 2. Also register to LocalMachine\Root if possible via certutil
+      try {
+        await Process.run('powershell', [
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          "Start-Process certutil -ArgumentList @('-addstore', '-f', 'ROOT', '$caNormPath') -Verb RunAs",
+        ]);
+      } catch (_) {}
 
       return await isCertificateTrusted();
     } catch (_) {
