@@ -1,4 +1,4 @@
-# DevlikaStack v2.2
+# DevlikaStack v0.1.0
 
 A lightweight, portable local web server and database development environment for Windows, built with Flutter. DevlikaStack bundles a multi-engine web server (Native HTTP, Nginx, Apache), a multi-version PHP FastCGI daemon pool, visual PHP extension management, MariaDB, phpMyAdmin, custom port conflict prevention, and 1-click Cloudflare Quick Tunnel into a single portable package without requiring Windows registry modifications or heavy virtualization layers.
 
@@ -6,7 +6,7 @@ A lightweight, portable local web server and database development environment fo
 
 ---
 
-## What's New in v2.2
+## What's New in v0.1.0
 
 * ⚡ **Visual PHP Extension Switch & php.ini Manager**: Toggle PHP extensions on/off with visual switches and instant FastCGI hot-reload (no server restart required). Includes 1-click presets for **Laravel**, **WordPress**, and **Minimal**, automated Zend OPcache directive synchronization, and cross-version GD variant resolution (PHP 7.4 vs 8.x).
 * 🚀 **0ms In-Memory Extensions Search & Multi-Sorting**: Filter extensions instantly with zero disk I/O stutter. Supports sorting by **Aktif di Atas (Active first)**, **Nama (A - Z)**, **Nama (Z - A)**, and **Kategori**, plus status filters (**Hanya Aktif** / **Hanya Nonaktif**) and responsive `Wrap` category chips.
@@ -99,7 +99,7 @@ Unlike traditional local stacks that enforce a single global PHP version:
 
 ## Download & Installation
 
-1. Download **`DevlikaStack-v2.2-windows-x64.zip`** from [GitHub Releases](https://github.com/firmanwazir/DevlikaStack/releases/tag/v2.2).
+1. Download **`DevlikaStack-v0.1.0-windows-x64.zip`** from [GitHub Releases](https://github.com/firmanwazir/DevlikaStack/releases/tag/v0.1.0).
 2. Extract the archive into your preferred directory (e.g., `D:\DevlikaStack-Portable\`).
 3. Run **`DevlikaStack.exe`** as Administrator.
 

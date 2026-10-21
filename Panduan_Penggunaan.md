@@ -1,4 +1,4 @@
-# ⚡ Panduan Penggunaan DevlikaStack v2.2
+# ⚡ Panduan Penggunaan DevlikaStack v0.1.0
 
 Panduan lengkap cara menggunakan **DevlikaStack** — aplikasi server lokal portabel berbasis Flutter Desktop untuk pengembangan web di Windows.
 
@@ -8,7 +8,7 @@ Panduan lengkap cara menggunakan **DevlikaStack** — aplikasi server lokal port
 
 ### Pertama Kali (Portable)
 
-1. Unduh file `DevlikaStack-v2.2-windows-x64.zip` dari [Halaman Release GitHub](https://github.com/firmanwazir/DevlikaStack/releases/tag/v2.2).
+1. Unduh file `DevlikaStack-v0.1.0-windows-x64.zip` dari [Halaman Release GitHub](https://github.com/firmanwazir/DevlikaStack/releases/tag/v0.1.0).
 2. Ekstrak ke lokasi mana saja (misalnya `D:\DevlikaStack-Portable\`).
 3. Klik dua kali file **`DevlikaStack.exe`**.
 4. Aplikasi akan otomatis meminta izin **Administrator** (diperlukan untuk menulis file `hosts` Windows dan menjalankan server di port 80).
@@ -194,7 +194,7 @@ DevlikaStack-Portable/
 ## ❓ FAQ (Pertanyaan Umum)
 
 **Q: Apakah saya bisa menjalankan DevlikaStack bersamaan dengan XAMPP?**  
-A: **Bisa!** DevlikaStack v2.2 memiliki fitur *Custom Port Conflict Management*. Cukup buka pengaturan port di header atas dan ubah port Web Server ke `8080` dan MariaDB ke `3307`. Keduanya bisa berjalan berdampingan tanpa saling bertabrakan.
+A: **Bisa!** DevlikaStack v0.1.0 memiliki fitur *Custom Port Conflict Management*. Cukup buka pengaturan port di header atas dan ubah port Web Server ke `8080` dan MariaDB ke `3307`. Keduanya bisa berjalan berdampingan tanpa saling bertabrakan.
 
 **Q: Apakah data database saya aman jika aplikasi di-update?**  
 A: **Sangat aman.** Database tersimpan di `bin/storage/mariadb/`. Saat mengupdate versi baru, Anda hanya perlu mengganti file executable dan folder `data/` hasil ekstrak rilis, tanpa menyentuh folder `bin/` yang berisi database Anda.

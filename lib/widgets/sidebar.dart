@@ -86,7 +86,7 @@ class Sidebar extends StatelessWidget {
                                   border: Border.all(color: AppTheme.borderDark),
                                 ),
                                 child: const Text(
-                                  'v2.1',
+                                  'v0.1.0',
                                   style: TextStyle(
                                     color: AppTheme.textSecondary,
                                     fontSize: 9,
