@@ -51,7 +51,13 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
 
     _tabController.addListener(() {
       if (_tabController.index == 0 && VersionCheckerService.instance.phpUpdates.isEmpty) {
-        VersionCheckerService.instance.checkPhp(checkOnline: false);
+        VersionCheckerService.instance.checkPhp(checkOnline: true);
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (VersionCheckerService.instance.phpUpdates.isEmpty) {
+        VersionCheckerService.instance.checkPhp(checkOnline: true);
       }
     });
   }
@@ -175,7 +181,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future<void> _installPhpVersion(String versionKey) async {
+  Future<void> _installPhpVersion(String versionKey, {String? downloadUrl}) async {
     final statusNotifier = ValueNotifier<String>('Memulai instalasi PHP $versionKey...');
     final progressNotifier = ValueNotifier<double>(0.1);
 
@@ -223,6 +229,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
     try {
       await PhpManager.instance.installVersion(
         versionKey,
+        customDownloadUrl: downloadUrl,
         onProgress: (msg, prog) {
           statusNotifier.value = msg;
           progressNotifier.value = prog;
@@ -365,229 +372,304 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
 
   // TAB 1: VERSIONS & UPDATE DETECTION
   Widget _buildVersionsTab() {
-    final versions = PhpManager.instance.getVersions();
-    final updates = VersionCheckerService.instance.phpUpdates;
+    return ListenableBuilder(
+      listenable: VersionCheckerService.instance,
+      builder: (context, _) {
+        final installedList = PhpManager.instance.getVersions();
+        final installedMap = {for (var v in installedList) v.versionKey: v};
+        final updates = VersionCheckerService.instance.phpUpdates;
+        final updateMap = {for (var u in updates) u.versionKey: u};
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Module with Update Checker
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.cardDark,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppTheme.borderDark),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceSubtle,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderDark),
-                  ),
-                  child: const Icon(Icons.code_rounded, color: AppTheme.textPrimary, size: 18),
+        final allKeys = <String>{
+          ...installedMap.keys,
+          ...updateMap.keys,
+        }.toList();
+
+        // Sort versions in natural semver order (e.g. 7.4 < 8.1 < 8.2 < 8.3 < 8.4 < 8.5)
+        allKeys.sort((a, b) {
+          final aParts = a.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+          final bParts = b.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+          for (int i = 0; i < 2; i++) {
+            final aVal = i < aParts.length ? aParts[i] : 0;
+            final bVal = i < bParts.length ? bParts[i] : 0;
+            if (aVal != bVal) return aVal.compareTo(bVal);
+          }
+          return a.compareTo(b);
+        });
+
+        final lastChecked = VersionCheckerService.instance.lastCheckedTime;
+        final lastCheckedStr = lastChecked != null
+            ? '${lastChecked.hour.toString().padLeft(2, '0')}:${lastChecked.minute.toString().padLeft(2, '0')}:${lastChecked.second.toString().padLeft(2, '0')}'
+            : null;
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Module with Update Checker
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.cardDark,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.borderDark),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Manajemen Multi-Versi PHP',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppTheme.borderDark),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Jalankan berbagai versi PHP secara berdampingan. Masing-masing virtual host dapat dipetakan ke versi berbeda.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _isCheckingPhpUpdates ? null : _checkPhpUpdates,
-                  icon: _isCheckingPhpUpdates
-                      ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.refresh_rounded, size: 14),
-                  label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Cek Pembaruan', style: const TextStyle(fontSize: 11.5)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.textPrimary,
-                    backgroundColor: AppTheme.surfaceSubtle,
-                    side: const BorderSide(color: AppTheme.borderDark),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Version Cards List
-          ...versions.map((ver) {
-            final updateInfo = updates.where((u) => u.versionKey == ver.versionKey).firstOrNull;
-            final isInstalled = ver.isInstalled;
-            final hasUpdate = updateInfo?.hasUpdate ?? false;
-            final latestVer = updateInfo?.latestVersion ?? ver.exactVersion;
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isInstalled ? AppTheme.borderDark : AppTheme.borderSubtle,
-                ),
-              ),
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceSubtle,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppTheme.borderDark),
+                      child: const Icon(Icons.code_rounded, color: AppTheme.textPrimary, size: 18),
                     ),
-                    child: Center(
-                      child: Text(
-                        ver.versionKey,
-                        style: const TextStyle(
-                          fontFamily: AppTheme.monoFont,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.5,
-                          color: AppTheme.textPrimary,
-                        ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Manajemen Multi-Versi PHP',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            lastCheckedStr != null
+                                ? 'Pemeriksaan otomatis terhubung langsung ke sumber resmi php.net (Dicek: $lastCheckedStr).'
+                                : 'Pemeriksaan otomatis terhubung langsung ke sumber resmi php.net secara real-time.',
+                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              ver.name,
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: isInstalled ? AppTheme.surfaceSubtle : AppTheme.surfaceSubtle,
-                                borderRadius: BorderRadius.circular(3),
-                                border: Border.all(
-                                  color: isInstalled ? AppTheme.accentGreen.withOpacity(0.3) : AppTheme.borderDark,
-                                ),
-                              ),
-                              child: Text(
-                                isInstalled ? 'v${ver.exactVersion}' : 'Tersedia v$latestVer',
-                                style: TextStyle(
-                                  fontFamily: AppTheme.monoFont,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: isInstalled ? AppTheme.accentGreen : AppTheme.textMuted,
-                                ),
-                              ),
-                            ),
-                            if (hasUpdate) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.surfaceSubtle,
-                                  borderRadius: BorderRadius.circular(3),
-                                  border: Border.all(color: AppTheme.accentCyan.withOpacity(0.3)),
-                                ),
-                                child: Text(
-                                  'Update: v$latestVer',
-                                  style: const TextStyle(
-                                    fontFamily: AppTheme.monoFont,
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.accentCyan,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isInstalled ? ver.dirPath : 'Belum terpasang di sistem local.',
-                          style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Actions
-                  if (isInstalled) ...[
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedVersionKey = ver.versionKey;
-                          _loadCurrentIniValues();
-                          _tabController.animateTo(1);
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.textPrimary,
-                        backgroundColor: AppTheme.surfaceSubtle,
-                        side: const BorderSide(color: AppTheme.borderDark),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text('php.ini', style: TextStyle(fontSize: 11)),
-                    ),
-                    const SizedBox(width: 6),
-                    IconButton(
-                      icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
-                      tooltip: 'Buka Folder PHP',
-                      splashRadius: 15,
-                      onPressed: () => ServerController.instance.openFolder(ver.dirPath),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, size: 15, color: AppTheme.accentRed),
-                      tooltip: 'Hapus PHP ${ver.versionKey}',
-                      splashRadius: 15,
-                      onPressed: () => _uninstallPhpVersion(ver.versionKey),
-                    ),
-                  ] else ...[
                     OutlinedButton.icon(
-                      onPressed: () => _installPhpVersion(ver.versionKey),
-                      icon: const Icon(Icons.download_rounded, size: 13),
-                      label: const Text('Pasang', style: TextStyle(fontSize: 11)),
+                      onPressed: _isCheckingPhpUpdates ? null : _checkPhpUpdates,
+                      icon: _isCheckingPhpUpdates
+                          ? const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.refresh_rounded, size: 14),
+                      label: Text(_isCheckingPhpUpdates ? 'Memeriksa...' : 'Cek php.net', style: const TextStyle(fontSize: 11.5)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textPrimary,
                         backgroundColor: AppTheme.surfaceSubtle,
                         side: const BorderSide(color: AppTheme.borderDark),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            );
-          }),
-        ],
-      ),
+              const SizedBox(height: 14),
+
+              // Version Cards List
+              ...allKeys.map((key) {
+                final installed = installedMap[key];
+                final updateInfo = updateMap[key];
+                final isInstalled = installed?.isInstalled ?? false;
+                final exactInstalled = isInstalled ? installed?.exactVersion : null;
+                final latestVer = updateInfo?.latestVersion ?? (exactInstalled ?? key);
+                final hasUpdate = isInstalled && (updateInfo?.hasUpdate ?? false);
+                final downloadUrl = updateInfo?.downloadUrl ?? (installed?.downloadUrl ?? '');
+                final name = installed?.name ?? (updateInfo?.name ?? 'PHP $key');
+                final dirPath = installed?.dirPath ?? '';
+                final releaseDate = updateInfo?.releaseDate;
+                final isUpstreamDiscovered = updateInfo?.isUpstreamDiscovered ?? false;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardDark,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isInstalled ? AppTheme.borderDark : AppTheme.borderSubtle,
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceSubtle,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppTheme.borderDark),
+                        ),
+                        child: Center(
+                          child: Text(
+                            key,
+                            style: const TextStyle(
+                              fontFamily: AppTheme.monoFont,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11.5,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: isInstalled ? AppTheme.surfaceSubtle : AppTheme.surfaceSubtle,
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(
+                                      color: isInstalled ? AppTheme.accentGreen.withOpacity(0.3) : AppTheme.borderDark,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isInstalled ? 'v$exactInstalled' : 'Tersedia Upstream: v$latestVer',
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.monoFont,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: isInstalled ? AppTheme.accentGreen : AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ),
+                                if (hasUpdate) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceSubtle,
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: AppTheme.accentCyan.withOpacity(0.3)),
+                                    ),
+                                    child: Text(
+                                      'Update: v$latestVer',
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.monoFont,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.accentCyan,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                if (isUpstreamDiscovered) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceSubtle,
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: Colors.white12),
+                                    ),
+                                    child: Text(
+                                      releaseDate != null ? 'php.net ($releaseDate)' : 'Resmi php.net',
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.monoFont,
+                                        fontSize: 9,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              isInstalled
+                                  ? dirPath
+                                  : 'Belum terpasang di lokal. Klik Pasang untuk unduh otomatis dari php.net resmi.',
+                              style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Actions
+                      if (isInstalled) ...[
+                        if (hasUpdate) ...[
+                          OutlinedButton.icon(
+                            onPressed: () => _installPhpVersion(key, downloadUrl: downloadUrl),
+                            icon: const Icon(Icons.system_update_alt_rounded, size: 12, color: AppTheme.accentCyan),
+                            label: const Text('Update', style: TextStyle(fontSize: 10.5, color: AppTheme.accentCyan)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.accentCyan,
+                              backgroundColor: AppTheme.surfaceSubtle,
+                              side: BorderSide(color: AppTheme.accentCyan.withOpacity(0.4)),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedVersionKey = key;
+                              _loadCurrentIniValues();
+                              _tabController.animateTo(1);
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textPrimary,
+                            backgroundColor: AppTheme.surfaceSubtle,
+                            side: const BorderSide(color: AppTheme.borderDark),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('php.ini', style: TextStyle(fontSize: 11)),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
+                          tooltip: 'Buka Folder PHP',
+                          splashRadius: 15,
+                          onPressed: () => ServerController.instance.openFolder(dirPath),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, size: 15, color: AppTheme.accentRed),
+                          tooltip: 'Hapus PHP $key',
+                          splashRadius: 15,
+                          onPressed: () => _uninstallPhpVersion(key),
+                        ),
+                      ] else ...[
+                        OutlinedButton.icon(
+                          onPressed: () => _installPhpVersion(key, downloadUrl: downloadUrl),
+                          icon: const Icon(Icons.download_rounded, size: 13),
+                          label: const Text('Pasang', style: TextStyle(fontSize: 11)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textPrimary,
+                            backgroundColor: AppTheme.surfaceSubtle,
+                            side: const BorderSide(color: AppTheme.borderDark),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 

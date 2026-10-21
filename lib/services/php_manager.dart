@@ -54,11 +54,11 @@ class PhpManager {
     ),
     const PhpVersionModel(
       versionKey: '8.3',
-      name: 'PHP 8.3 (Terbaru)',
+      name: 'PHP 8.3 (Laravel 11 / Stabil)',
       dirPath: '',
       isInstalled: false,
-      exactVersion: '8.3.6',
-      downloadUrl: 'https://windows.php.net/downloads/releases/archives/php-8.3.6-nts-Win32-vs16-x64.zip',
+      exactVersion: '8.3.17',
+      downloadUrl: 'https://windows.php.net/downloads/releases/php-8.3.17-nts-Win32-vs16-x64.zip',
     ),
   ];
 
@@ -115,6 +115,37 @@ class PhpManager {
       ));
     }
 
+    // Automatically detect any custom PHP version directories dropped into bin/php/
+    final knownKeys = results.map((r) => r.versionKey).toSet();
+    final baseDir = Directory(phpBase);
+    if (baseDir.existsSync()) {
+      try {
+        for (final entity in baseDir.listSync()) {
+          if (entity is Directory) {
+            final dirName = p.basename(entity.path);
+            final exe = p.join(entity.path, 'php.exe');
+            if (File(exe).existsSync()) {
+              final match = RegExp(r'^php-?(\d+\.\d+)').firstMatch(dirName);
+              if (match != null) {
+                final key = match.group(1)!;
+                if (!knownKeys.contains(key)) {
+                  knownKeys.add(key);
+                  results.add(PhpVersionModel(
+                    versionKey: key,
+                    name: 'PHP $key',
+                    dirPath: entity.path,
+                    isInstalled: true,
+                    exactVersion: _detectExactVersion(exe, key),
+                    downloadUrl: '',
+                  ));
+                }
+              }
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
     _cachedVersions = results;
     return results;
   }
@@ -141,6 +172,7 @@ class PhpManager {
 
   Future<void> installVersion(
     String versionKey, {
+    String? customDownloadUrl,
     required Function(String msg, double progress) onProgress,
   }) async {
     final phpBase = ConfigService.instance.phpBaseDir;
@@ -161,26 +193,56 @@ class PhpManager {
     }
 
     // 2. Download from official windows.php.net
-    final def = _definitions.firstWhere((d) => d.versionKey == versionKey);
+    final def = _definitions.where((d) => d.versionKey == versionKey).firstOrNull;
+    final candidateUrls = <String>[];
+    if (customDownloadUrl != null && customDownloadUrl.isNotEmpty) {
+      candidateUrls.add(customDownloadUrl);
+      if (customDownloadUrl.contains('/releases/') && !customDownloadUrl.contains('/archives/')) {
+        candidateUrls.add(customDownloadUrl.replaceAll('/releases/', '/releases/archives/'));
+      } else if (customDownloadUrl.contains('/releases/archives/')) {
+        candidateUrls.add(customDownloadUrl.replaceAll('/releases/archives/', '/releases/'));
+      }
+    }
+    if (def?.downloadUrl != null && def!.downloadUrl.isNotEmpty) {
+      if (!candidateUrls.contains(def.downloadUrl)) {
+        candidateUrls.add(def.downloadUrl);
+      }
+    }
+
+    if (candidateUrls.isEmpty) {
+      throw Exception('URL unduhan untuk PHP $versionKey tidak tersedia.');
+    }
+
     final tempZip = p.join(ConfigService.instance.binDir, 'temp_php_$versionKey.zip');
     onProgress('Mengunduh PHP $versionKey resmi...', 0.1);
 
     final client = http.Client();
     IOSink? sink;
+    http.StreamedResponse? activeResponse;
+
+    for (final url in candidateUrls) {
+      try {
+        final request = http.Request('GET', Uri.parse(url));
+        request.headers['User-Agent'] = 'DevlikaStack-Updater/1.0';
+        final response = await client.send(request);
+        if (response.statusCode == 200) {
+          activeResponse = response;
+          break;
+        }
+      } catch (_) {}
+    }
+
+    if (activeResponse == null) {
+      throw HttpException('Gagal mengunduh PHP $versionKey dari sumber resmi.');
+    }
+
     try {
-      final request = http.Request('GET', Uri.parse(def.downloadUrl));
-      final response = await client.send(request);
-
-      if (response.statusCode != 200) {
-        throw HttpException('Gagal mengunduh PHP $versionKey (HTTP ${response.statusCode}).');
-      }
-
-      final totalBytes = response.contentLength ?? 30000000;
+      final totalBytes = activeResponse.contentLength ?? 30000000;
       var receivedBytes = 0;
       final file = File(tempZip);
       sink = file.openWrite();
 
-      await response.stream.listen((chunk) {
+      await activeResponse.stream.listen((chunk) {
         receivedBytes += chunk.length;
         sink?.add(chunk);
         onProgress('Mengunduh PHP $versionKey (${(receivedBytes / totalBytes * 100).toInt()}%)...', (receivedBytes / totalBytes) * 0.7);
@@ -277,6 +339,18 @@ class PhpManager {
     } else if (versionKey == '8.3') {
       return [
         r'D:\WebServer\laragon\bin\php\php-8.3.16-Win32-vs16-x64',
+        r'D:\WebServer\laragon\bin\php\php-8.3.17-nts-Win32-vs16-x64',
+      ];
+    } else if (versionKey == '8.4') {
+      return [
+        r'D:\WebServer\laragon\bin\php\php-8.4.4-Win32-vs17-x64',
+        r'D:\WebServer\laragon\bin\php\php-8.4.0-Win32-vs17-x64',
+        r'C:\PhpWebStudy-Data\app\php-8.4',
+      ];
+    } else if (versionKey == '8.5') {
+      return [
+        r'D:\WebServer\laragon\bin\php\php-8.5.0-Win32-vs17-x64',
+        r'C:\PhpWebStudy-Data\app\php-8.5',
       ];
     }
     return [];

@@ -28,6 +28,8 @@ class ConfigService {
     if (clean.startsWith('8.1')) return '8.1';
     if (clean.startsWith('8.2')) return '8.2';
     if (clean.startsWith('8.3')) return '8.3';
+    if (clean.startsWith('8.4')) return '8.4';
+    if (clean.startsWith('8.5')) return '8.5';
     if (clean.startsWith('8')) return '8.2';
     return key.trim();
   }

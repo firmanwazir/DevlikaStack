@@ -31,6 +31,8 @@ class PhpUpdateInfo {
   final bool isInstalled;
   final bool hasUpdate;
   final String downloadUrl;
+  final String? releaseDate;
+  final bool isUpstreamDiscovered;
 
   const PhpUpdateInfo({
     required this.versionKey,
@@ -40,6 +42,8 @@ class PhpUpdateInfo {
     required this.isInstalled,
     required this.hasUpdate,
     required this.downloadUrl,
+    this.releaseDate,
+    this.isUpstreamDiscovered = false,
   });
 }
 
@@ -157,41 +161,92 @@ class VersionCheckerService extends ChangeNotifier {
   }
 
   /// Detect & Check PHP Versions
+  /// Detect & Check PHP Versions directly from official php.net live release feeds
   Future<List<PhpUpdateInfo>> checkPhp({bool checkOnline = false}) async {
     final installedList = PhpManager.instance.getVersions();
 
-    // Default latest known versions
-    final Map<String, String> latestMap = {
-      '7.4': '7.4.33',
-      '8.1': '8.1.30',
-      '8.2': '8.2.29',
-      '8.3': '8.3.17',
-      '8.4': '8.4.4',
-    };
+    // Map of seriesKey (e.g. "8.5") to exact version (e.g. "8.5.11")
+    final Map<String, String> latestMap = {};
+    final Map<String, String> downloadUrlMap = {};
+    final Map<String, String> dateMap = {};
 
-    final Map<String, String> downloadUrlMap = {
-      '7.4': 'https://windows.php.net/downloads/releases/archives/php-7.4.33-nts-Win32-vc15-x64.zip',
-      '8.1': 'https://windows.php.net/downloads/releases/archives/php-8.1.30-nts-Win32-vs16-x64.zip',
-      '8.2': 'https://windows.php.net/downloads/releases/archives/php-8.2.29-nts-Win32-vs16-x64.zip',
-      '8.3': 'https://windows.php.net/downloads/releases/php-8.3.17-nts-Win32-vs16-x64.zip',
-      '8.4': 'https://windows.php.net/downloads/releases/php-8.4.4-nts-Win32-vs17-x64.zip',
-    };
-
-    // Query windows.php.net releases JSON only if checkOnline requested
+    // 1. Query live upstream release information from php.net official API if checkOnline requested
     if (checkOnline) {
       try {
         final res = await http.get(
-          Uri.parse('https://windows.php.net/downloads/releases/releases.json'),
-        ).timeout(const Duration(seconds: 4));
+          Uri.parse('https://www.php.net/releases/index.php?json'),
+          headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
+        ).timeout(const Duration(seconds: 5));
 
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body) as Map<String, dynamic>;
-          data.forEach((seriesKey, details) {
+          final versionsToQuery = <String>{};
+
+          // Automatically extract all major releases (e.g. "8", "7", "9")
+          for (final majorKey in data.keys) {
+            final entry = data[majorKey];
+            if (entry is Map<String, dynamic>) {
+              // Extract supported minor versions array (e.g. ["8.2", "8.3", "8.4", "8.5"])
+              final supp = entry['supported_versions'];
+              if (supp is List) {
+                for (final v in supp) {
+                  versionsToQuery.add(v.toString());
+                }
+              }
+              // Extract current latest version of this major branch
+              final cur = entry['version']?.toString();
+              final curDate = entry['date']?.toString();
+              if (cur != null && cur.isNotEmpty) {
+                final parts = cur.split('.');
+                if (parts.length >= 2) {
+                  final series = '${parts[0]}.${parts[1]}';
+                  latestMap[series] = cur;
+                  if (curDate != null && curDate.isNotEmpty) {
+                    dateMap[series] = curDate;
+                  }
+                }
+              }
+            }
+          }
+
+          // Concurrently fetch exact version for each supported series from official API
+          await Future.wait(versionsToQuery.map((series) async {
+            try {
+              final vRes = await http.get(
+                Uri.parse('https://www.php.net/releases/index.php?json&version=$series'),
+                headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
+              ).timeout(const Duration(seconds: 4));
+              if (vRes.statusCode == 200) {
+                final vData = jsonDecode(vRes.body) as Map<String, dynamic>;
+                final exact = vData['version']?.toString();
+                final vDate = vData['date']?.toString();
+                if (exact != null && exact.isNotEmpty) {
+                  latestMap[series] = exact;
+                }
+                if (vDate != null && vDate.isNotEmpty) {
+                  dateMap[series] = vDate;
+                }
+              }
+            } catch (_) {}
+          }));
+        }
+      } catch (_) {}
+
+      // Also try windows.php.net if available to get exact binary zip paths
+      try {
+        final winRes = await http.get(
+          Uri.parse('https://windows.php.net/downloads/releases/releases.json'),
+          headers: {'User-Agent': 'DevlikaStack-Updater/1.0'},
+        ).timeout(const Duration(seconds: 3));
+
+        if (winRes.statusCode == 200) {
+          final winData = jsonDecode(winRes.body) as Map<String, dynamic>;
+          winData.forEach((seriesKey, details) {
             if (details is Map && details.containsKey('version')) {
               final ver = details['version'].toString();
               latestMap[seriesKey] = ver;
 
-              for (var buildKey in ['nts-vs17-x64', 'nts-vs16-x64']) {
+              for (var buildKey in ['nts-vs17-x64', 'nts-vs16-x64', 'nts-vc15-x64']) {
                 if (details.containsKey(buildKey) && details[buildKey] is Map) {
                   final zipInfo = details[buildKey]['zip'];
                   if (zipInfo is Map && zipInfo.containsKey('path')) {
@@ -206,19 +261,61 @@ class VersionCheckerService extends ChangeNotifier {
       } catch (_) {}
     }
 
-    final results = <PhpUpdateInfo>[];
+    // Automatically construct Windows binary download URLs for all discovered series
+    for (final entry in latestMap.entries) {
+      final series = entry.key;
+      final exactVer = entry.value;
+      if (!downloadUrlMap.containsKey(series)) {
+        final parts = series.split('.');
+        final major = int.tryParse(parts[0]) ?? 8;
+        final minor = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+        final vs = (major >= 8 && minor >= 4) ? 'vs17' : (major >= 8 ? 'vs16' : 'vc15');
 
-    for (var ver in installedList) {
-      final k = ver.versionKey;
-      final name = ver.name;
-      final isInstalled = ver.isInstalled;
-      final installedVer = isInstalled ? ver.exactVersion : null;
-      final latestVer = latestMap[k] ?? ver.exactVersion;
+        if (major <= 7) {
+          downloadUrlMap[series] = 'https://windows.php.net/downloads/releases/archives/php-$exactVer-nts-Win32-$vs-x64.zip';
+        } else {
+          downloadUrlMap[series] = 'https://windows.php.net/downloads/releases/archives/php-$exactVer-nts-Win32-$vs-x64.zip';
+        }
+      }
+    }
+
+    final results = <PhpUpdateInfo>[];
+    final installedMap = {for (var v in installedList) v.versionKey: v};
+
+    // Combine all keys: installed versions + all upstream discovered versions!
+    final allKeys = <String>{
+      ...installedMap.keys,
+      ...latestMap.keys,
+    }.toList();
+
+    // Sort versions in natural semver order (e.g. 7.4 < 8.1 < 8.2 < 8.3 < 8.4 < 8.5)
+    allKeys.sort((a, b) {
+      final aParts = a.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+      final bParts = b.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+      for (int i = 0; i < 2; i++) {
+        final aVal = i < aParts.length ? aParts[i] : 0;
+        final bVal = i < bParts.length ? bParts[i] : 0;
+        if (aVal != bVal) return aVal.compareTo(bVal);
+      }
+      return a.compareTo(b);
+    });
+
+    for (final k in allKeys) {
+      final installed = installedMap[k];
+      final isInstalled = installed?.isInstalled ?? false;
+      final installedVer = isInstalled ? installed?.exactVersion : null;
+      final latestVer = latestMap[k] ?? (installedVer ?? k);
+      final downloadUrl = downloadUrlMap[k] ?? (installed?.downloadUrl ?? '');
+      final isUpstream = latestMap.containsKey(k);
 
       bool hasUpdate = false;
       if (isInstalled && installedVer != null) {
         hasUpdate = _isNewerVersion(latestVer, installedVer);
+      } else if (!isInstalled) {
+        hasUpdate = true; // Not installed yet -> available for install
       }
+
+      final name = installed?.name ?? 'PHP $k';
 
       results.add(PhpUpdateInfo(
         versionKey: k,
@@ -227,7 +324,9 @@ class VersionCheckerService extends ChangeNotifier {
         latestVersion: latestVer,
         isInstalled: isInstalled,
         hasUpdate: hasUpdate,
-        downloadUrl: downloadUrlMap[k] ?? ver.downloadUrl,
+        downloadUrl: downloadUrl,
+        releaseDate: dateMap[k],
+        isUpstreamDiscovered: isUpstream,
       ));
     }
 

@@ -19,6 +19,10 @@ class VhostConfigGenerator {
         return const [9082, 9182, 9282, 9382];
       case '8.3':
         return const [9083, 9183, 9283, 9383];
+      case '8.4':
+        return const [9084, 9184, 9284, 9384];
+      case '8.5':
+        return const [9085, 9185, 9285, 9385];
       case 'default':
       default:
         return const [9000, 9001, 9002, 9003];
