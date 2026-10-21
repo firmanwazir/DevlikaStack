@@ -50,11 +50,27 @@ class HttpServerService {
   final Map<String, _StaticFileCacheEntry> _staticFileCache = {};
 
   bool _cachedFileExists(String path) {
-    return _fileExistsCache[path] ??= File(path).existsSync();
+    if (_fileExistsCache.containsKey(path)) return _fileExistsCache[path]!;
+    try {
+      final exists = File(path).existsSync();
+      _fileExistsCache[path] = exists;
+      return exists;
+    } catch (_) {
+      _fileExistsCache[path] = false;
+      return false;
+    }
   }
 
   bool _cachedDirExists(String path) {
-    return _dirExistsCache[path] ??= Directory(path).existsSync();
+    if (_dirExistsCache.containsKey(path)) return _dirExistsCache[path]!;
+    try {
+      final exists = Directory(path).existsSync();
+      _dirExistsCache[path] = exists;
+      return exists;
+    } catch (_) {
+      _dirExistsCache[path] = false;
+      return false;
+    }
   }
 
   Future<List<int>> _collectBytes(Stream<List<int>> stream) async {
@@ -519,7 +535,7 @@ class HttpServerService {
     }
 
     final indexPath = p.join(phpMyAdminDir, 'index.php');
-    final scriptToRun = targetFile.existsSync() && targetPath.endsWith('.php') ? targetPath : indexPath;
+    final scriptToRun = _cachedFileExists(targetPath) && targetPath.endsWith('.php') ? targetPath : indexPath;
 
     await _executePhp(
       request,
@@ -575,12 +591,17 @@ class HttpServerService {
 
     final rawPath = customPath ?? request.uri.path;
 
+    final isHttps = request.connectionInfo?.localPort == 443 ||
+        request.certificate != null ||
+        request.headers.value('x-forwarded-proto') == 'https';
+
     // 2. Evaluate .htaccess rules (RewriteRule, RewriteCond, FilesMatch, Headers, php_value)
     final htaccess = HtaccessService.instance.evaluate(
       request: request,
       docRoot: effectiveDocRoot,
       rawPath: rawPath,
       host: host,
+      isHttps: isHttps,
     );
 
     // If .htaccess says 403 Forbidden (e.g. .env, uploads/*.php, referrer spam)
@@ -611,11 +632,16 @@ class HttpServerService {
       return;
     }
 
-    final effectivePath = htaccess.rewrittenPath;
+    var effectivePath = htaccess.rewrittenPath;
     final pathInfo = htaccess.pathInfo;
+    final effectiveQueryString = htaccess.queryString ?? request.uri.query;
 
     // Remove leading slash for local joining
     var relativePath = effectivePath.startsWith('/') ? effectivePath.substring(1) : effectivePath;
+    // Ensure relativePath never contains query strings
+    if (relativePath.contains('?')) {
+      relativePath = relativePath.split('?')[0];
+    }
     // Normalize and verify path stays within document root (prevent path traversal)
     final normalizedDocRoot = p.normalize(effectiveDocRoot);
     var targetPath = p.normalize(p.join(normalizedDocRoot, relativePath));
@@ -640,6 +666,7 @@ class HttpServerService {
       final dirIndexHtml = p.join(targetPath, 'index.html');
       if (_cachedFileExists(dirIndexPhp)) {
         targetPath = dirIndexPhp;
+        effectivePath = effectivePath.endsWith('/') ? '${effectivePath}index.php' : '$effectivePath/index.php';
       } else if (_cachedFileExists(dirIndexHtml)) {
         await _serveStaticFile(request, File(dirIndexHtml), customHeaders: htaccess.responseHeaders);
         return;
@@ -656,6 +683,7 @@ class HttpServerService {
           docRoot: effectiveDocRoot,
           scriptName: effectivePath,
           pathInfo: pathInfo ?? '',
+          queryString: effectiveQueryString,
           phpVersion: phpVersion,
           customHeaders: htaccess.responseHeaders,
           phpIniOverrides: htaccess.phpIniOverrides,
@@ -676,6 +704,7 @@ class HttpServerService {
         docRoot: effectiveDocRoot,
         scriptName: '/index.php',
         pathInfo: pathInfo ?? (effectivePath.isNotEmpty ? effectivePath : rawPath),
+        queryString: effectiveQueryString,
         phpVersion: phpVersion,
         customHeaders: htaccess.responseHeaders,
         phpIniOverrides: htaccess.phpIniOverrides,
@@ -764,6 +793,7 @@ class HttpServerService {
     required String docRoot,
     required String scriptName,
     required String pathInfo,
+    String? queryString,
     String? phpVersion,
     Map<String, String>? customHeaders,
     Map<String, String>? phpIniOverrides,
@@ -820,7 +850,7 @@ class HttpServerService {
 
     final env = <String, String>{
       'GATEWAY_INTERFACE': 'CGI/1.1',
-      'SERVER_SOFTWARE': 'DevlikaStack/2.0 (Portable)',
+      'SERVER_SOFTWARE': 'DevlikaStack/0.1.0 (Portable)',
       'SERVER_PROTOCOL': 'HTTP/1.1',
       'REQUEST_METHOD': request.method,
       'REQUEST_URI': requestUri,
@@ -828,7 +858,7 @@ class HttpServerService {
       'SCRIPT_NAME': scriptName,
       'PATH_INFO': pathInfo,
       'PHP_SELF': pathInfo.isNotEmpty ? '$scriptName$pathInfo' : scriptName,
-      'QUERY_STRING': request.uri.query,
+      'QUERY_STRING': queryString ?? request.uri.query,
       'DOCUMENT_ROOT': docRoot,
       'SERVER_NAME': host,
       'HTTP_HOST': host,
@@ -840,6 +870,11 @@ class HttpServerService {
       'CONTENT_LENGTH': bodyBytes.length.toString(),
       'REQUEST_SCHEME': isHttps ? 'https' : 'http',
     };
+
+    if (pathInfo.isNotEmpty) {
+      final cleanInfo = pathInfo.startsWith('/') ? pathInfo.substring(1) : pathInfo;
+      env['PATH_TRANSLATED'] = p.normalize(p.join(docRoot, cleanInfo));
+    }
 
     if (isHttps) {
       env['HTTPS'] = 'on';
@@ -1105,8 +1140,43 @@ class HttpServerService {
       }
     } catch (_) {}
 
-    // Keep-Alive header for persistent connections
+    // HTTP Range Requests (206 Partial Content) for video/audio seeking and resume
+    final rangeHeader = request.headers.value(HttpHeaders.rangeHeader);
+    if (stat != null && rangeHeader != null && rangeHeader.startsWith('bytes=')) {
+      final rangeValue = rangeHeader.substring(6).trim();
+      final parts = rangeValue.split('-');
+      final fileLength = stat.size;
+      int start = int.tryParse(parts[0]) ?? 0;
+      int? end = parts.length > 1 && parts[1].isNotEmpty ? int.tryParse(parts[1]) : null;
+      end ??= fileLength - 1;
+
+      if (start >= 0 && start <= end && end < fileLength) {
+        final contentLength = end - start + 1;
+        request.response.statusCode = HttpStatus.partialContent;
+        request.response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
+        request.response.headers.set(HttpHeaders.contentRangeHeader, 'bytes $start-$end/$fileLength');
+        request.response.contentLength = contentLength;
+
+        customHeaders?.forEach((k, v) {
+          try {
+            request.response.headers.set(k, v);
+          } catch (_) {}
+        });
+
+        try {
+          await file.openRead(start, end + 1).pipe(request.response);
+        } catch (_) {
+          try {
+            await request.response.close();
+          } catch (_) {}
+        }
+        return;
+      }
+    }
+
+    // Keep-Alive and Accept-Ranges headers
     request.response.headers.set('Connection', 'keep-alive');
+    request.response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
 
     customHeaders?.forEach((k, v) {
       try {

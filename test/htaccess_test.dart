@@ -185,4 +185,101 @@ RewriteRule .* - [F]
     await server.close(force: true);
     client.close();
   });
+
+  test('Parses and executes CodeIgniter 4 standard .htaccess with index.php?/\$1 and QSA', () async {
+    final htaccessContent = '''
+<IfModule mod_rewrite.c>
+    Options +FollowSymlinks
+    RewriteEngine On
+
+    # Redirect Trailing Slashes...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/\$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Checks to see if the user is attempting to access a valid file
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([\\s\\S]*)\$ index.php?/\$1 [L,NC,QSA]
+</IfModule>
+''';
+
+    File('${tempDir.path}/.htaccess').writeAsStringSync(htaccessContent);
+
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server.listen((req) async {
+      final res = HtaccessService.instance.evaluate(
+        request: req,
+        docRoot: tempDir.path,
+        rawPath: req.uri.path,
+      );
+
+      if (res.isRedirect) {
+        req.response.statusCode = res.redirectStatusCode;
+        req.response.headers.set(HttpHeaders.locationHeader, res.redirectUrl!);
+      } else {
+        req.response.statusCode = 200;
+        req.response.write('${res.rewrittenPath}|${res.pathInfo}|${res.queryString}');
+      }
+      await req.response.close();
+    });
+
+    final client = HttpClient();
+
+    // 1. Test trailing slash redirect with %1 backreference: /dashboard/ -> /dashboard
+    final req1 = await client.getUrl(Uri.parse('http://127.0.0.1:${server.port}/dashboard/'));
+    req1.followRedirects = false;
+    final resp1 = await req1.close();
+    expect(resp1.statusCode, equals(301));
+    expect(resp1.headers.value(HttpHeaders.locationHeader), equals('/dashboard'));
+
+    // 2. Test CodeIgniter 4 rewrite without query: /dashboard -> rewritten to /index.php with pathInfo /dashboard
+    final req2 = await client.getUrl(Uri.parse('http://127.0.0.1:${server.port}/dashboard'));
+    final resp2 = await req2.close();
+    final body2 = await resp2.transform(const SystemEncoding().decoder).join();
+    // Must NOT contain '?' in rewrittenPath (prevents Windows errno 123)
+    expect(body2, equals('/index.php|/dashboard|/dashboard'));
+
+    // 3. Test CodeIgniter 4 rewrite with existing query and QSA: /dashboard?ref=test&page=2
+    final req3 = await client.getUrl(Uri.parse('http://127.0.0.1:${server.port}/dashboard?ref=test&page=2'));
+    final resp3 = await req3.close();
+    final body3 = await resp3.transform(const SystemEncoding().decoder).join();
+    expect(body3, equals('/index.php|/dashboard|/dashboard&ref=test&page=2'));
+
+    await server.close(force: true);
+    client.close();
+  });
+
+  test('Handles query parameter rewrites like index.php?route=\$1 [QSA]', () async {
+    final htaccessContent = '''
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)\$ index.php?route=\$1 [L,QSA]
+''';
+
+    File('${tempDir.path}/.htaccess').writeAsStringSync(htaccessContent);
+
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server.listen((req) async {
+      final res = HtaccessService.instance.evaluate(
+        request: req,
+        docRoot: tempDir.path,
+        rawPath: req.uri.path,
+      );
+
+      req.response.statusCode = 200;
+      req.response.write('${res.rewrittenPath}|${res.pathInfo}|${res.queryString}');
+      await req.response.close();
+    });
+
+    final client = HttpClient();
+    final req = await client.getUrl(Uri.parse('http://127.0.0.1:${server.port}/catalog/product?sort=desc'));
+    final resp = await req.close();
+    final body = await resp.transform(const SystemEncoding().decoder).join();
+    expect(body, equals('/index.php|/catalog/product|route=catalog/product&sort=desc'));
+
+    await server.close(force: true);
+    client.close();
+  });
 }

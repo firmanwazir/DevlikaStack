@@ -9,6 +9,7 @@ class HtaccessResult {
   final String? redirectUrl;
   final String rewrittenPath;
   final String? pathInfo;
+  final String? queryString;
   final Map<String, String> responseHeaders;
   final Map<String, String> phpIniOverrides;
   final Map<String, String> customEnv;
@@ -22,6 +23,7 @@ class HtaccessResult {
     this.redirectUrl,
     required this.rewrittenPath,
     this.pathInfo,
+    this.queryString,
     this.responseHeaders = const {},
     this.phpIniOverrides = const {},
     this.customEnv = const {},
@@ -37,6 +39,9 @@ class _RewriteCond {
   final RegExp? regExp;
   final bool isFileTest;
   final bool isDirTest;
+  final bool isExactEqual;
+  final bool isExactNotEqual;
+  final String exactValue;
   final bool invert;
 
   _RewriteCond({
@@ -46,10 +51,22 @@ class _RewriteCond {
     this.isNoCase = false,
   })  : isFileTest = pattern == '-f' || pattern == '!-f',
         isDirTest = pattern == '-d' || pattern == '!-d',
+        isExactEqual = pattern.startsWith('=') && !pattern.startsWith('!='),
+        isExactNotEqual = pattern.startsWith('!='),
+        exactValue = pattern.startsWith('!=')
+            ? pattern.substring(2)
+            : (pattern.startsWith('=') ? pattern.substring(1) : ''),
         invert = pattern.startsWith('!'),
-        regExp = (pattern == '-f' || pattern == '!-f' || pattern == '-d' || pattern == '!-d')
+        regExp = (pattern == '-f' ||
+                pattern == '!-f' ||
+                pattern == '-d' ||
+                pattern == '!-d' ||
+                pattern.startsWith('=') ||
+                pattern.startsWith('!='))
             ? null
-            : _compileRegex(pattern.startsWith('!') ? pattern.substring(1) : pattern, isNoCase);
+            : _compileRegex(
+                pattern.startsWith('!') ? pattern.substring(1) : pattern,
+                isNoCase);
 
   static RegExp? _compileRegex(String pat, bool isNoCase) {
     try {
@@ -138,6 +155,7 @@ class HtaccessService {
     required String docRoot,
     required String rawPath,
     String? host,
+    bool isHttps = false,
   }) {
     // Auto-expire filesystem cache every 5 seconds
     _checkFsCacheTtl();
@@ -202,7 +220,8 @@ class HtaccessService {
     var currentPath = rawPath.startsWith('/') ? rawPath.substring(1) : rawPath;
     final forbiddenRules = parsed.rewriteRules.where((r) => r.isForbidden);
     for (var rule in forbiddenRules) {
-      if (_evalConditions(rule.conditions, request, docRoot, currentPath, host)) {
+      final condMatches = <Match?>[];
+      if (_evalConditions(rule.conditions, request, docRoot, currentPath, host, isHttps, condMatches)) {
         if (rule.regExp.hasMatch(currentPath) || rule.regExp.hasMatch(rawPath)) {
           return HtaccessResult(
             isForbidden: true,
@@ -217,11 +236,13 @@ class HtaccessService {
 
     // 5. Evaluate Rewrite / Routing Rules
     String? finalPathInfo;
+    String? finalQueryString;
     var finalRewritten = rawPath;
 
     final standardRules = parsed.rewriteRules.where((r) => !r.isForbidden);
     for (var rule in standardRules) {
-      if (!_evalConditions(rule.conditions, request, docRoot, currentPath, host)) {
+      final condMatches = <Match?>[];
+      if (!_evalConditions(rule.conditions, request, docRoot, currentPath, host, isHttps, condMatches)) {
         continue;
       }
 
@@ -244,13 +265,22 @@ class HtaccessService {
         // Handle target substitution
         var target = rule.target;
         if (target != '-') {
-          // Replace backreferences $0, $1, etc.
-          for (var i = 0; i <= match.groupCount; i++) {
+          // 1. Replace %1, %2, etc. from RewriteCond matches (descending order)
+          final lastCondMatch = condMatches.isNotEmpty ? condMatches.last : null;
+          if (lastCondMatch != null) {
+            for (var i = lastCondMatch.groupCount; i >= 0; i--) {
+              final groupVal = lastCondMatch.group(i) ?? '';
+              target = target.replaceAll('%$i', groupVal);
+            }
+          }
+
+          // 2. Replace backreferences $0, $1, etc. (descending order to avoid $1 matching in $10)
+          for (var i = match.groupCount; i >= 0; i--) {
             final groupVal = match.group(i) ?? '';
             target = target.replaceAll('\$$i', groupVal);
           }
 
-          // Check if redirect rule [R=301] or [R]
+          // 3. Check if redirect rule [R=301] or [R]
           if (rule.redirectCode != null) {
             var redirectLocation = target;
             if (!redirectLocation.startsWith('http://') &&
@@ -268,13 +298,49 @@ class HtaccessService {
             );
           }
 
-          // CodeIgniter style: index.php/$0
-          if (target.startsWith('index.php/')) {
-            final subPath = target.substring('index.php'.length);
+          // 4. Parse query string and file target from target (e.g. index.php?/$1 or index.php?route=$1)
+          String fileTarget = target;
+          if (target.contains('?')) {
+            final qIndex = target.indexOf('?');
+            fileTarget = target.substring(0, qIndex);
+            final rawTargetQuery = target.substring(qIndex + 1);
+
+            if (fileTarget.isEmpty) {
+              fileTarget = currentPath.isEmpty ? '/index.php' : currentPath;
+            }
+
+            // If rawTargetQuery starts with '/', it's a CodeIgniter index.php?/$1 path routing!
+            if (rawTargetQuery.startsWith('/')) {
+              finalPathInfo = rawTargetQuery;
+            }
+
+            // Handle QSA (Query String Append)
+            if (rule.isQueryStringAppend && request.uri.hasQuery && request.uri.query.isNotEmpty) {
+              finalQueryString = rawTargetQuery.isNotEmpty
+                  ? '$rawTargetQuery&${request.uri.query}'
+                  : request.uri.query;
+            } else {
+              finalQueryString = rawTargetQuery;
+            }
+          }
+
+          // 5. CodeIgniter style with PATH_INFO: index.php/$0 or /index.php/$0
+          if (fileTarget.startsWith('index.php/') || fileTarget.startsWith('/index.php/')) {
+            final cleanPrefix = fileTarget.startsWith('/') ? '/index.php' : 'index.php';
+            final subPath = fileTarget.substring(cleanPrefix.length);
             finalPathInfo = subPath.startsWith('/') ? subPath : '/$subPath';
             finalRewritten = '/index.php';
+          } else if (fileTarget == 'index.php' || fileTarget == '/index.php') {
+            finalRewritten = '/index.php';
+            // If pathInfo wasn't extracted from a query (?/$1), set it from original rawPath
+            finalPathInfo ??= rawPath.startsWith('/') ? rawPath : '/$rawPath';
           } else {
-            finalRewritten = target.startsWith('/') ? target : '/$target';
+            finalRewritten = fileTarget.startsWith('/') ? fileTarget : '/$fileTarget';
+          }
+
+          // Ensure finalRewritten never contains query strings
+          if (finalRewritten.contains('?')) {
+            finalRewritten = finalRewritten.split('?')[0];
           }
 
           currentPath = finalRewritten.startsWith('/') ? finalRewritten.substring(1) : finalRewritten;
@@ -289,6 +355,7 @@ class HtaccessService {
     return HtaccessResult(
       rewrittenPath: finalRewritten,
       pathInfo: finalPathInfo,
+      queryString: finalQueryString,
       responseHeaders: headers,
       phpIniOverrides: phpIni,
       customEnv: customEnv,
@@ -302,6 +369,8 @@ class HtaccessService {
     String docRoot,
     String currentPath,
     String? host,
+    bool isHttps,
+    List<Match?> condMatchesOut,
   ) {
     if (conditions.isEmpty) return true;
 
@@ -310,8 +379,11 @@ class HtaccessService {
 
     for (var i = 0; i < conditions.length; i++) {
       final cond = conditions[i];
-      final val = _resolveVariable(cond.variable, request, docRoot, currentPath, host);
-      final isMatch = _evalSingleCondition(cond, val, docRoot);
+      final val = _resolveVariable(cond.variable, request, docRoot, currentPath, host, isHttps);
+      final (isMatch, matchObj) = _evalSingleCondition(cond, val, docRoot);
+      if (isMatch && matchObj != null) {
+        condMatchesOut.add(matchObj);
+      }
 
       if (cond.isOr) {
         currentOrGroupResult = (currentOrGroupResult ?? false) || isMatch;
@@ -327,22 +399,59 @@ class HtaccessService {
     return currentOrGroupResult ?? true;
   }
 
-  bool _evalSingleCondition(_RewriteCond cond, String value, String docRoot) {
+  (bool, Match?) _evalSingleCondition(_RewriteCond cond, String value, String docRoot) {
     if (cond.isFileTest) {
-      final path = p.isAbsolute(value) ? value : p.join(docRoot, value);
-      final exists = _fsExistsCache[path] ??= File(path).existsSync();
-      return cond.invert ? !exists : exists;
+      final cleanVal = value.contains('?') ? value.split('?')[0] : value;
+      final path = p.isAbsolute(cleanVal) ? cleanVal : p.join(docRoot, cleanVal);
+      bool exists = false;
+      if (_fsExistsCache.containsKey(path)) {
+        exists = _fsExistsCache[path]!;
+      } else {
+        try {
+          exists = File(path).existsSync();
+        } catch (_) {
+          exists = false;
+        }
+        _fsExistsCache[path] = exists;
+      }
+      return (cond.invert ? !exists : exists, null);
     }
     if (cond.isDirTest) {
-      final path = p.isAbsolute(value) ? value : p.join(docRoot, value);
+      final cleanVal = value.contains('?') ? value.split('?')[0] : value;
+      final path = p.isAbsolute(cleanVal) ? cleanVal : p.join(docRoot, cleanVal);
       final dirKey = 'd:$path';
-      final exists = _fsExistsCache[dirKey] ??= Directory(path).existsSync();
-      return cond.invert ? !exists : exists;
+      bool exists = false;
+      if (_fsExistsCache.containsKey(dirKey)) {
+        exists = _fsExistsCache[dirKey]!;
+      } else {
+        try {
+          exists = Directory(path).existsSync();
+        } catch (_) {
+          exists = false;
+        }
+        _fsExistsCache[dirKey] = exists;
+      }
+      return (cond.invert ? !exists : exists, null);
     }
 
-    if (cond.regExp == null) return false;
-    final matched = cond.regExp!.hasMatch(value);
-    return cond.invert ? !matched : matched;
+    if (cond.isExactEqual) {
+      final matched = cond.isNoCase
+          ? value.toLowerCase() == cond.exactValue.toLowerCase()
+          : value == cond.exactValue;
+      return (matched, null);
+    }
+
+    if (cond.isExactNotEqual) {
+      final matched = cond.isNoCase
+          ? value.toLowerCase() != cond.exactValue.toLowerCase()
+          : value != cond.exactValue;
+      return (matched, null);
+    }
+
+    if (cond.regExp == null) return (false, null);
+    final match = cond.regExp!.firstMatch(value);
+    final matched = match != null;
+    return (cond.invert ? !matched : matched, match);
   }
 
   String _resolveVariable(
@@ -351,13 +460,25 @@ class HtaccessService {
     String docRoot,
     String currentPath,
     String? host,
+    bool isHttps,
   ) {
     final upper = varName.toUpperCase().trim();
     if (upper == '%{REQUEST_FILENAME}') {
-      return p.normalize(p.join(docRoot, currentPath));
+      final cleanPath = currentPath.contains('?') ? currentPath.split('?')[0] : currentPath;
+      return p.normalize(p.join(docRoot, cleanPath));
     }
     if (upper == '%{REQUEST_URI}') {
       return request.uri.path;
+    }
+    if (upper == '%{HTTPS}') {
+      return isHttps ? 'on' : 'off';
+    }
+    if (upper == '%{THE_REQUEST}') {
+      final q = request.uri.hasQuery ? '?${request.uri.query}' : '';
+      return '${request.method} ${request.uri.path}$q HTTP/1.1';
+    }
+    if (upper == '%{SERVER_PORT}') {
+      return '${request.connectionInfo?.localPort ?? (isHttps ? 443 : 80)}';
     }
     if (upper == '%{HTTP_REFERER}') {
       return request.headers.value('referer') ?? '';
