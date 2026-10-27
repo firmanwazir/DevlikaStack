@@ -677,9 +677,14 @@ class HttpServerService {
       return;
     }
 
-    // If .htaccess says Redirect (e.g. trailing slash redirect [R=301])
+    // If .htaccess says Redirect (e.g. trailing slash redirect [R=301] or [R=302])
     if (htaccess.isRedirect && htaccess.redirectUrl != null) {
-      request.response.statusCode = htaccess.redirectStatusCode;
+      // In local dev server, downgrade 301 to 302 and ALWAYS send no-cache headers to prevent browser disk cache locking!
+      final statusCode = htaccess.redirectStatusCode == 301 ? 302 : htaccess.redirectStatusCode;
+      request.response.statusCode = statusCode;
+      request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store, must-revalidate, max-age=0');
+      request.response.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
+      request.response.headers.set(HttpHeaders.expiresHeader, '0');
       htaccess.responseHeaders.forEach((k, v) {
         try {
           request.response.headers.set(k, v);
@@ -711,22 +716,41 @@ class HttpServerService {
       return;
     }
 
-    // Handle directory request: ensure trailing slash then try index.php or index.html
+    // Handle directory request: ensure trailing slash ONLY if directory has an index file
     if (_cachedDirExists(targetPath)) {
-      if (!rawPath.endsWith('/') && !rawPath.contains('.')) {
-        request.response.statusCode = 301;
-        final queryPart = request.uri.hasQuery ? '?${request.uri.query}' : '';
-        request.response.headers.set(HttpHeaders.locationHeader, '$rawPath/$queryPart');
-        await request.response.close();
-        return;
-      }
       final dirIndexPhp = p.join(targetPath, 'index.php');
       final dirIndexHtml = p.join(targetPath, 'index.html');
-      if (_cachedFileExists(dirIndexPhp)) {
-        targetPath = dirIndexPhp;
-        effectivePath = effectivePath.endsWith('/') ? '${effectivePath}index.php' : '$effectivePath/index.php';
-      } else if (_cachedFileExists(dirIndexHtml)) {
-        await _serveStaticFile(request, File(dirIndexHtml), customHeaders: htaccess.responseHeaders);
+      final hasDirIndex = _cachedFileExists(dirIndexPhp) || _cachedFileExists(dirIndexHtml);
+
+      if (hasDirIndex) {
+        if (!rawPath.endsWith('/') && !rawPath.contains('.')) {
+          // Send 302 Temporary Redirect with explicit No-Cache headers so browsers NEVER cache on disk!
+          request.response.statusCode = 302;
+          request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store, must-revalidate, max-age=0');
+          request.response.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
+          request.response.headers.set(HttpHeaders.expiresHeader, '0');
+          final queryPart = request.uri.hasQuery ? '?${request.uri.query}' : '';
+          request.response.headers.set(HttpHeaders.locationHeader, '$rawPath/$queryPart');
+          await request.response.close();
+          return;
+        }
+        if (_cachedFileExists(dirIndexPhp)) {
+          targetPath = dirIndexPhp;
+          effectivePath = effectivePath.endsWith('/') ? '${effectivePath}index.php' : '$effectivePath/index.php';
+        } else if (_cachedFileExists(dirIndexHtml)) {
+          await _serveStaticFile(request, File(dirIndexHtml), customHeaders: htaccess.responseHeaders);
+          return;
+        }
+      } else {
+        // targetPath is a static folder (e.g. /mysqlgw/js/vendor/jquery or /assets/images) without an index file.
+        // DO NOT REDIRECT! DO NOT send to front controller index.php!
+        request.response.statusCode = 404;
+        request.response.headers.contentType = ContentType.html;
+        request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store, must-revalidate, max-age=0');
+        request.response.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
+        request.response.headers.set(HttpHeaders.expiresHeader, '0');
+        request.response.write(_errorPage(404, 'Folder Tanpa Index', 'Folder <code>$rawPath</code> tidak memiliki file index (index.php / index.html).'));
+        await request.response.close();
         return;
       }
     }
@@ -1167,9 +1191,10 @@ class HttpServerService {
       request.response.headers.set(HttpHeaders.lastModifiedHeader, HttpDate.format(lastModified));
       request.response.contentLength = stat.size;
 
-      // Cache-Control for static assets (images, fonts, css, js) to eliminate roundtrip latency
+      // Cache-Control for static assets in local development: use no-cache with ETag so browser checks for updates
+      // instead of locking into permanent disk cache (public, immutable)
       if (_staticCacheExts.contains(ext)) {
-        request.response.headers.set(HttpHeaders.cacheControlHeader, 'public, max-age=86400, immutable');
+        request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, must-revalidate');
         // ETag for even faster cache validation
         request.response.headers.set('ETag', '"${stat.size}-${lastModified.millisecondsSinceEpoch}"');
       }
