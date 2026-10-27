@@ -221,6 +221,34 @@ void main() {
       expect(apacheVhost.contains('SSLEngine on'), isTrue);
     });
 
+    test('VhostConfigGenerator omits SSL port 443 entirely when isSslEnabled is false', () async {
+      final config = ConfigService.instance;
+      final generator = VhostConfigGenerator.instance;
+
+      config.setIsSslEnabled(false);
+
+      final site = SiteModel(
+        id: 'no-ssl-site',
+        domain: 'nossl.test',
+        rootPath: '${tempDir.path}/nossl',
+        phpVersion: '8.2',
+        isEnabled: true,
+        type: 'php',
+      );
+
+      await generator.generateNginxConfigs([site]);
+      final nginxVhost = File('${config.nginxVhostsDir}/nossl.test.conf').readAsStringSync();
+      expect(nginxVhost.contains('listen 443 ssl;'), isFalse);
+      expect(nginxVhost.contains('listen 80;'), isTrue);
+
+      await generator.generateApacheConfigs([site]);
+      final apacheVhost = File(config.apacheVhostsFile).readAsStringSync();
+      expect(apacheVhost.contains('<VirtualHost *:443>'), isFalse);
+
+      // Restore default
+      config.setIsSslEnabled(true);
+    });
+
     test('SecurityContext loads generated Devlika Stack SSL certificate and private key', () {
       final certFile = File(r'D:\WebServer\www\WindowApp\Server\DevlikaStack-Portable\bin\storage\ssl\server.crt');
       final keyFile = File(r'D:\WebServer\www\WindowApp\Server\DevlikaStack-Portable\bin\storage\ssl\server.key');

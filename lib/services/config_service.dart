@@ -277,6 +277,17 @@ class ConfigService {
     }
   }
 
+  bool get isSslEnabled {
+    final settings = _loadSettings();
+    return settings['is_ssl_enabled'] as bool? ?? true;
+  }
+
+  void setIsSslEnabled(bool enabled) {
+    final settings = Map<String, dynamic>.from(_loadSettings());
+    settings['is_ssl_enabled'] = enabled;
+    _saveSettings(settings);
+  }
+
   String _detectBinDir() {
     final exeDir = p.dirname(Platform.resolvedExecutable);
 

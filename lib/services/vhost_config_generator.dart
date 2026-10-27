@@ -66,9 +66,12 @@ class VhostConfigGenerator {
     if (!confDir.existsSync()) confDir.createSync(recursive: true);
     if (!vhostsDir.existsSync()) vhostsDir.createSync(recursive: true);
 
+    final isSslEnabled = config.isSslEnabled;
     final ssl = SslService.instance;
-    await ssl.ensureCertificate(sites: sites);
-    final hasSsl = ssl.hasCertificate;
+    if (isSslEnabled) {
+      await ssl.ensureCertificate(sites: sites);
+    }
+    final hasSsl = isSslEnabled && ssl.hasCertificate;
     final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
     final sslCert = _toForwardSlash(certFile);
     final sslKey = _toForwardSlash(ssl.keyPath);
@@ -463,9 +466,12 @@ server {
     final httpPort = config.httpPort;
     final httpsPort = config.httpsPort;
 
+    final isSslEnabled = config.isSslEnabled;
     final ssl = SslService.instance;
-    await ssl.ensureCertificate(sites: sites);
-    final hasSsl = ssl.hasCertificate;
+    if (isSslEnabled) {
+      await ssl.ensureCertificate(sites: sites);
+    }
+    final hasSsl = isSslEnabled && ssl.hasCertificate;
     final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
     final sslCert = _toForwardSlash(certFile);
     final sslKey = _toForwardSlash(ssl.keyPath);

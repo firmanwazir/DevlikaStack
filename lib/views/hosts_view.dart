@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/site_model.dart';
+import '../services/config_service.dart';
 import '../services/server_controller.dart';
 import '../services/tunnel_service.dart';
 import '../theme/app_theme.dart';
@@ -431,13 +432,14 @@ class _HostsViewState extends State<HostsView> {
                             ),
 
                             // HTTPS
-                            IconButton(
-                              icon: const Icon(Icons.lock_outline_rounded, size: 14),
-                              tooltip: 'Buka HTTPS (https://${site.domain})',
-                              splashRadius: 15,
-                              color: AppTheme.accentGreen,
-                              onPressed: () => controller.openUrl('https://${site.domain}'),
-                            ),
+                            if (ConfigService.instance.isSslEnabled)
+                              IconButton(
+                                icon: const Icon(Icons.lock_outline_rounded, size: 14),
+                                tooltip: 'Buka HTTPS (https://${site.domain})',
+                                splashRadius: 15,
+                                color: AppTheme.accentGreen,
+                                onPressed: () => controller.openUrl('https://${site.domain}'),
+                              ),
 
                             // HTTP
                             IconButton(

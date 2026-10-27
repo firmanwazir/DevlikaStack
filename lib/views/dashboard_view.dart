@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/config_service.dart';
 import '../services/server_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/add_host_dialog.dart';
@@ -715,12 +716,13 @@ class DashboardView extends StatelessWidget {
                   ),
 
                   // Fast Action Buttons (Clean & Quiet)
-                  IconButton(
-                    icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
-                    tooltip: 'Buka HTTPS (https://${sites[index].domain})',
-                    splashRadius: 16,
-                    onPressed: () => controller.openUrl('https://${sites[index].domain}'),
-                  ),
+                  if (ConfigService.instance.isSslEnabled)
+                    IconButton(
+                      icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
+                      tooltip: 'Buka HTTPS (https://${sites[index].domain})',
+                      splashRadius: 16,
+                      onPressed: () => controller.openUrl('https://${sites[index].domain}'),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
                     tooltip: 'Buka HTTP (http://${sites[index].domain})',

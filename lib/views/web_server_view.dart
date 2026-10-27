@@ -312,58 +312,104 @@ class _WebServerViewState extends State<WebServerView> {
                       children: [
                         if (isRunning) ...[
                           OutlinedButton.icon(
-                            onPressed: _isTrustingSsl
-                                ? null
-                                : () async {
-                                    setState(() => _isTrustingSsl = true);
-                                    final ok = await SslService.instance.installCertificateToWindowsStore();
-                                    if (mounted) {
-                                      setState(() {
-                                        _isTrustingSsl = false;
-                                        _isSslTrusted = ok;
-                                      });
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(ok
-                                              ? 'Sertifikat SSL Devlika berhasil dipasang! Silakan restart browser (Chrome/Edge) agar sertifikat aktif.'
-                                              : 'Pemasangan sertifikat dibatalkan atau selesai.'),
-                                          backgroundColor: AppTheme.cardDark,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  },
-                            icon: _isTrustingSsl
-                                ? const SizedBox(
-                                    width: 12,
-                                    height: 12,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.textPrimary),
-                                  )
-                                : Icon(
-                                    _isSslTrusted ? Icons.verified_rounded : Icons.shield_outlined,
-                                    size: 14,
-                                    color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
-                                  ),
+                            onPressed: () async {
+                              final current = ConfigService.instance.isSslEnabled;
+                              final nextState = !current;
+                              ConfigService.instance.setIsSslEnabled(nextState);
+                              await WebServerEngineManager.instance.syncVhosts();
+                              if (isRunning) {
+                                await WebServerEngineManager.instance.stop();
+                                await WebServerEngineManager.instance.start();
+                              }
+                              if (mounted) setState(() {});
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(nextState
+                                      ? 'SSL (HTTPS) diaktifkan pada port ${ConfigService.instance.httpsPort}.'
+                                      : 'SSL (HTTPS) dinonaktifkan. Web server sekarang hanya melayani HTTP port ${ConfigService.instance.httpPort}.'),
+                                  backgroundColor: AppTheme.cardDark,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              ConfigService.instance.isSslEnabled ? Icons.lock_rounded : Icons.lock_open_rounded,
+                              size: 14,
+                              color: ConfigService.instance.isSslEnabled ? const Color(0xFF10B981) : AppTheme.textSecondary,
+                            ),
                             label: Text(
-                              _isTrustingSsl
-                                  ? 'Memasang...'
-                                  : (_isSslTrusted ? 'SSL Trusted' : 'Trust SSL'),
+                              ConfigService.instance.isSslEnabled ? 'SSL: ON' : 'SSL: OFF',
                               style: TextStyle(
                                 fontSize: 11.5,
-                                color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
-                                fontWeight: _isSslTrusted ? FontWeight.w600 : FontWeight.normal,
+                                color: ConfigService.instance.isSslEnabled ? const Color(0xFF10B981) : AppTheme.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.surfaceSubtle,
                               side: BorderSide(
-                                color: _isSslTrusted ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
+                                color: ConfigService.instance.isSslEnabled ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
                               ),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                             ),
                           ),
                           const SizedBox(width: 8),
+                          if (ConfigService.instance.isSslEnabled) ...[
+                            OutlinedButton.icon(
+                              onPressed: _isTrustingSsl
+                                  ? null
+                                  : () async {
+                                      setState(() => _isTrustingSsl = true);
+                                      final ok = await SslService.instance.installCertificateToWindowsStore();
+                                      if (mounted) {
+                                        setState(() {
+                                          _isTrustingSsl = false;
+                                          _isSslTrusted = ok;
+                                        });
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(ok
+                                                ? 'Sertifikat SSL Devlika berhasil dipasang! Silakan restart browser (Chrome/Edge) agar sertifikat aktif.'
+                                                : 'Pemasangan sertifikat dibatalkan atau selesai.'),
+                                            backgroundColor: AppTheme.cardDark,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    },
+                              icon: _isTrustingSsl
+                                  ? const SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.textPrimary),
+                                    )
+                                  : Icon(
+                                      _isSslTrusted ? Icons.verified_rounded : Icons.shield_outlined,
+                                      size: 14,
+                                      color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
+                                    ),
+                              label: Text(
+                                _isTrustingSsl
+                                    ? 'Memasang...'
+                                    : (_isSslTrusted ? 'SSL Trusted' : 'Trust SSL'),
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
+                                  fontWeight: _isSslTrusted ? FontWeight.w600 : FontWeight.normal,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.textPrimary,
+                                backgroundColor: AppTheme.surfaceSubtle,
+                                side: BorderSide(
+                                  color: _isSslTrusted ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           OutlinedButton.icon(
                             onPressed: () => _openUrl('http://127.0.0.1'),
                             icon: const Icon(Icons.open_in_browser_rounded, size: 14),
@@ -683,12 +729,13 @@ class _WebServerViewState extends State<WebServerView> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.lock_outline_rounded, size: 14, color: AppTheme.accentGreen),
-                                            tooltip: 'Buka https://${site.domain}',
-                                            splashRadius: 14,
-                                            onPressed: () => _openUrl('https://${site.domain}'),
-                                          ),
+                                          if (ConfigService.instance.isSslEnabled)
+                                            IconButton(
+                                              icon: const Icon(Icons.lock_outline_rounded, size: 14, color: AppTheme.accentGreen),
+                                              tooltip: 'Buka https://${site.domain}',
+                                              splashRadius: 14,
+                                              onPressed: () => _openUrl('https://${site.domain}'),
+                                            ),
                                           IconButton(
                                             icon: const Icon(Icons.open_in_browser_rounded, size: 14, color: AppTheme.textSecondary),
                                             tooltip: 'Buka http://${site.domain}',

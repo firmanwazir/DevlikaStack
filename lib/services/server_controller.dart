@@ -476,7 +476,7 @@ class ServerController extends ChangeNotifier {
   }
 
   String formatSiteUrl(String domain, {bool isHttps = false}) {
-    if (isHttps) {
+    if (isHttps && ConfigService.instance.isSslEnabled) {
       final portSuffix = httpsPort == 443 ? '' : ':$httpsPort';
       return 'https://$domain$portSuffix';
     } else {
@@ -487,14 +487,18 @@ class ServerController extends ChangeNotifier {
 
   String resolveSiteUrl(String rawUrl) {
     try {
-      final uri = Uri.parse(rawUrl);
-      if (uri.hasPort) return rawUrl;
+      var uri = Uri.parse(rawUrl);
+      if (!ConfigService.instance.isSslEnabled && uri.scheme == 'https') {
+        uri = uri.replace(scheme: 'http');
+      }
+      if (uri.hasPort) return uri.toString();
       if (uri.scheme == 'http' && httpPort != 80) {
         return uri.replace(port: httpPort).toString();
       }
       if (uri.scheme == 'https' && httpsPort != 443) {
         return uri.replace(port: httpsPort).toString();
       }
+      return uri.toString();
     } catch (_) {}
     return rawUrl;
   }

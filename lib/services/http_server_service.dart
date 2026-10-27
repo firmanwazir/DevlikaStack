@@ -120,47 +120,51 @@ class HttpServerService {
       // Start FastCGI daemons for all configured PHP versions
       await _startAllConfiguredFastCgiDaemons();
 
-      // Start HTTPS Server with SSL
-      try {
-        final ssl = SslService.instance;
-        final sites = ConfigService.instance.loadSites();
-        await ssl.ensureCertificate(sites: sites);
-        if (ssl.hasCertificate) {
-          final certToUse = File(ssl.fullChainCertPath).existsSync()
-              ? ssl.fullChainCertPath
-              : ssl.certPath;
-          final sec = SecurityContext()
-            ..useCertificateChain(certToUse)
-            ..usePrivateKey(ssl.keyPath);
-          _secureServer = await HttpServer.bindSecure(
-            InternetAddress.loopbackIPv4,
-            httpsPort,
-            sec,
-          );
-          _secureServer!.autoCompress = true;
-          _secureServer!.idleTimeout = const Duration(seconds: 15);
-          _secureServer!.listen(
-            _handleRequest,
-            onError: (e) => _logController.add('[Web Server HTTPS Error] $e'),
-          );
-          _logController.add('[Web Server] Berjalan pada https://127.0.0.1:$httpsPort (SSL Aktif)');
-
-          try {
-            _secureServerIpv6 = await HttpServer.bindSecure(
-              InternetAddress.loopbackIPv6,
+      // Start HTTPS Server with SSL (if enabled)
+      if (ConfigService.instance.isSslEnabled) {
+        try {
+          final ssl = SslService.instance;
+          final sites = ConfigService.instance.loadSites();
+          await ssl.ensureCertificate(sites: sites);
+          if (ssl.hasCertificate) {
+            final certToUse = File(ssl.fullChainCertPath).existsSync()
+                ? ssl.fullChainCertPath
+                : ssl.certPath;
+            final sec = SecurityContext()
+              ..useCertificateChain(certToUse)
+              ..usePrivateKey(ssl.keyPath);
+            _secureServer = await HttpServer.bindSecure(
+              InternetAddress.loopbackIPv4,
               httpsPort,
               sec,
             );
-            _secureServerIpv6!.autoCompress = true;
-            _secureServerIpv6!.idleTimeout = const Duration(seconds: 15);
-            _secureServerIpv6!.listen(
+            _secureServer!.autoCompress = true;
+            _secureServer!.idleTimeout = const Duration(seconds: 15);
+            _secureServer!.listen(
               _handleRequest,
-              onError: (e) => _logController.add('[Web Server HTTPS IPv6 Error] $e'),
+              onError: (e) => _logController.add('[Web Server HTTPS Error] $e'),
             );
-          } catch (_) {}
+            _logController.add('[Web Server] Berjalan pada https://127.0.0.1:$httpsPort (SSL Aktif)');
+
+            try {
+              _secureServerIpv6 = await HttpServer.bindSecure(
+                InternetAddress.loopbackIPv6,
+                httpsPort,
+                sec,
+              );
+              _secureServerIpv6!.autoCompress = true;
+              _secureServerIpv6!.idleTimeout = const Duration(seconds: 15);
+              _secureServerIpv6!.listen(
+                _handleRequest,
+                onError: (e) => _logController.add('[Web Server HTTPS IPv6 Error] $e'),
+              );
+            } catch (_) {}
+          }
+        } catch (sslErr) {
+          _logController.add('[Web Server SSL Warning] HTTPS Port $httpsPort tidak aktif: $sslErr');
         }
-      } catch (sslErr) {
-        _logController.add('[Web Server SSL Warning] HTTPS Port $httpsPort tidak aktif: $sslErr');
+      } else {
+        _logController.add('[Web Server] SSL dinonaktifkan oleh pengguna (hanya melayani HTTP Port $httpPort).');
       }
 
       return true;
@@ -685,7 +689,6 @@ class HttpServerService {
       request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store, must-revalidate, max-age=0');
       request.response.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
       request.response.headers.set(HttpHeaders.expiresHeader, '0');
-      request.response.headers.set('Clear-Site-Data', '"cache"');
       htaccess.responseHeaders.forEach((k, v) {
         try {
           request.response.headers.set(k, v);
