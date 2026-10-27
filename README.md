@@ -6,8 +6,14 @@ A lightweight, portable local web server and database development environment fo
 
 ## What's New in v0.2.0
 
+### 🐛 Bug Fixes
+* **Fixed Browser 301 Moved Permanently Disk Cache**: Menghilangkan redirect paksa HTTP ke HTTPS dan header HSTS yang menyebabkan browser terkunci di cache redirect permanen (301 disk cache).
+* **Fixed Broken Page & JS Asset Reload**: Memperbaiki isu halaman rusak dan asset JS gagal muat saat berpindah protokol dengan menambahkan sakelar kontrol SSL global (`SSL: ON/OFF`) serta pemisahan vhost Nginx & Apache yang bersih.
+* **Fixed Unreadable Fonts & Low Contrast in Light Mode**: Memperbaiki teks buram/pudar dan warna aksen pastel yang tidak terbaca di atas latar putih dengan kalibrasi kontras WCAG AA (Slate-900 / Slate-700 / Slate-500).
+* **Fixed Dark Box Artifacts in Light Mode**: Menghilangkan seluruh kotak hitam hardcoded pada indikator TabBar PHP, seleksi engine web server, dan opsi dialog modal saat berada di tema terang.
+
+### 🎨 Features & Enhancements
 * ☀️ **Default Light Theme & Dark Mode Option**: Switched default application look to a soft, modern Light Theme (Slate/Zinc palette) with 1-click Sun/Moon toggle in the header.
-* 👁️ **Refined Visual Contrast**: Eliminated lingering dark blocks across tabs, engine selectors, and modal dialogs; enhanced typography contrast ratios for optimal legibility.
 * 🖥️ **Adaptive Log Terminal**: Activity log viewer now features a soft, dedicated light code canvas in light mode and obsidian dark in dark mode.
 * 🔓 **Flexible SSL / HTTP Mode**: Added complete SSL toggle switch. Sites can now run via pure HTTP without forced HTTPS redirect or 301 disk cache conflicts.
 * 🧪 **61 Unit & Widget Tests**: Comprehensive test suite including dynamic theme mode persistence and switching.
