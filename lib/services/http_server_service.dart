@@ -936,7 +936,7 @@ class HttpServerService {
 
     final env = <String, String>{
       'GATEWAY_INTERFACE': 'CGI/1.1',
-      'SERVER_SOFTWARE': 'DevlikaStack/0.1.0 (Portable)',
+      'SERVER_SOFTWARE': 'DevlikaStack/0.2.0 (Portable)',
       'SERVER_PROTOCOL': 'HTTP/1.1',
       'REQUEST_METHOD': request.method,
       'REQUEST_URI': requestUri,

@@ -1,8 +1,16 @@
-# DevlikaStack v0.1.0
+# DevlikaStack v0.2.0
 
 A lightweight, portable local web server and database development environment for Windows, built with Flutter. DevlikaStack bundles a multi-engine web server (Native HTTP, Nginx, Apache), a multi-version PHP FastCGI daemon pool, visual PHP extension management, MariaDB, phpMyAdmin, custom port conflict prevention, and 1-click Cloudflare Quick Tunnel into a single portable package without requiring Windows registry modifications or heavy virtualization layers.
 
-![DevlikaStack Dashboard](assets/screenshots/preview.png)
+---
+
+## What's New in v0.2.0
+
+* ☀️ **Default Light Theme & Dark Mode Option**: Switched default application look to a soft, modern Light Theme (Slate/Zinc palette) with 1-click Sun/Moon toggle in the header.
+* 👁️ **Refined Visual Contrast**: Eliminated lingering dark blocks across tabs, engine selectors, and modal dialogs; enhanced typography contrast ratios for optimal legibility.
+* 🖥️ **Adaptive Log Terminal**: Activity log viewer now features a soft, dedicated light code canvas in light mode and obsidian dark in dark mode.
+* 🔓 **Flexible SSL / HTTP Mode**: Added complete SSL toggle switch. Sites can now run via pure HTTP without forced HTTPS redirect or 301 disk cache conflicts.
+* 🧪 **61 Unit & Widget Tests**: Comprehensive test suite including dynamic theme mode persistence and switching.
 
 ---
 
@@ -99,7 +107,7 @@ Unlike traditional local stacks that enforce a single global PHP version:
 
 ## Download & Installation
 
-1. Download **`DevlikaStack-v0.1.0-windows-x64.zip`** from [GitHub Releases](https://github.com/firmanwazir/DevlikaStack/releases/tag/v0.1.0).
+1. Download **`DevlikaStack-v0.2.0-windows-x64.zip`** from [GitHub Releases](https://github.com/firmanwazir/DevlikaStack/releases/tag/v0.2.0).
 2. Extract the archive into your preferred directory (e.g., `D:\DevlikaStack-Portable\`).
 3. Run **`DevlikaStack.exe`** as Administrator.
 
