@@ -288,6 +288,16 @@ class HtaccessService {
                 !redirectLocation.startsWith('/')) {
               redirectLocation = '/$redirectLocation';
             }
+            // Preserve query string from original request if not already present, or append with &
+            if (request.uri.hasQuery && request.uri.query.isNotEmpty) {
+              if (redirectLocation.contains('?')) {
+                if (rule.isQueryStringAppend) {
+                  redirectLocation = '$redirectLocation&${request.uri.query}';
+                }
+              } else {
+                redirectLocation = '$redirectLocation?${request.uri.query}';
+              }
+            }
             return HtaccessResult(
               isRedirect: true,
               redirectStatusCode: rule.redirectCode!,
