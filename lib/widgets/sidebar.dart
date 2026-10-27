@@ -27,7 +27,7 @@ class Sidebar extends StatelessWidget {
 
         return Container(
           width: 240,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppTheme.sidebarDark,
             border: Border(
               right: BorderSide(color: AppTheme.borderDark, width: 1),
@@ -44,11 +44,11 @@ class Sidebar extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E2330),
+                        color: AppTheme.logoBg,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF2E364A), width: 1),
+                        border: Border.all(color: AppTheme.logoBorder, width: 1),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.dns_rounded,
                           color: AppTheme.accentIndigo,
@@ -65,7 +65,7 @@ class Sidebar extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Flexible(
+                              Flexible(
                                 child: Text(
                                   'DevlikaStack',
                                   overflow: TextOverflow.ellipsis,
@@ -85,7 +85,7 @@ class Sidebar extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(color: AppTheme.borderDark),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'v0.1.0',
                                   style: TextStyle(
                                     color: AppTheme.textSecondary,
@@ -97,7 +97,7 @@ class Sidebar extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 1),
-                          const Text(
+                          Text(
                             'Local Server Suite',
                             style: TextStyle(
                               color: AppTheme.textMuted,
@@ -112,7 +112,7 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
 
-              const Divider(height: 1, color: AppTheme.borderDark),
+              Divider(height: 1, color: AppTheme.borderDark),
 
               // 2. Minimalist, Quiet Navigation (No Badge Fatigue)
               Expanded(
@@ -207,7 +207,7 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
 
-              const Divider(height: 1, color: AppTheme.borderDark),
+              Divider(height: 1, color: AppTheme.borderDark),
 
               // 3. Compact Native Control Bar
               Container(
@@ -239,7 +239,7 @@ class Sidebar extends StatelessWidget {
                                     : (isAllOn
                                         ? 'Semua Layanan Berjalan'
                                         : (isWebOn || isDbOn ? 'Sebagian Layanan Aktif' : 'Semua Layanan Berhenti')),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -256,12 +256,12 @@ class Sidebar extends StatelessWidget {
                           child: OutlinedButton.icon(
                             onPressed: controller.isOperatingAll ? null : () => controller.startAll(),
                             icon: controller.isStartingAll
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 12,
                                     height: 12,
                                     child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGreen),
                                   )
-                                : const Icon(Icons.play_arrow_rounded, size: 14, color: AppTheme.accentGreen),
+                                : Icon(Icons.play_arrow_rounded, size: 14, color: AppTheme.accentGreen),
                             label: Text(
                               controller.isStartingAll ? 'Memulai...' : 'Start',
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
@@ -269,7 +269,7 @@ class Sidebar extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.cardDark,
-                              side: const BorderSide(color: AppTheme.borderDark),
+                              side: BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
@@ -280,12 +280,12 @@ class Sidebar extends StatelessWidget {
                           child: OutlinedButton.icon(
                             onPressed: controller.isOperatingAll ? null : () => controller.stopAll(),
                             icon: controller.isStoppingAll
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 12,
                                     height: 12,
                                     child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentRed),
                                   )
-                                : const Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
+                                : Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
                             label: Text(
                               controller.isStoppingAll ? 'Menghentikan...' : 'Stop',
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
@@ -293,7 +293,7 @@ class Sidebar extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.cardDark,
-                              side: const BorderSide(color: AppTheme.borderDark),
+                              side: BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
@@ -316,7 +316,7 @@ class Sidebar extends StatelessWidget {
       padding: const EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 4),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppTheme.textMuted,
           fontSize: 9.5,
           fontWeight: FontWeight.w700,
@@ -348,10 +348,10 @@ class Sidebar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF1E2330) : Colors.transparent,
+              color: isSelected ? AppTheme.navSelectedBg : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
               border: isSelected
-                  ? Border.all(color: const Color(0xFF2E374A), width: 1)
+                  ? Border.all(color: AppTheme.navSelectedBorder, width: 1)
                   : null,
             ),
             child: Row(
@@ -397,7 +397,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     child: Text(
                       countBadge,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppTheme.monoFont,
                         color: AppTheme.textSecondary,
                         fontSize: 10,

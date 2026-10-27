@@ -37,7 +37,7 @@ class TunnelDialog extends StatelessWidget {
           backgroundColor: AppTheme.cardDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: AppTheme.borderDark),
+            side: BorderSide(color: AppTheme.borderDark),
           ),
           child: Container(
             width: 500,
@@ -57,7 +57,7 @@ class TunnelDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: AppTheme.borderDark),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.cloud_sync_outlined,
                           color: AppTheme.accentIndigo,
@@ -69,7 +69,7 @@ class TunnelDialog extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Cloudflare Quick Tunnel',
                             style: TextStyle(
@@ -91,7 +91,7 @@ class TunnelDialog extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppTheme.textMuted, size: 18),
+                      icon: Icon(Icons.close, color: AppTheme.textMuted, size: 18),
                       splashRadius: 18,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
@@ -109,9 +109,9 @@ class TunnelDialog extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.dns_outlined, size: 14, color: AppTheme.textSecondary),
+                      Icon(Icons.dns_outlined, size: 14, color: AppTheme.textSecondary),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Target Host: ',
                         style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5),
                       ),
@@ -169,7 +169,7 @@ class TunnelDialog extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 1),
                           child: Icon(Icons.error_outline, color: AppTheme.accentRed, size: 16),
                         ),
@@ -208,7 +208,7 @@ class TunnelDialog extends StatelessWidget {
         children: [
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentIndigo),
@@ -217,7 +217,7 @@ class TunnelDialog extends StatelessWidget {
               Expanded(
                 child: Text(
                   tunnel.downloadStatus,
-                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12),
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 12),
                 ),
               ),
             ],
@@ -248,7 +248,7 @@ class TunnelDialog extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Komponen cloudflared Diperlukan',
             style: TextStyle(
               color: AppTheme.textPrimary,
@@ -257,7 +257,7 @@ class TunnelDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Fitur ini membutuhkan binary resmi Cloudflare Tunnel (~55 MB). Hanya perlu diunduh satu kali dan langsung siap digunakan tanpa akun.',
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 11.5, height: 1.4),
           ),
@@ -292,7 +292,7 @@ class TunnelDialog extends StatelessWidget {
         border: Border.all(color: AppTheme.borderDark),
       ),
       child: Column(
-        children: const [
+        children: [
           SizedBox(
             width: 22,
             height: 22,
@@ -329,13 +329,13 @@ class TunnelDialog extends StatelessWidget {
             Container(
               width: 7,
               height: 7,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppTheme.accentGreen,
               ),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'LIVE & SECURE (HTTPS)',
               style: TextStyle(
                 color: AppTheme.accentGreen,
@@ -358,7 +358,7 @@ class TunnelDialog extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.lock_outline, size: 15, color: AppTheme.accentGreen),
+              Icon(Icons.lock_outline, size: 15, color: AppTheme.accentGreen),
               const SizedBox(width: 10),
               Expanded(
                 child: SelectableText(
@@ -371,7 +371,7 @@ class TunnelDialog extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.copy_rounded, size: 15, color: AppTheme.textSecondary),
+                icon: Icon(Icons.copy_rounded, size: 15, color: AppTheme.textSecondary),
                 tooltip: 'Salin Tautan',
                 splashRadius: 16,
                 padding: EdgeInsets.zero,
@@ -385,7 +385,7 @@ class TunnelDialog extends StatelessWidget {
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
-                        side: const BorderSide(color: AppTheme.borderDark),
+                        side: BorderSide(color: AppTheme.borderDark),
                       ),
                       duration: const Duration(seconds: 2),
                     ),
@@ -400,7 +400,7 @@ class TunnelDialog extends StatelessWidget {
         // Info note
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Icon(Icons.info_outline, size: 13, color: AppTheme.textMuted),
             SizedBox(width: 6),
             Expanded(
@@ -422,7 +422,7 @@ class TunnelDialog extends StatelessWidget {
                 label: const Text('Buka Browser'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textPrimary,
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: AppTheme.borderDark),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
@@ -455,7 +455,7 @@ class TunnelDialog extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Publikasikan Host Ini ke Internet',
           style: TextStyle(
             color: AppTheme.textPrimary,
@@ -464,7 +464,7 @@ class TunnelDialog extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Cloudflare Quick Tunnel membuat URL HTTPS publik acak yang langsung terhubung ke port lokal ini tanpa memerlukan port forwarding atau IP publik statis.',
           style: TextStyle(color: AppTheme.textSecondary, fontSize: 11.5, height: 1.4),
         ),

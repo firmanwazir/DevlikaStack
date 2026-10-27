@@ -119,7 +119,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
       backgroundColor: AppTheme.cardDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppTheme.borderDark),
+        side: BorderSide(color: AppTheme.borderDark),
       ),
       child: Container(
         width: 500,
@@ -139,7 +139,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                     children: [
                       Text(
                         isEditing ? 'Edit Virtual Host' : 'Tambah Virtual Host Baru',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -150,12 +150,12 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         isEditing
                             ? 'Perbarui konfigurasi domain dan direktori root proyek'
                             : 'Konfigurasikan domain lokal dan runtime target',
-                        style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted),
+                        style: TextStyle(fontSize: 11.5, color: AppTheme.textMuted),
                       ),
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 18, color: AppTheme.textMuted),
+                    icon: Icon(Icons.close, size: 18, color: AppTheme.textMuted),
                     splashRadius: 16,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -164,7 +164,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
               const SizedBox(height: 16),
 
               // Domain Name
-              const Text(
+              Text(
                 'Domain Host Lokal',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
               ),
@@ -173,20 +173,20 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 height: 38,
                 child: TextFormField(
                   controller: _domainController,
-                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
                   decoration: InputDecoration(
                     hintText: 'contoh: project.local atau api.test',
-                    hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                     filled: true,
                     fillColor: AppTheme.surfaceSubtle,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(6),
-                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                      borderSide: BorderSide(color: AppTheme.borderDark),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(6),
-                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                      borderSide: BorderSide(color: AppTheme.borderDark),
                     ),
                   ),
                   validator: (val) {
@@ -212,7 +212,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
               const SizedBox(height: 14),
 
               // Type Selector
-              const Text(
+              Text(
                 'Tipe Runtime',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
               ),
@@ -240,7 +240,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
               // Target Folder (for PHP)
               if (_selectedType == 'php') ...[
-                const Text(
+                Text(
                   'Document Root (Direktori Proyek)',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
@@ -252,20 +252,20 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         height: 38,
                         child: TextFormField(
                           controller: _pathController,
-                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
+                          style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
                           decoration: InputDecoration(
                             hintText: r'D:\WebServer\www\my-project',
-                            hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                            hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                             filled: true,
                             fillColor: AppTheme.surfaceSubtle,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6),
-                              borderSide: const BorderSide(color: AppTheme.borderDark),
+                              borderSide: BorderSide(color: AppTheme.borderDark),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6),
-                              borderSide: const BorderSide(color: AppTheme.borderDark),
+                              borderSide: BorderSide(color: AppTheme.borderDark),
                             ),
                           ),
                           validator: (val) {
@@ -288,7 +288,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
                           backgroundColor: AppTheme.surfaceSubtle,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         ),
@@ -300,7 +300,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 const SizedBox(height: 12),
 
                 // PHP Version Selection
-                const Text(
+                Text(
                   'Versi PHP',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
@@ -318,7 +318,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                       value: _selectedPhpVersion,
                       dropdownColor: AppTheme.cardDark,
                       isExpanded: true,
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
+                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
                       items: [
                         const DropdownMenuItem(
                           value: 'default',
@@ -343,7 +343,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
 
               // Proxy Port (for Proxy)
               if (_selectedType == 'proxy') ...[
-                const Text(
+                Text(
                   'Target Port Localhost',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                 ),
@@ -352,21 +352,21 @@ class _AddHostDialogState extends State<AddHostDialog> {
                   height: 38,
                   child: TextFormField(
                     controller: _proxyPortController,
-                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
+                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontFamily: AppTheme.monoFont),
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       hintText: '3000 atau 5173',
-                      hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       filled: true,
                       fillColor: AppTheme.surfaceSubtle,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                        borderSide: BorderSide(color: AppTheme.borderDark),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                        borderSide: BorderSide(color: AppTheme.borderDark),
                       ),
                     ),
                     validator: (val) {
@@ -437,7 +437,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                    child: Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
@@ -492,7 +492,7 @@ class _AddHostDialogState extends State<AddHostDialog> {
             const SizedBox(height: 1),
             Text(
               desc,
-              style: const TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
+              style: TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
             ),
           ],
         ),

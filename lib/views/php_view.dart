@@ -159,7 +159,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
       Process.run('notepad.exe', [path]);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Berkas php.ini belum ditemukan.'),
           backgroundColor: AppTheme.cardDark,
         ),
@@ -201,13 +201,13 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
           backgroundColor: AppTheme.cardDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: AppTheme.borderDark),
+            side: BorderSide(color: AppTheme.borderDark),
           ),
           title: Row(
             children: [
-              const Icon(Icons.download_rounded, color: AppTheme.accentIndigo, size: 18),
+              Icon(Icons.download_rounded, color: AppTheme.accentIndigo, size: 18),
               const SizedBox(width: 8),
-              Text('Instalasi PHP $versionKey', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+              Text('Instalasi PHP $versionKey', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
             ],
           ),
           content: Column(
@@ -216,7 +216,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
             children: [
               ValueListenableBuilder<String>(
                 valueListenable: statusNotifier,
-                builder: (_, status, __) => Text(status, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12.5)),
+                builder: (_, status, __) => Text(status, style: TextStyle(color: AppTheme.textSecondary, fontSize: 12.5)),
               ),
               const SizedBox(height: 14),
               ValueListenableBuilder<double>(
@@ -283,12 +283,12 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
         backgroundColor: AppTheme.cardDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppTheme.borderDark),
+          side: BorderSide(color: AppTheme.borderDark),
         ),
-        title: const Text('Hapus PHP', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
-        content: Text('Hapus direktori binary dan konfigurasi PHP $versionKey?', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+        title: Text('Hapus PHP', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+        content: Text('Hapus direktori binary dan konfigurasi PHP $versionKey?', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Batal', style: TextStyle(color: AppTheme.textSecondary))),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentRed),
@@ -438,14 +438,14 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: AppTheme.borderDark),
                       ),
-                      child: const Icon(Icons.code_rounded, color: AppTheme.textPrimary, size: 18),
+                      child: Icon(Icons.code_rounded, color: AppTheme.textPrimary, size: 18),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Manajemen Multi-Versi PHP',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                           ),
@@ -454,7 +454,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             lastCheckedStr != null
                                 ? 'Pemeriksaan otomatis terhubung langsung ke sumber resmi php.net (Dicek: $lastCheckedStr).'
                                 : 'Pemeriksaan otomatis terhubung langsung ke sumber resmi php.net secara real-time.',
-                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                           ),
                         ],
                       ),
@@ -472,7 +472,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textPrimary,
                         backgroundColor: AppTheme.surfaceSubtle,
-                        side: const BorderSide(color: AppTheme.borderDark),
+                        side: BorderSide(color: AppTheme.borderDark),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                     ),
@@ -518,7 +518,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         child: Center(
                           child: Text(
                             key,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: AppTheme.monoFont,
                               fontWeight: FontWeight.w700,
                               fontSize: 11.5,
@@ -537,7 +537,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                               children: [
                                 Text(
                                   name,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+                                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
@@ -570,7 +570,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                     ),
                                     child: Text(
                                       'Update: v$latestVer',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: AppTheme.monoFont,
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w600,
@@ -590,7 +590,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                     ),
                                     child: Text(
                                       releaseDate != null ? 'php.net ($releaseDate)' : 'Resmi php.net',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: AppTheme.monoFont,
                                         fontSize: 9,
                                         color: AppTheme.textMuted,
@@ -605,7 +605,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                               isInstalled
                                   ? dirPath
                                   : 'Belum terpasang di lokal. Klik Pasang untuk unduh otomatis dari php.net resmi.',
-                              style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
+                              style: TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
@@ -617,8 +617,8 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         if (hasUpdate) ...[
                           OutlinedButton.icon(
                             onPressed: () => _installPhpVersion(key, downloadUrl: downloadUrl),
-                            icon: const Icon(Icons.system_update_alt_rounded, size: 12, color: AppTheme.accentCyan),
-                            label: const Text('Update', style: TextStyle(fontSize: 10.5, color: AppTheme.accentCyan)),
+                            icon: Icon(Icons.system_update_alt_rounded, size: 12, color: AppTheme.accentCyan),
+                            label: Text('Update', style: TextStyle(fontSize: 10.5, color: AppTheme.accentCyan)),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.accentCyan,
                               backgroundColor: AppTheme.surfaceSubtle,
@@ -641,7 +641,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.textPrimary,
                             backgroundColor: AppTheme.surfaceSubtle,
-                            side: const BorderSide(color: AppTheme.borderDark),
+                            side: BorderSide(color: AppTheme.borderDark),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -650,13 +650,13 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         ),
                         const SizedBox(width: 6),
                         IconButton(
-                          icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
+                          icon: Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
                           tooltip: 'Buka Folder PHP',
                           splashRadius: 15,
                           onPressed: () => ServerController.instance.openFolder(dirPath),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, size: 15, color: AppTheme.accentRed),
+                          icon: Icon(Icons.delete_outline_rounded, size: 15, color: AppTheme.accentRed),
                           tooltip: 'Hapus PHP $key',
                           splashRadius: 15,
                           onPressed: () => _uninstallPhpVersion(key),
@@ -669,7 +669,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.textPrimary,
                             backgroundColor: AppTheme.surfaceSubtle,
-                            side: const BorderSide(color: AppTheme.borderDark),
+                            side: BorderSide(color: AppTheme.borderDark),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -812,7 +812,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentAmber, size: 16),
+              Icon(Icons.auto_awesome_rounded, color: AppTheme.accentAmber, size: 16),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -841,7 +841,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.sync_rounded, color: AppTheme.accentCyan, size: 16),
+              Icon(Icons.sync_rounded, color: AppTheme.accentCyan, size: 16),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -867,7 +867,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.extension_off_rounded, size: 36, color: AppTheme.textMuted),
             SizedBox(height: 12),
             Text('Belum ada versi PHP yang terpasang', style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
@@ -950,7 +950,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
             children: [
               Row(
                 children: [
-                  const Text('Versi PHP:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                  Text('Versi PHP:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
                   const SizedBox(width: 10),
                   Container(
                     height: 32,
@@ -966,7 +966,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             ? _selectedVersionKey
                             : installedVersions.first.versionKey,
                         dropdownColor: AppTheme.cardDark,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600, fontFamily: AppTheme.monoFont),
+                        style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600, fontFamily: AppTheme.monoFont),
                         items: installedVersions.map((v) {
                           return DropdownMenuItem(
                             value: v.versionKey,
@@ -1000,7 +1000,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         Container(
                           width: 6,
                           height: 6,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: AppTheme.accentGreen,
                             shape: BoxShape.circle,
                           ),
@@ -1008,7 +1008,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         const SizedBox(width: 6),
                         Text(
                           '$activeCount / ${allExtensions.length} Ekstensi Aktif',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTheme.monoFont,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -1033,7 +1033,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textPrimary,
                       backgroundColor: AppTheme.surfaceSubtle,
-                      side: const BorderSide(color: AppTheme.borderDark),
+                      side: BorderSide(color: AppTheme.borderDark),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1045,7 +1045,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
               // Presets Row
               Row(
                 children: [
-                  const Text('Preset Cepat:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w500)),
+                  Text('Preset Cepat:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w500)),
                   const SizedBox(width: 10),
                   _buildPresetButton(
                     label: 'Laravel',
@@ -1094,13 +1094,13 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 children: [
-                  const Icon(Icons.search_rounded, size: 16, color: AppTheme.textMuted),
+                  Icon(Icons.search_rounded, size: 16, color: AppTheme.textMuted),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _searchController,
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5),
+                      decoration: InputDecoration(
                         hintText: 'Cari ekstensi (contoh: curl, intl, pdo, gd, redis)...',
                         hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                         border: InputBorder.none,
@@ -1118,7 +1118,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         _searchController.clear();
                         setState(() => _extensionSearch = '');
                       },
-                      child: const Icon(Icons.close_rounded, size: 15, color: AppTheme.textMuted),
+                      child: Icon(Icons.close_rounded, size: 15, color: AppTheme.textMuted),
                     ),
                 ],
               ),
@@ -1153,7 +1153,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                     child: DropdownButton<String>(
                       value: _statusFilter,
                       dropdownColor: AppTheme.cardDark,
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500),
+                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500),
                       items: const [
                         DropdownMenuItem(value: 'all', child: Text('Semua Status')),
                         DropdownMenuItem(value: 'active', child: Text('Hanya Aktif')),
@@ -1179,13 +1179,13 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.sort_rounded, size: 15, color: AppTheme.accentIndigo),
+                  Icon(Icons.sort_rounded, size: 15, color: AppTheme.accentIndigo),
                   const SizedBox(width: 6),
                   DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _sortBy,
                       dropdownColor: AppTheme.cardDark,
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500),
+                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500),
                       items: const [
                         DropdownMenuItem(value: 'active_first', child: Text('Sortir: Aktif di Atas')),
                         DropdownMenuItem(value: 'name_asc', child: Text('Sortir: Nama (A - Z)')),
@@ -1226,7 +1226,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.restart_alt_rounded, size: 15, color: AppTheme.accentAmber),
                             SizedBox(width: 4),
                             Text('Reset Filter', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTheme.accentAmber)),
@@ -1289,16 +1289,16 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.category_outlined, size: 13, color: AppTheme.textMuted),
+                  Icon(Icons.category_outlined, size: 13, color: AppTheme.textMuted),
                   const SizedBox(width: 6),
-                  const Text(
+                  Text(
                     'Kategori Ekstensi:',
                     style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                   ),
                   const Spacer(),
                   Text(
                     'Menampilkan ${filteredExtensions.length} dari ${allExtensions.length} ekstensi',
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
+                    style: TextStyle(fontSize: 11, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
                   ),
                 ],
               ),
@@ -1409,9 +1409,9 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.search_off_rounded, size: 36, color: AppTheme.textMuted),
+                      Icon(Icons.search_off_rounded, size: 36, color: AppTheme.textMuted),
                       const SizedBox(height: 10),
-                      const Text(
+                      Text(
                         'Tidak ada ekstensi yang cocok dengan filter yang dipilih',
                         style: TextStyle(color: AppTheme.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
                       ),
@@ -1420,7 +1420,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         _extensionSearch.isNotEmpty
                             ? 'Pencarian: "$_extensionSearch"'
                             : 'Kategori: $_selectedCategory • Status: ${_statusFilter == "active" ? "Aktif" : _statusFilter == "inactive" ? "Nonaktif" : "Semua"}',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 14),
                       OutlinedButton.icon(
@@ -1436,7 +1436,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         label: const Text('Reset Semua Filter', style: TextStyle(fontSize: 12)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           backgroundColor: AppTheme.cardDark,
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         ),
@@ -1465,7 +1465,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
     return OutlinedButton.icon(
       onPressed: _isApplyingPreset ? null : onPressed,
       icon: Icon(icon, size: 13, color: color),
-      label: Text(label, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+      label: Text(label, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
       style: OutlinedButton.styleFrom(
         backgroundColor: color.withOpacity(0.08),
         side: BorderSide(color: color.withOpacity(0.3)),
@@ -1514,7 +1514,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                   children: [
                     Text(
                       ext.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
                     ),
                     const SizedBox(width: 8),
                     // Key pill badge
@@ -1527,7 +1527,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                       ),
                       child: Text(
                         ext.key,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppTheme.monoFont,
                           fontSize: 10,
                           color: AppTheme.textMuted,
@@ -1565,7 +1565,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.warning_amber_rounded, size: 10, color: AppTheme.accentAmber),
                             SizedBox(width: 3),
                             Text(
@@ -1585,7 +1585,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                 const SizedBox(height: 3),
                 Text(
                   ext.description,
-                  style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 11.5, color: AppTheme.textSecondary),
                 ),
               ],
             ),
@@ -1615,7 +1615,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.inventory_2_outlined, size: 36, color: AppTheme.textMuted),
             SizedBox(height: 12),
             Text('Belum ada versi PHP yang terpasang', style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
@@ -1644,7 +1644,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  const Text('Versi PHP:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                  Text('Versi PHP:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
                   const SizedBox(width: 12),
 
                   Container(
@@ -1661,7 +1661,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                             ? _selectedVersionKey
                             : installedVersions.first.versionKey,
                         dropdownColor: AppTheme.cardDark,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600, fontFamily: AppTheme.monoFont),
+                        style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600, fontFamily: AppTheme.monoFont),
                         items: installedVersions.map((v) {
                           return DropdownMenuItem(
                             value: v.versionKey,
@@ -1688,7 +1688,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textPrimary,
                       backgroundColor: AppTheme.surfaceSubtle,
-                      side: const BorderSide(color: AppTheme.borderDark),
+                      side: BorderSide(color: AppTheme.borderDark),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
@@ -1708,7 +1708,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Direktif Utama php.ini',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                   ),
@@ -1781,9 +1781,9 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('cgi.fix_pathinfo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont)),
+                            Text('cgi.fix_pathinfo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont)),
                             const SizedBox(height: 2),
-                            const Text('Normalisasi pathinfo untuk routing framework', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                            Text('Normalisasi pathinfo untuk routing framework', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                             const SizedBox(height: 6),
                             Container(
                               height: 38,
@@ -1798,7 +1798,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                   value: _fixPathinfo,
                                   dropdownColor: AppTheme.cardDark,
                                   isExpanded: true,
-                                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontFamily: AppTheme.monoFont),
+                                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontFamily: AppTheme.monoFont),
                                   items: const [
                                     DropdownMenuItem(value: '1', child: Text('1 (Aktif)')),
                                     DropdownMenuItem(value: '0', child: Text('0 (Nonaktif)')),
@@ -1817,9 +1817,9 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('display_errors', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont)),
+                            Text('display_errors', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont)),
                             const SizedBox(height: 2),
-                            const Text('Output error ke response browser', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                            Text('Output error ke response browser', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                             const SizedBox(height: 6),
                             Container(
                               height: 38,
@@ -1834,7 +1834,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                   value: _displayErrors,
                                   dropdownColor: AppTheme.cardDark,
                                   isExpanded: true,
-                                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontFamily: AppTheme.monoFont),
+                                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontFamily: AppTheme.monoFont),
                                   items: const [
                                     DropdownMenuItem(value: 'On', child: Text('On (Development)')),
                                     DropdownMenuItem(value: 'Off', child: Text('Off (Production)')),
@@ -1888,31 +1888,31 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont),
         ),
         const SizedBox(height: 2),
-        Text(desc, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+        Text(desc, style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
         const SizedBox(height: 6),
         SizedBox(
           height: 38,
           child: TextFormField(
             controller: controller,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontFamily: AppTheme.monoFont),
             decoration: InputDecoration(
               filled: true,
               fillColor: AppTheme.surfaceSubtle,
               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: AppTheme.borderDark),
+                borderSide: BorderSide(color: AppTheme.borderDark),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: AppTheme.borderDark),
+                borderSide: BorderSide(color: AppTheme.borderDark),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                borderSide: BorderSide(color: AppTheme.accentIndigo),
               ),
             ),
           ),

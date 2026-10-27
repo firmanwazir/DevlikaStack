@@ -23,8 +23,8 @@ class HeaderBar extends StatelessWidget {
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: const BoxDecoration(
-            color: AppTheme.bgDark,
+          decoration: BoxDecoration(
+            color: AppTheme.cardDark,
             border: Border(
               bottom: BorderSide(color: AppTheme.borderDark, width: 1),
             ),
@@ -37,7 +37,7 @@ class HeaderBar extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -55,7 +55,7 @@ class HeaderBar extends StatelessWidget {
                       child: Text(
                         subtitle,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.textMuted,
                           fontWeight: FontWeight.w400,
@@ -91,15 +91,46 @@ class HeaderBar extends StatelessWidget {
               // phpMyAdmin Quick Link (Clean Outlined)
               OutlinedButton.icon(
                 onPressed: () => controller.openPhpMyAdmin(),
-                icon: const Icon(Icons.table_view_outlined, size: 14, color: AppTheme.textSecondary),
+                icon: Icon(Icons.table_view_outlined, size: 14, color: AppTheme.textSecondary),
                 label: const Text('phpMyAdmin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textPrimary,
                   backgroundColor: AppTheme.cardDark,
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: AppTheme.borderDark),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
+              ),
+              const SizedBox(width: 8),
+
+              // Theme Switcher (Toggle Light / Dark)
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: AppTheme.themeModeNotifier,
+                builder: (context, currentMode, _) {
+                  final isDark = currentMode == ThemeMode.dark;
+                  return Tooltip(
+                    message: isDark ? 'Beralih ke Tema Terang (Light Mode)' : 'Beralih ke Tema Gelap (Dark Mode)',
+                    child: InkWell(
+                      onTap: () => AppTheme.toggleTheme(),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        height: 34,
+                        width: 34,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppTheme.cardDark,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppTheme.borderDark),
+                        ),
+                        child: Icon(
+                          isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                          size: 16,
+                          color: isDark ? AppTheme.accentAmber : AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 8),
 

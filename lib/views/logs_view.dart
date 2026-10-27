@@ -62,7 +62,7 @@ class _LogsViewState extends State<LogsView> {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Live Server Logs',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                       ),
@@ -76,7 +76,7 @@ class _LogsViewState extends State<LogsView> {
                         ),
                         child: Text(
                           '${controller.logs.length} Lines',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTheme.monoFont,
                             color: AppTheme.textSecondary,
                             fontSize: 10,
@@ -94,7 +94,7 @@ class _LogsViewState extends State<LogsView> {
                             : () {
                                 Clipboard.setData(ClipboardData(text: controller.logs.join('\n')));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text('Semua baris log disalin ke clipboard.'),
                                     backgroundColor: AppTheme.cardDark,
                                     duration: Duration(seconds: 2),
@@ -106,7 +106,7 @@ class _LogsViewState extends State<LogsView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
                           backgroundColor: AppTheme.surfaceSubtle,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         ),
                       ),
@@ -118,7 +118,7 @@ class _LogsViewState extends State<LogsView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textSecondary,
                           backgroundColor: AppTheme.surfaceSubtle,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         ),
                       ),
@@ -139,7 +139,7 @@ class _LogsViewState extends State<LogsView> {
                     border: Border.all(color: AppTheme.borderDark),
                   ),
                   child: controller.logs.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
                             'Menunggu output aktivitas server...',
                             style: TextStyle(color: AppTheme.textMuted, fontSize: 12, fontFamily: AppTheme.monoFont),

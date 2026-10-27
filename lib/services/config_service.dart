@@ -288,6 +288,19 @@ class ConfigService {
     _saveSettings(settings);
   }
 
+  String get themeMode {
+    final settings = _loadSettings();
+    return settings['theme_mode'] as String? ?? 'light';
+  }
+
+  void setThemeMode(String mode) {
+    if (mode == 'light' || mode == 'dark') {
+      final settings = Map<String, dynamic>.from(_loadSettings());
+      settings['theme_mode'] = mode;
+      _saveSettings(settings);
+    }
+  }
+
   String _detectBinDir() {
     final exeDir = p.dirname(Platform.resolvedExecutable);
 

@@ -42,7 +42,7 @@ class _MariaDbViewState extends State<MariaDbView> {
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),
-            side: const BorderSide(color: AppTheme.borderDark),
+            side: BorderSide(color: AppTheme.borderDark),
           ),
         ),
       );
@@ -58,7 +58,7 @@ class _MariaDbViewState extends State<MariaDbView> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(6),
-          side: const BorderSide(color: AppTheme.borderDark),
+          side: BorderSide(color: AppTheme.borderDark),
         ),
         duration: const Duration(seconds: 2),
       ),
@@ -77,7 +77,7 @@ class _MariaDbViewState extends State<MariaDbView> {
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),
-            side: const BorderSide(color: AppTheme.borderDark),
+            side: BorderSide(color: AppTheme.borderDark),
           ),
         ),
       );
@@ -135,7 +135,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                         children: [
                           Row(
                             children: [
-                              const Text(
+                              Text(
                                 'MariaDB Database Server',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
@@ -189,7 +189,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                             controller.isMariaDbRunning
                                 ? 'Mendengarkan di 127.0.0.1:${controller.mariaDbPort} • InnoDB Storage Engine aktif'
                                 : (db.isInstalled ? 'Daemon database sedang nonaktif.' : 'MariaDB binary belum terpasang.'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11.5,
                             ),
@@ -269,7 +269,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Peralatan Database',
                       style: TextStyle(
                         fontSize: 12.5,
@@ -287,7 +287,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                             label: const Text('Buka phpMyAdmin', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
-                              side: const BorderSide(color: AppTheme.borderDark),
+                              side: BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
@@ -298,11 +298,11 @@ class _MariaDbViewState extends State<MariaDbView> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () => widget.onNavigate!(5), // Go to SQL Importer View
-                              icon: const Icon(Icons.flash_on_rounded, size: 15, color: AppTheme.accentIndigo),
+                              icon: Icon(Icons.flash_on_rounded, size: 15, color: AppTheme.accentIndigo),
                               label: const Text('SQL Turbo Importer', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.textPrimary,
-                                side: const BorderSide(color: AppTheme.borderDark),
+                                side: BorderSide(color: AppTheme.borderDark),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                               ),
@@ -316,7 +316,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                           label: const Text('Edit my.ini', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.textPrimary,
-                            side: const BorderSide(color: AppTheme.borderDark),
+                            side: BorderSide(color: AppTheme.borderDark),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           ),
@@ -328,7 +328,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                           label: const Text('Folder Data', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.textPrimary,
-                            side: const BorderSide(color: AppTheme.borderDark),
+                            side: BorderSide(color: AppTheme.borderDark),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           ),
@@ -357,7 +357,7 @@ class _MariaDbViewState extends State<MariaDbView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(Icons.key_outlined, size: 15, color: AppTheme.textSecondary),
               SizedBox(width: 8),
               Text(
@@ -372,7 +372,7 @@ class _MariaDbViewState extends State<MariaDbView> {
           ),
           const SizedBox(height: 12),
           _buildCopyableRow('Host', '127.0.0.1 (localhost)', '127.0.0.1'),
-          const Divider(height: 14, color: AppTheme.borderDark),
+          Divider(height: 14, color: AppTheme.borderDark),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -382,7 +382,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                   context: context,
                   builder: (ctx) => const PortSettingsDialog(),
                 ),
-                child: const Text(
+                child: Text(
                   'Ubah Port',
                   style: TextStyle(
                     color: AppTheme.accentIndigo,
@@ -393,14 +393,14 @@ class _MariaDbViewState extends State<MariaDbView> {
               ),
             ],
           ),
-          const Divider(height: 14, color: AppTheme.borderDark),
+          Divider(height: 14, color: AppTheme.borderDark),
           _buildCopyableRow('Username', 'root', 'root'),
-          const Divider(height: 14, color: AppTheme.borderDark),
+          Divider(height: 14, color: AppTheme.borderDark),
           _buildCopyableRow('Password', '(kosong / tanpa password)', ''),
-          const Divider(height: 14, color: AppTheme.borderDark),
+          Divider(height: 14, color: AppTheme.borderDark),
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 110,
                 child: Text('Folder Data', style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
               ),
@@ -412,7 +412,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.open_in_new_rounded, size: 14, color: AppTheme.textMuted),
+                icon: Icon(Icons.open_in_new_rounded, size: 14, color: AppTheme.textMuted),
                 tooltip: 'Buka Folder Data',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
@@ -440,7 +440,7 @@ class _MariaDbViewState extends State<MariaDbView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
+                children: [
                   Icon(Icons.verified_outlined, size: 15, color: AppTheme.textSecondary),
                   SizedBox(width: 8),
                   Text(
@@ -456,7 +456,7 @@ class _MariaDbViewState extends State<MariaDbView> {
               OutlinedButton.icon(
                 onPressed: _isCheckingUpdate ? null : _checkUpdate,
                 icon: _isCheckingUpdate
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 12,
                         height: 12,
                         child: CircularProgressIndicator(strokeWidth: 1.5, color: AppTheme.textPrimary),
@@ -468,7 +468,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textPrimary,
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: AppTheme.borderDark),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                 ),
@@ -509,13 +509,13 @@ class _MariaDbViewState extends State<MariaDbView> {
                     ),
                   ],
                 ),
-                const Divider(height: 16, color: AppTheme.borderDark),
+                Divider(height: 16, color: AppTheme.borderDark),
                 Row(
                   children: [
                     Container(
                       width: 5,
                       height: 5,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppTheme.accentGreen,
                       ),
@@ -524,7 +524,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                     Expanded(
                       child: Text(
                         versionInfo?.status ?? 'Versi Terkini & Optimal',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 11.5,
@@ -534,7 +534,7 @@ class _MariaDbViewState extends State<MariaDbView> {
                     ),
                     Text(
                       'Dicek: ${versionInfo != null ? "${versionInfo.lastChecked.hour.toString().padLeft(2, '0')}:${versionInfo.lastChecked.minute.toString().padLeft(2, '0')}" : "Baru saja"}',
-                      style: const TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
+                      style: TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
                     ),
                   ],
                 ),
@@ -555,7 +555,7 @@ class _MariaDbViewState extends State<MariaDbView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 10.5, color: AppTheme.textMuted)),
+        Text(title, style: TextStyle(fontSize: 10.5, color: AppTheme.textMuted)),
         const SizedBox(height: 2),
         Text(
           value,
@@ -567,7 +567,7 @@ class _MariaDbViewState extends State<MariaDbView> {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 1),
-        Text(subtitle, style: const TextStyle(fontSize: 10, color: AppTheme.textMuted), overflow: TextOverflow.ellipsis),
+        Text(subtitle, style: TextStyle(fontSize: 10, color: AppTheme.textMuted), overflow: TextOverflow.ellipsis),
       ],
     );
   }
@@ -577,7 +577,7 @@ class _MariaDbViewState extends State<MariaDbView> {
       children: [
         SizedBox(
           width: 110,
-          child: Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
+          child: Text(label, style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
         ),
         Expanded(
           child: Text(
@@ -591,7 +591,7 @@ class _MariaDbViewState extends State<MariaDbView> {
         ),
         if (copyValue.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.copy_rounded, size: 13, color: AppTheme.textMuted),
+            icon: Icon(Icons.copy_rounded, size: 13, color: AppTheme.textMuted),
             tooltip: 'Salin $label',
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 26, minHeight: 26),

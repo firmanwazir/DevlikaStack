@@ -40,7 +40,7 @@ class _WebServerViewState extends State<WebServerView> {
     if (mounted) {
       setState(() => _isSyncingHosts = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Sinkronisasi file hosts Windows & vhosts server selesai!'),
           backgroundColor: AppTheme.cardDark,
           behavior: SnackBarBehavior.floating,
@@ -103,7 +103,7 @@ class _WebServerViewState extends State<WebServerView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Web Server Engine',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                         ),
@@ -114,14 +114,14 @@ class _WebServerViewState extends State<WebServerView> {
                                 context: context,
                                 builder: (ctx) => const PortSettingsDialog(),
                               ),
-                              icon: const Icon(Icons.lan_outlined, size: 13, color: AppTheme.accentIndigo),
+                              icon: Icon(Icons.lan_outlined, size: 13, color: AppTheme.accentIndigo),
                               label: Text(
                                 'Port: ${controller.httpPort}',
                                 style: const TextStyle(fontFamily: AppTheme.monoFont, fontSize: 11, fontWeight: FontWeight.w600),
                               ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.textPrimary,
-                                side: const BorderSide(color: AppTheme.borderDark),
+                                side: BorderSide(color: AppTheme.borderDark),
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                               ),
@@ -136,7 +136,7 @@ class _WebServerViewState extends State<WebServerView> {
                               ),
                               child: Text(
                                 'ACTIVE: ${activeEngine.toUpperCase()}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: AppTheme.monoFont,
                                   color: AppTheme.textSecondary,
                                   fontSize: 10,
@@ -254,7 +254,7 @@ class _WebServerViewState extends State<WebServerView> {
                             children: [
                               Text(
                                 engineMgr.activeEngineDisplayName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                   color: AppTheme.textPrimary,
@@ -287,7 +287,7 @@ class _WebServerViewState extends State<WebServerView> {
                             isRunning
                                 ? 'Port ${controller.httpPort} (HTTP) • Port ${controller.httpsPort} (HTTPS) • ${activeSites.length} domain terhubung'
                                 : 'Layanan web server sedang berhenti.',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 12,
                             ),
@@ -379,7 +379,7 @@ class _WebServerViewState extends State<WebServerView> {
                                       }
                                     },
                               icon: _isTrustingSsl
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 12,
                                       height: 12,
                                       child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.textPrimary),
@@ -417,7 +417,7 @@ class _WebServerViewState extends State<WebServerView> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.surfaceSubtle,
-                              side: const BorderSide(color: AppTheme.borderDark),
+                              side: BorderSide(color: AppTheme.borderDark),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                             ),
                           ),
@@ -463,7 +463,7 @@ class _WebServerViewState extends State<WebServerView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Konfigurasi & Berkas Engine',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                         ),
@@ -480,7 +480,7 @@ class _WebServerViewState extends State<WebServerView> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.textPrimary,
                             backgroundColor: AppTheme.surfaceSubtle,
-                            side: const BorderSide(color: AppTheme.borderDark),
+                            side: BorderSide(color: AppTheme.borderDark),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           ),
                         ),
@@ -558,7 +558,7 @@ class _WebServerViewState extends State<WebServerView> {
                             context: context,
                             builder: (ctx) => const PortSettingsDialog(),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Ubah Port',
                             style: TextStyle(
                               color: AppTheme.accentIndigo,
@@ -569,9 +569,9 @@ class _WebServerViewState extends State<WebServerView> {
                         ),
                       ],
                     ),
-                    const Divider(height: 14, color: AppTheme.borderDark),
+                    Divider(height: 14, color: AppTheme.borderDark),
                     _buildInfoRow('FastCGI Daemon', activeEngine == 'builtin' ? 'Internal Pipe' : '127.0.0.1:9000 (Persistent Pool)'),
-                    const Divider(height: 14, color: AppTheme.borderDark),
+                    Divider(height: 14, color: AppTheme.borderDark),
                     _buildInfoRow('File Hosts Windows', r'C:\Windows\System32\drivers\etc\hosts'),
                   ],
                 ),
@@ -597,7 +597,7 @@ class _WebServerViewState extends State<WebServerView> {
                           children: [
                             Text(
                               'Routing Virtual Host ($activeEngine)',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -609,7 +609,7 @@ class _WebServerViewState extends State<WebServerView> {
                               ),
                               child: Text(
                                 '${activeSites.length} Terhubung',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: AppTheme.monoFont,
                                   color: AppTheme.textSecondary,
                                   fontSize: 10,
@@ -641,7 +641,7 @@ class _WebServerViewState extends State<WebServerView> {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: AppTheme.borderDark),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Belum ada virtual host yang aktif. Tambahkan host pada menu Virtual Hosts.',
                             style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
@@ -665,8 +665,8 @@ class _WebServerViewState extends State<WebServerView> {
                             },
                             children: [
                               TableRow(
-                                decoration: const BoxDecoration(color: AppTheme.surfaceSubtle),
-                                children: const [
+                                decoration: BoxDecoration(color: AppTheme.surfaceSubtle),
+                                children: [
                                   Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     child: Text('DOMAIN', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.textMuted, letterSpacing: 0.5)),
@@ -687,7 +687,7 @@ class _WebServerViewState extends State<WebServerView> {
                               ),
                               ...activeSites.map((site) {
                                 return TableRow(
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     border: Border(top: BorderSide(color: AppTheme.borderDark)),
                                   ),
                                   children: [
@@ -695,7 +695,7 @@ class _WebServerViewState extends State<WebServerView> {
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                                       child: Text(
                                         site.domain,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontFamily: AppTheme.monoFont,
                                           fontWeight: FontWeight.w600,
                                           color: AppTheme.textPrimary,
@@ -708,7 +708,7 @@ class _WebServerViewState extends State<WebServerView> {
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                                       child: Text(
                                         site.type == 'proxy' ? 'Proxy :${site.proxyPort}' : 'PHP ${site.phpVersion}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontFamily: AppTheme.monoFont,
                                           fontSize: 11,
                                           color: AppTheme.textSecondary,
@@ -720,7 +720,7 @@ class _WebServerViewState extends State<WebServerView> {
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                                       child: Text(
                                         site.rootPath,
-                                        style: const TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
+                                        style: TextStyle(fontSize: 11.5, color: AppTheme.textMuted, fontFamily: AppTheme.monoFont),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -731,13 +731,13 @@ class _WebServerViewState extends State<WebServerView> {
                                         children: [
                                           if (ConfigService.instance.isSslEnabled)
                                             IconButton(
-                                              icon: const Icon(Icons.lock_outline_rounded, size: 14, color: AppTheme.accentGreen),
+                                              icon: Icon(Icons.lock_outline_rounded, size: 14, color: AppTheme.accentGreen),
                                               tooltip: 'Buka https://${site.domain}',
                                               splashRadius: 14,
                                               onPressed: () => _openUrl('https://${site.domain}'),
                                             ),
                                           IconButton(
-                                            icon: const Icon(Icons.open_in_browser_rounded, size: 14, color: AppTheme.textSecondary),
+                                            icon: Icon(Icons.open_in_browser_rounded, size: 14, color: AppTheme.textSecondary),
                                             tooltip: 'Buka http://${site.domain}',
                                             splashRadius: 14,
                                             onPressed: () => _openUrl('http://${site.domain}'),
@@ -827,7 +827,7 @@ class _WebServerViewState extends State<WebServerView> {
             const SizedBox(height: 6),
             Text(
               subtitle,
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11, height: 1.3),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 11, height: 1.3),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -859,11 +859,11 @@ class _WebServerViewState extends State<WebServerView> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppTheme.monoFont,
             fontSize: 12,
             fontWeight: FontWeight.w500,

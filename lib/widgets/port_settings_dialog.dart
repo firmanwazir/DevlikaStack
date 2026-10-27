@@ -101,7 +101,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
       backgroundColor: AppTheme.cardDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppTheme.borderDark),
+        side: BorderSide(color: AppTheme.borderDark),
       ),
       child: Container(
         width: 520,
@@ -120,7 +120,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppTheme.borderDark),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.lan_outlined,
                     color: AppTheme.accentIndigo,
                     size: 20,
@@ -131,7 +131,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Konfigurasi Port Jaringan',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
@@ -151,7 +151,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   ),
                 ),
                 if (_isChecking)
-                  const SizedBox(
+                  SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentIndigo),
@@ -170,7 +170,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.accentCyan),
+                  Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.accentCyan),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -238,7 +238,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   onPressed: () => Navigator.of(context).pop(false),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.textSecondary,
-                    side: const BorderSide(color: AppTheme.borderDark),
+                    side: BorderSide(color: AppTheme.borderDark),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   ),
@@ -283,7 +283,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 12.5,
                 fontWeight: FontWeight.w500,
@@ -305,7 +305,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 onChanged: (_) => onChanged(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTheme.monoFont,
                   color: AppTheme.textPrimary,
                   fontSize: 13,
@@ -316,15 +316,15 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   fillColor: AppTheme.bgDark,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
+                    borderSide: BorderSide(color: AppTheme.borderDark),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
+                    borderSide: BorderSide(color: AppTheme.borderDark),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                    borderSide: BorderSide(color: AppTheme.accentIndigo),
                   ),
                 ),
               ),
@@ -381,7 +381,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 12.5,
             fontWeight: FontWeight.w500,
@@ -397,7 +397,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                 controller: controller,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTheme.monoFont,
                   color: AppTheme.textPrimary,
                   fontSize: 13,
@@ -408,15 +408,15 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   fillColor: AppTheme.bgDark,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
+                    borderSide: BorderSide(color: AppTheme.borderDark),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.borderDark),
+                    borderSide: BorderSide(color: AppTheme.borderDark),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                    borderSide: BorderSide(color: AppTheme.accentIndigo),
                   ),
                 ),
               ),
@@ -471,7 +471,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: AppTheme.accentGreen.withOpacity(0.3)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check_circle_outline_rounded, size: 11, color: AppTheme.accentGreen),
@@ -493,7 +493,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: AppTheme.accentGreen.withOpacity(0.3)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check_circle_outline_rounded, size: 11, color: AppTheme.accentGreen),
@@ -518,11 +518,11 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.warning_amber_rounded, size: 11, color: AppTheme.accentAmber),
+          Icon(Icons.warning_amber_rounded, size: 11, color: AppTheme.accentAmber),
           const SizedBox(width: 4),
           Text(
             status.description,
-            style: const TextStyle(color: AppTheme.accentAmber, fontSize: 10.5, fontWeight: FontWeight.w500),
+            style: TextStyle(color: AppTheme.accentAmber, fontSize: 10.5, fontWeight: FontWeight.w500),
           ),
         ],
       ),

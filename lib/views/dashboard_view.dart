@@ -81,7 +81,7 @@ class DashboardView extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Virtual Hosts Aktif',
                         style: TextStyle(
                           fontSize: 14,
@@ -100,7 +100,7 @@ class DashboardView extends StatelessWidget {
                         ),
                         child: Text(
                           '${controller.sites.length}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTheme.monoFont,
                             color: AppTheme.textSecondary,
                             fontSize: 11,
@@ -163,9 +163,9 @@ class DashboardView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppTheme.accentAmber, size: 20),
+          Icon(Icons.warning_amber_rounded, color: AppTheme.accentAmber, size: 20),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
               'Beberapa runtime komponen server belum terpasang di sistem.',
               style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w500),
@@ -213,7 +213,7 @@ class DashboardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: AppTheme.borderDark),
                     ),
-                    child: const Icon(Icons.hub_rounded, color: AppTheme.textPrimary, size: 17),
+                    child: Icon(Icons.hub_rounded, color: AppTheme.textPrimary, size: 17),
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -221,7 +221,7 @@ class DashboardView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Web Server',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
                           ),
@@ -233,7 +233,7 @@ class DashboardView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(color: AppTheme.borderDark),
                             ),
-                            child: const Text(
+                            child: Text(
                               'HTTP Engine',
                               style: TextStyle(fontFamily: AppTheme.monoFont, fontSize: 10, color: AppTheme.textSecondary),
                             ),
@@ -243,14 +243,14 @@ class DashboardView extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'Port ${controller.httpPort} (HTTP) • Port ${controller.httpsPort} (HTTPS)',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                       ),
                     ],
                   ),
                 ],
               ),
               controller.isWebToggling
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 36,
                       height: 24,
                       child: Center(
@@ -272,7 +272,7 @@ class DashboardView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppTheme.borderDark),
+          Divider(height: 1, color: AppTheme.borderDark),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -305,7 +305,7 @@ class DashboardView extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   child: Row(
-                    children: const [
+                    children: [
                       Text(
                         'Konfigurasi Engine',
                         style: TextStyle(color: AppTheme.accentIndigo, fontSize: 11.5, fontWeight: FontWeight.w600),
@@ -350,7 +350,7 @@ class DashboardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: AppTheme.borderDark),
                     ),
-                    child: const Icon(Icons.storage_rounded, color: AppTheme.textPrimary, size: 17),
+                    child: Icon(Icons.storage_rounded, color: AppTheme.textPrimary, size: 17),
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -358,7 +358,7 @@ class DashboardView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'MariaDB Server',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
                           ),
@@ -372,7 +372,7 @@ class DashboardView extends StatelessWidget {
                             ),
                             child: Text(
                               'MySQL ${controller.mariaDbPort}',
-                              style: const TextStyle(fontFamily: AppTheme.monoFont, fontSize: 10, color: AppTheme.textSecondary),
+                              style: TextStyle(fontFamily: AppTheme.monoFont, fontSize: 10, color: AppTheme.textSecondary),
                             ),
                           ),
                         ],
@@ -380,14 +380,14 @@ class DashboardView extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'Loopback 127.0.0.1:${controller.mariaDbPort} • root:none',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                       ),
                     ],
                   ),
                 ],
               ),
               controller.isMariaDbToggling
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 36,
                       height: 24,
                       child: Center(
@@ -409,7 +409,7 @@ class DashboardView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppTheme.borderDark),
+          Divider(height: 1, color: AppTheme.borderDark),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -441,7 +441,7 @@ class DashboardView extends StatelessWidget {
                   InkWell(
                     onTap: () => onNavigate(5),
                     borderRadius: BorderRadius.circular(4),
-                    child: const Padding(
+                    child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       child: Text(
                         'SQL Importer',
@@ -456,7 +456,7 @@ class DashboardView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       child: Row(
-                        children: const [
+                        children: [
                           Text(
                             'Kelola DB',
                             style: TextStyle(color: AppTheme.accentIndigo, fontSize: 11.5, fontWeight: FontWeight.w600),
@@ -496,14 +496,14 @@ class DashboardView extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: AppTheme.borderDark),
             ),
-            child: const Icon(Icons.code_rounded, color: AppTheme.textSecondary, size: 16),
+            child: Icon(Icons.code_rounded, color: AppTheme.textSecondary, size: 16),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('PHP Environment', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                Text('PHP Environment', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
                 const SizedBox(height: 1),
                 Text(
                   php.isInstalled ? php.version : 'Belum Terpasang',
@@ -521,7 +521,7 @@ class DashboardView extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: AppTheme.textPrimary,
               backgroundColor: AppTheme.surfaceSubtle,
-              side: const BorderSide(color: AppTheme.borderDark),
+              side: BorderSide(color: AppTheme.borderDark),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -553,14 +553,14 @@ class DashboardView extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: AppTheme.borderDark),
             ),
-            child: const Icon(Icons.table_view_rounded, color: AppTheme.textSecondary, size: 16),
+            child: Icon(Icons.table_view_rounded, color: AppTheme.textSecondary, size: 16),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('phpMyAdmin', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
+                Text('phpMyAdmin', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
                 const SizedBox(height: 1),
                 Text(
                   pma.isInstalled ? 'Siap digunakan' : 'Belum Terpasang',
@@ -579,7 +579,7 @@ class DashboardView extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: pma.isInstalled ? AppTheme.cardHover : AppTheme.surfaceSubtle,
               foregroundColor: AppTheme.textPrimary,
-              side: const BorderSide(color: AppTheme.borderDark),
+              side: BorderSide(color: AppTheme.borderDark),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -605,14 +605,14 @@ class DashboardView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.public_outlined, size: 36, color: AppTheme.textMuted),
+              Icon(Icons.public_outlined, size: 36, color: AppTheme.textMuted),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Belum Ada Virtual Host Terdaftar',
                 style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Tambahkan virtual host untuk mengarahkan domain lokal ke folder proyek Anda.',
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
               ),
@@ -646,7 +646,7 @@ class DashboardView extends StatelessWidget {
       child: Column(
         children: [
           for (int index = 0; index < sites.length; index++) ...[
-            if (index > 0) const Divider(height: 1, color: AppTheme.borderDark),
+            if (index > 0) Divider(height: 1, color: AppTheme.borderDark),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               child: Row(
@@ -660,7 +660,7 @@ class DashboardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(color: AppTheme.borderDark),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(Icons.public, color: AppTheme.textSecondary, size: 15),
                     ),
                   ),
@@ -673,7 +673,7 @@ class DashboardView extends StatelessWidget {
                           children: [
                             Text(
                               sites[index].domain,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: AppTheme.monoFont,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
@@ -690,7 +690,7 @@ class DashboardView extends StatelessWidget {
                               ),
                               child: Text(
                                 sites[index].type == 'proxy' ? 'Proxy :${sites[index].proxyPort}' : sites[index].phpVersion,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: AppTheme.monoFont,
                                   fontSize: 9.5,
                                   color: AppTheme.textSecondary,
@@ -703,7 +703,7 @@ class DashboardView extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           sites[index].type == 'proxy' ? 'Reverse Proxy ke port ${sites[index].proxyPort}' : sites[index].rootPath,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTheme.monoFont,
                             fontSize: 11,
                             color: AppTheme.textMuted,
@@ -718,26 +718,26 @@ class DashboardView extends StatelessWidget {
                   // Fast Action Buttons (Clean & Quiet)
                   if (ConfigService.instance.isSslEnabled)
                     IconButton(
-                      icon: const Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
+                      icon: Icon(Icons.lock_outline_rounded, size: 15, color: AppTheme.accentGreen),
                       tooltip: 'Buka HTTPS (https://${sites[index].domain})',
                       splashRadius: 16,
                       onPressed: () => controller.openUrl('https://${sites[index].domain}'),
                     ),
                   IconButton(
-                    icon: const Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.open_in_new_rounded, size: 15, color: AppTheme.textSecondary),
                     tooltip: 'Buka HTTP (http://${sites[index].domain})',
                     splashRadius: 16,
                     onPressed: () => controller.openUrl('http://${sites[index].domain}'),
                   ),
                   if (sites[index].type != 'proxy')
                     IconButton(
-                      icon: const Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
+                      icon: Icon(Icons.folder_open_outlined, size: 15, color: AppTheme.textSecondary),
                       tooltip: 'Buka Folder Dokumen',
                       splashRadius: 16,
                       onPressed: () => controller.openFolder(sites[index].rootPath),
                     ),
                   IconButton(
-                    icon: const Icon(Icons.tune_rounded, size: 15, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.tune_rounded, size: 15, color: AppTheme.textSecondary),
                     tooltip: 'Pengaturan Virtual Host',
                     splashRadius: 16,
                     onPressed: () {

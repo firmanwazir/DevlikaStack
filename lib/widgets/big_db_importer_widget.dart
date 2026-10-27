@@ -106,7 +106,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
     final filePath = _fileController.text.trim();
     if (filePath.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Pilih file SQL terlebih dahulu.'),
           backgroundColor: AppTheme.accentAmber,
         ),
@@ -120,7 +120,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
 
     if (targetDb.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Tentukan nama database tujuan.'),
           backgroundColor: AppTheme.accentAmber,
         ),
@@ -130,7 +130,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
 
     if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(targetDb)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Nama database hanya boleh mengandung huruf, angka, dan underscore.'),
           backgroundColor: AppTheme.accentAmber,
         ),
@@ -203,14 +203,14 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: AppTheme.borderDark),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Icon(Icons.flash_on_rounded, color: AppTheme.accentIndigo, size: 18),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Large Database Importer',
                             style: TextStyle(
@@ -264,19 +264,19 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle_outline, color: AppTheme.accentGreen, size: 16),
+                      Icon(Icons.check_circle_outline, color: AppTheme.accentGreen, size: 16),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           importer.lastCompletedInfo!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 12,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, size: 15, color: AppTheme.textMuted),
+                        icon: Icon(Icons.close, size: 15, color: AppTheme.textMuted),
                         tooltip: 'Tutup',
                         onPressed: () => importer.clearStatus(),
                         padding: EdgeInsets.zero,
@@ -300,7 +300,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 1),
                         child: Icon(Icons.error_outline, color: AppTheme.accentRed, size: 16),
                       ),
@@ -309,7 +309,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Import Gagal',
                               style: TextStyle(
                                 color: AppTheme.accentRed,
@@ -329,7 +329,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, size: 15, color: AppTheme.textMuted),
+                        icon: Icon(Icons.close, size: 15, color: AppTheme.textMuted),
                         tooltip: 'Tutup',
                         onPressed: () => importer.clearStatus(),
                         padding: EdgeInsets.zero,
@@ -342,7 +342,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
 
               if (!isImporting) ...[
                 // File SQL Selection Row
-                const Text(
+                Text(
                   'File SQL Target',
                   style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                 ),
@@ -378,21 +378,21 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                         style: AppTheme.monoStyle(color: AppTheme.textPrimary, fontSize: 12),
                         decoration: InputDecoration(
                           hintText: r'D:\database_backup.sql',
-                          hintStyle: const TextStyle(color: AppTheme.textMuted),
+                          hintStyle: TextStyle(color: AppTheme.textMuted),
                           filled: true,
                           fillColor: AppTheme.surfaceSubtle,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                            borderSide: BorderSide(color: AppTheme.accentIndigo),
                           ),
                         ),
                       ),
@@ -406,7 +406,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                           : 'Pilih File .sql'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textPrimary,
-                        side: const BorderSide(color: AppTheme.borderDark),
+                        side: BorderSide(color: AppTheme.borderDark),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                       ),
@@ -424,12 +424,12 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, size: 14, color: AppTheme.textSecondary),
+                        Icon(Icons.info_outline, size: 14, color: AppTheme.textSecondary),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Ukuran file: ${DbImporterService.formatBytes(_selectedFileSize)}. Pastikan partisi penyimpanan memiliki sisa ruang memadai.',
-                            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                            style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                           ),
                         ),
                       ],
@@ -500,23 +500,23 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                     style: AppTheme.monoStyle(color: AppTheme.textPrimary, fontSize: 12),
                     decoration: InputDecoration(
                       labelText: 'Nama Database Baru',
-                      labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 11.5),
+                      labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 11.5),
                       hintText: 'db_target_name',
-                      hintStyle: const TextStyle(color: AppTheme.textMuted),
+                      hintStyle: TextStyle(color: AppTheme.textMuted),
                       filled: true,
                       fillColor: AppTheme.surfaceSubtle,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                        borderSide: BorderSide(color: AppTheme.borderDark),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: AppTheme.borderDark),
+                        borderSide: BorderSide(color: AppTheme.borderDark),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                        borderSide: BorderSide(color: AppTheme.accentIndigo),
                       ),
                     ),
                   )
@@ -532,7 +532,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                             border: Border.all(color: AppTheme.borderDark),
                           ),
                           child: _isLoadingDatabases
-                              ? const Padding(
+                              ? Padding(
                                   padding: EdgeInsets.symmetric(vertical: 10),
                                   child: Center(
                                     child: SizedBox(
@@ -565,7 +565,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.refresh_rounded, size: 16, color: AppTheme.textSecondary),
+                        icon: Icon(Icons.refresh_rounded, size: 16, color: AppTheme.textSecondary),
                         tooltip: 'Muat ulang database',
                         onPressed: _loadDatabases,
                       ),
@@ -610,7 +610,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                         children: [
                           Text(
                             importer.statusMessage,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textPrimary,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -634,7 +634,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                           value: importer.progress > 0 ? importer.progress : null,
                           minHeight: 6,
                           backgroundColor: AppTheme.surfaceElevated,
-                          valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentIndigo),
+                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentIndigo),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -682,8 +682,8 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
                   alignment: Alignment.centerRight,
                   child: OutlinedButton.icon(
                     onPressed: () => importer.cancelImport(),
-                    icon: const Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
-                    label: const Text('Batalkan', style: TextStyle(color: AppTheme.accentRed, fontSize: 12)),
+                    icon: Icon(Icons.stop_rounded, size: 14, color: AppTheme.accentRed),
+                    label: Text('Batalkan', style: TextStyle(color: AppTheme.accentRed, fontSize: 12)),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppTheme.accentRed.withOpacity(0.3)),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -711,7 +711,7 @@ class _BigDbImporterWidgetState extends State<BigDbImporterWidget> {
           children: [
             Icon(icon, size: 11, color: AppTheme.textMuted),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+            Text(label, style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
           ],
         ),
         const SizedBox(height: 3),

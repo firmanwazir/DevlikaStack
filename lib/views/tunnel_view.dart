@@ -159,7 +159,7 @@ class _TunnelViewState extends State<TunnelView> {
               children: [
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'Cloudflare Quick Tunnel (Online Preview)',
                       style: TextStyle(
                         fontSize: 14,
@@ -198,7 +198,7 @@ class _TunnelViewState extends State<TunnelView> {
                   ],
                 ),
                 const SizedBox(height: 2),
-                const Text(
+                Text(
                   'Publikasikan virtual host lokal ke internet secara aman dengan sertifikat SSL resmi.',
                   style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                 ),
@@ -241,7 +241,7 @@ class _TunnelViewState extends State<TunnelView> {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Target Preview',
                 style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
               ),
@@ -269,7 +269,7 @@ class _TunnelViewState extends State<TunnelView> {
                   selectedForegroundColor: AppTheme.textPrimary,
                   foregroundColor: AppTheme.textSecondary,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: AppTheme.borderDark),
                 ),
               ),
             ],
@@ -286,7 +286,7 @@ class _TunnelViewState extends State<TunnelView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Pilih Domain Virtual Host', style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
+                      Text('Pilih Domain Virtual Host', style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
                       const SizedBox(height: 6),
                       Container(
                         height: 38,
@@ -303,17 +303,17 @@ class _TunnelViewState extends State<TunnelView> {
                                 ? _selectedDomain
                                 : (sites.isNotEmpty ? sites.first.domain : null),
                             dropdownColor: AppTheme.cardDark,
-                            hint: const Text('Belum ada host', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                            hint: Text('Belum ada host', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                             items: sites.map((s) {
                               return DropdownMenuItem<String>(
                                 value: s.domain,
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.public, size: 14, color: AppTheme.textMuted),
+                                    Icon(Icons.public, size: 14, color: AppTheme.textMuted),
                                     const SizedBox(width: 8),
                                     Text(
                                       s.domain,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppTheme.textPrimary,
                                         fontFamily: AppTheme.monoFont,
                                         fontSize: 12.5,
@@ -323,7 +323,7 @@ class _TunnelViewState extends State<TunnelView> {
                                     const SizedBox(width: 6),
                                     Text(
                                       '(${s.type == 'proxy' ? 'Proxy :${s.proxyPort}' : s.phpVersion})',
-                                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                                      style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                                     ),
                                   ],
                                 ),
@@ -346,25 +346,25 @@ class _TunnelViewState extends State<TunnelView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Port Server', style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
+                    Text('Port Server', style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5)),
                     const SizedBox(height: 6),
                     SizedBox(
                       height: 38,
                       child: TextField(
                         controller: _portController,
                         enabled: !isRunning && !isStarting,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont, fontSize: 12.5),
+                        style: TextStyle(color: AppTheme.textPrimary, fontFamily: AppTheme.monoFont, fontSize: 12.5),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: AppTheme.surfaceSubtle,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                         ),
                         keyboardType: TextInputType.number,
@@ -454,10 +454,10 @@ class _TunnelViewState extends State<TunnelView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(tunnel.downloadStatus, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12)),
+                      Text(tunnel.downloadStatus, style: TextStyle(color: AppTheme.textPrimary, fontSize: 12)),
                       Text(
                         '${(tunnel.downloadProgress * 100).toStringAsFixed(0)}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppTheme.monoFont,
                           color: AppTheme.accentIndigo,
                           fontWeight: FontWeight.bold,
@@ -470,7 +470,7 @@ class _TunnelViewState extends State<TunnelView> {
                   LinearProgressIndicator(
                     value: tunnel.downloadProgress,
                     backgroundColor: AppTheme.borderDark,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentIndigo),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentIndigo),
                     minHeight: 4,
                   ),
                 ],
@@ -496,10 +496,10 @@ class _TunnelViewState extends State<TunnelView> {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.accentGreen),
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.accentGreen),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Link Preview Publik Siap Dibagikan ke Klien:',
                         style: TextStyle(
                           color: AppTheme.accentGreen,
@@ -510,7 +510,7 @@ class _TunnelViewState extends State<TunnelView> {
                       const Spacer(),
                       Text(
                         'Target: ${tunnel.activeDomain} (:${tunnel.activePort})',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 11,
                           fontFamily: AppTheme.monoFont,
@@ -531,7 +531,7 @@ class _TunnelViewState extends State<TunnelView> {
                           ),
                           child: SelectableText(
                             tunnel.publicUrl!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textPrimary,
                               fontFamily: AppTheme.monoFont,
                               fontSize: 13,
@@ -545,7 +545,7 @@ class _TunnelViewState extends State<TunnelView> {
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: tunnel.publicUrl!));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text('Link preview publik disalin ke clipboard!'),
                               backgroundColor: AppTheme.cardDark,
                               duration: Duration(seconds: 2),
@@ -557,7 +557,7 @@ class _TunnelViewState extends State<TunnelView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
                           backgroundColor: AppTheme.cardDark,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         ),
@@ -575,7 +575,7 @@ class _TunnelViewState extends State<TunnelView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
                           backgroundColor: AppTheme.cardDark,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         ),
@@ -591,9 +591,9 @@ class _TunnelViewState extends State<TunnelView> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.sync_rounded, size: 15, color: AppTheme.textMuted),
+              Icon(Icons.sync_rounded, size: 15, color: AppTheme.textMuted),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Auto-Reconnect jika koneksi tunnel terputus',
                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
@@ -622,12 +622,12 @@ class _TunnelViewState extends State<TunnelView> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded, size: 15, color: AppTheme.accentRed),
+                  Icon(Icons.error_outline_rounded, size: 15, color: AppTheme.accentRed),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       tunnel.lastError!,
-                      style: const TextStyle(color: AppTheme.accentRed, fontSize: 12),
+                      style: TextStyle(color: AppTheme.accentRed, fontSize: 12),
                     ),
                   ),
                 ],
@@ -652,13 +652,13 @@ class _TunnelViewState extends State<TunnelView> {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Log Terminal Cloudflare',
                 style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.clear_all_rounded, size: 16, color: AppTheme.textMuted),
+                icon: Icon(Icons.clear_all_rounded, size: 16, color: AppTheme.textMuted),
                 splashRadius: 15,
                 tooltip: 'Bersihkan Log',
                 onPressed: () => setState(() => _logs.clear()),
@@ -676,7 +676,7 @@ class _TunnelViewState extends State<TunnelView> {
               border: Border.all(color: AppTheme.borderDark),
             ),
             child: _logs.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Menunggu proses tunnel dimulai...',
                       style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5, fontFamily: AppTheme.monoFont),
@@ -720,7 +720,7 @@ class _TunnelViewState extends State<TunnelView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Informasi & Keamanan Tunnel',
             style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
           ),
@@ -778,7 +778,7 @@ class _TunnelViewState extends State<TunnelView> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -787,7 +787,7 @@ class _TunnelViewState extends State<TunnelView> {
               const SizedBox(height: 1),
               Text(
                 desc,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textMuted,
                   fontSize: 11,
                   height: 1.3,

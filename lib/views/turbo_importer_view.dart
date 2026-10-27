@@ -37,7 +37,7 @@ class TurboImporterView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: AppTheme.borderDark),
                       ),
-                      child: const Icon(Icons.bolt_rounded, color: AppTheme.textPrimary, size: 18),
+                      child: Icon(Icons.bolt_rounded, color: AppTheme.textPrimary, size: 18),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -46,7 +46,7 @@ class TurboImporterView extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Text(
+                              Text(
                                 'Database SQL Importer',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -62,7 +62,7 @@ class TurboImporterView extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(color: AppTheme.borderDark),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'CLI STREAMING',
                                   style: TextStyle(
                                     fontFamily: AppTheme.monoFont,
@@ -75,7 +75,7 @@ class TurboImporterView extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Import database dump SQL besar langsung via binary client MariaDB tanpa batasan memory limit PHP.',
                             style: TextStyle(
                               fontSize: 12,
@@ -209,7 +209,7 @@ class TurboImporterView extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -222,11 +222,11 @@ class TurboImporterView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('– ', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                  Text('– ', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                   Expanded(
                     child: Text(
                       p,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11.5,
                         color: AppTheme.textMuted,
                         height: 1.35,

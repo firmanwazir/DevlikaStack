@@ -79,14 +79,14 @@ class _HostsViewState extends State<HostsView> {
                       child: TextField(
                         controller: _searchController,
                         onChanged: (val) => setState(() => _searchQuery = val),
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                        style: TextStyle(color: AppTheme.textPrimary, fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'Cari domain, folder root, atau runtime...',
-                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12.5),
-                          prefixIcon: const Icon(Icons.search, size: 16, color: AppTheme.textMuted),
+                          hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 12.5),
+                          prefixIcon: Icon(Icons.search, size: 16, color: AppTheme.textMuted),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.close, size: 14, color: AppTheme.textMuted),
+                                  icon: Icon(Icons.close, size: 14, color: AppTheme.textMuted),
                                   splashRadius: 14,
                                   onPressed: () {
                                     _searchController.clear();
@@ -99,15 +99,15 @@ class _HostsViewState extends State<HostsView> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.borderDark),
+                            borderSide: BorderSide(color: AppTheme.borderDark),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: AppTheme.accentIndigo),
+                            borderSide: BorderSide(color: AppTheme.accentIndigo),
                           ),
                         ),
                       ),
@@ -169,7 +169,7 @@ class _HostsViewState extends State<HostsView> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9.5,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textMuted,
@@ -179,7 +179,7 @@ class _HostsViewState extends State<HostsView> {
               const SizedBox(height: 1),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTheme.monoFont,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -222,14 +222,14 @@ class _HostsViewState extends State<HostsView> {
           const SizedBox(height: 14),
           Text(
             isSearch ? 'Tidak ada host yang cocok dengan pencarian' : 'Belum Ada Virtual Host',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
           ),
           const SizedBox(height: 4),
           Text(
             isSearch
                 ? 'Coba gunakan kata kunci domain atau nama folder lainnya.'
                 : 'Daftarkan domain lokal (contoh: project.local) untuk diarahkan ke folder proyek.',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
           ),
           if (!isSearch) ...[
             const SizedBox(height: 16),
@@ -268,13 +268,13 @@ class _HostsViewState extends State<HostsView> {
           // Table Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppTheme.surfaceSubtle,
               borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
               border: Border(bottom: BorderSide(color: AppTheme.borderDark)),
             ),
             child: Row(
-              children: const [
+              children: [
                 SizedBox(width: 48, child: Text('STATUS', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
                 Expanded(flex: 3, child: Text('DOMAIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
                 Expanded(flex: 2, child: Text('RUNTIME', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5))),
@@ -288,7 +288,7 @@ class _HostsViewState extends State<HostsView> {
           Expanded(
             child: ListView.separated(
               itemCount: sites.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: AppTheme.borderDark),
+              separatorBuilder: (_, __) => Divider(height: 1, color: AppTheme.borderDark),
               itemBuilder: (context, index) {
                 final site = sites[index];
 
@@ -323,12 +323,12 @@ class _HostsViewState extends State<HostsView> {
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               children: [
-                                const Icon(Icons.public, size: 14, color: AppTheme.textMuted),
+                                Icon(Icons.public, size: 14, color: AppTheme.textMuted),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     site.domain,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: AppTheme.monoFont,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
@@ -360,7 +360,7 @@ class _HostsViewState extends State<HostsView> {
                               site.type == 'proxy'
                                   ? 'PROXY :${site.proxyPort}'
                                   : (site.phpVersion == 'default' ? 'PHP Default' : 'PHP ${site.phpVersion}'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: AppTheme.monoFont,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -382,7 +382,7 @@ class _HostsViewState extends State<HostsView> {
                             site.type == 'proxy'
                                 ? 'Reverse Proxy -> 127.0.0.1:${site.proxyPort}'
                                 : site.rootPath,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textMuted,
                               fontSize: 11.5,
                               fontFamily: AppTheme.monoFont,
@@ -503,10 +503,10 @@ class _HostsViewState extends State<HostsView> {
         backgroundColor: AppTheme.cardDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppTheme.borderDark),
+          side: BorderSide(color: AppTheme.borderDark),
         ),
         title: Row(
-          children: const [
+          children: [
             Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 20),
             SizedBox(width: 8),
             Text('Hapus Virtual Host', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
@@ -518,10 +518,10 @@ class _HostsViewState extends State<HostsView> {
           children: [
             Text(
               'Konfirmasi penghapusan konfigurasi virtual host ${site.domain}?',
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Routing domain ini akan dinonaktifkan. File pada folder proyek Anda tidak akan dihapus.',
               style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
@@ -530,7 +530,7 @@ class _HostsViewState extends State<HostsView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+            child: Text('Batal', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
           ),
           ElevatedButton(
             onPressed: () {

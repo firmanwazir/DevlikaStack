@@ -42,21 +42,21 @@ class EnvironmentView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: AppTheme.borderDark),
                       ),
-                      child: const Icon(Icons.lan_outlined, size: 20, color: AppTheme.accentIndigo),
+                      child: Icon(Icons.lan_outlined, size: 20, color: AppTheme.accentIndigo),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Port Jaringan & Pencegahan Konflik (XAMPP / IIS)',
                             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             'HTTP: ${controller.httpPort}  •  HTTPS: ${controller.httpsPort}  •  MariaDB: ${controller.mariaDbPort}',
-                            style: const TextStyle(fontFamily: AppTheme.monoFont, fontSize: 11.5, color: AppTheme.textSecondary),
+                            style: TextStyle(fontFamily: AppTheme.monoFont, fontSize: 11.5, color: AppTheme.textSecondary),
                           ),
                         ],
                       ),
@@ -66,12 +66,12 @@ class EnvironmentView extends StatelessWidget {
                         context: context,
                         builder: (ctx) => const PortSettingsDialog(),
                       ),
-                      icon: const Icon(Icons.tune_rounded, size: 14, color: AppTheme.accentIndigo),
+                      icon: Icon(Icons.tune_rounded, size: 14, color: AppTheme.accentIndigo),
                       label: const Text('Atur Port', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.textPrimary,
                         backgroundColor: AppTheme.surfaceSubtle,
-                        side: const BorderSide(color: AppTheme.borderDark),
+                        side: BorderSide(color: AppTheme.borderDark),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                       ),
@@ -82,12 +82,12 @@ class EnvironmentView extends StatelessWidget {
 
               const SizedBox(height: 18),
 
-              const Text(
+              Text(
                 'Daftar Komponen Server',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
               ),
               const SizedBox(height: 3),
-              const Text(
+              Text(
                 'Kelola dependensi binary portable PHP, MariaDB, web engine, dan alat manajemen.',
                 style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
@@ -140,7 +140,7 @@ class EnvironmentView extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.textPrimary,
                           backgroundColor: AppTheme.surfaceSubtle,
-                          side: const BorderSide(color: AppTheme.borderDark),
+                          side: BorderSide(color: AppTheme.borderDark),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -203,7 +203,7 @@ class EnvironmentView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Pusat Unduhan Komponen',
                       style: TextStyle(
                         fontSize: 14,
@@ -216,7 +216,7 @@ class EnvironmentView extends StatelessWidget {
                       comp.isAllInstalled
                           ? 'Semua komponen runtime dasar telah terpasang dengan lengkap di sistem.'
                           : 'Unduh dan pasang PHP, MariaDB, serta phpMyAdmin sekaligus dalam 1 klik.',
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                     ),
                   ],
                 ),
@@ -250,14 +250,14 @@ class EnvironmentView extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: controller.batchInstallProgress,
                 backgroundColor: AppTheme.surfaceSubtle,
-                valueColor: const AlwaysStoppedAnimation(AppTheme.accentIndigo),
+                valueColor: AlwaysStoppedAnimation(AppTheme.accentIndigo),
                 minHeight: 5,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               controller.batchInstallMessage,
-              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontFamily: AppTheme.monoFont),
+              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontFamily: AppTheme.monoFont),
             ),
           ],
         ],
@@ -306,7 +306,7 @@ class EnvironmentView extends StatelessWidget {
                       children: [
                         Text(
                           item.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
                         ),
                         const SizedBox(width: 8),
                         Container(
@@ -333,7 +333,7 @@ class EnvironmentView extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       details,
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 11.5, fontFamily: AppTheme.monoFont),
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 11.5, fontFamily: AppTheme.monoFont),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -362,7 +362,7 @@ class EnvironmentView extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textPrimary,
                   backgroundColor: AppTheme.surfaceSubtle,
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: AppTheme.borderDark),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -377,14 +377,14 @@ class EnvironmentView extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: item.installProgress,
                 backgroundColor: AppTheme.surfaceSubtle,
-                valueColor: const AlwaysStoppedAnimation(AppTheme.accentIndigo),
+                valueColor: AlwaysStoppedAnimation(AppTheme.accentIndigo),
                 minHeight: 4,
               ),
             ),
             const SizedBox(height: 5),
             Text(
               item.statusMessage,
-              style: const TextStyle(fontSize: 10.5, color: AppTheme.accentIndigo, fontFamily: AppTheme.monoFont),
+              style: TextStyle(fontSize: 10.5, color: AppTheme.accentIndigo, fontFamily: AppTheme.monoFont),
             ),
           ],
         ],
