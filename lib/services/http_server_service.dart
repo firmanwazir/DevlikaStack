@@ -209,9 +209,14 @@ class HttpServerService {
       }
     }
 
-    final futures = <Future<bool>>[];
+    final resolvedModels = <String, PhpVersionModel>{};
     for (var key in neededKeys) {
       final model = ConfigService.instance.getPhpForSite(key);
+      resolvedModels[model.versionKey] = model;
+    }
+
+    final futures = <Future<bool>>[];
+    for (var model in resolvedModels.values) {
       futures.add(_startFastCgiDaemonFor(model));
     }
     await Future.wait(futures);
@@ -539,6 +544,33 @@ class HttpServerService {
     if (_cachedFileExists(targetPath) && !targetPath.endsWith('.php')) {
       await _serveStaticFile(request, targetFile);
       return;
+    }
+
+    // If targetPath is a directory, check for directory index
+    if (_cachedDirExists(targetPath)) {
+      final dirIndex = p.join(targetPath, 'index.php');
+      final dirHtml = p.join(targetPath, 'index.html');
+      if (_cachedFileExists(dirIndex)) {
+        await _executePhp(
+          request,
+          scriptPath: dirIndex,
+          docRoot: phpMyAdminDir,
+          scriptName: '/__phpmyadmin$subPath/index.php',
+          pathInfo: '',
+          phpVersion: 'default',
+        );
+        return;
+      } else if (_cachedFileExists(dirHtml)) {
+        await _serveStaticFile(request, File(dirHtml));
+        return;
+      } else {
+        // If it's a static folder (e.g. /js/vendor/jquery) without index file, return 404 instead of running root index.php
+        request.response.statusCode = 404;
+        request.response.headers.contentType = ContentType.html;
+        request.response.write(_errorPage(404, 'Folder Tanpa Index', 'Folder static phpMyAdmin tidak memiliki index file.'));
+        await request.response.close();
+        return;
+      }
     }
 
     final indexPath = p.join(phpMyAdminDir, 'index.php');

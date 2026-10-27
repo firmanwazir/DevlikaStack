@@ -159,6 +159,22 @@ http {
         keepalive 32;
     }
 
+    upstream php_8_4_pool {
+        server 127.0.0.1:9084;
+        server 127.0.0.1:9184;
+        server 127.0.0.1:9284;
+        server 127.0.0.1:9384;
+        keepalive 32;
+    }
+
+    upstream php_8_5_pool {
+        server 127.0.0.1:9085;
+        server 127.0.0.1:9185;
+        server 127.0.0.1:9285;
+        server 127.0.0.1:9385;
+        keepalive 32;
+    }
+
     # Default localhost / 127.0.0.1 server
     server {
         listen       $httpPort default_server;
@@ -221,7 +237,7 @@ http {
       }
     }
 
-    // 4. Generate individual vhost files for enabled sites
+    // 4. Generate individual vhost files for enabled sites (Separate HTTP & HTTPS blocks)
     for (var site in sites) {
       if (!site.isEnabled) continue;
 
@@ -232,14 +248,9 @@ http {
       String content;
       if (site.type == 'proxy') {
         content = '''
-# Devlika Stack Virtual Host: ${site.domain} (Reverse Proxy)
+# Devlika Stack Virtual Host: ${site.domain} (Reverse Proxy - HTTP)
 server {
     listen $httpPort;
-    ${hasSsl ? '''listen $httpsPort ssl;
-    ssl_certificate "$sslCert";
-    ssl_certificate_key "$sslKey";
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;''' : ''}
     server_name ${site.domain};
 
     location / {
@@ -254,19 +265,37 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
+${hasSsl ? '''
+# Devlika Stack Virtual Host: ${site.domain} (Reverse Proxy - HTTPS)
+server {
+    listen $httpsPort ssl;
+    ssl_certificate "$sslCert";
+    ssl_certificate_key "$sslKey";
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    server_name ${site.domain};
+
+    location / {
+        proxy_pass http://127.0.0.1:${site.proxyPort};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+''' : ''}
 ''';
       } else {
         final docRoot = _getEffectiveDocRoot(site.rootPath);
         final upstreamName = getUpstreamName(site.phpVersion);
         content = '''
-# Devlika Stack Virtual Host: ${site.domain} (PHP ${site.phpVersion} / Static)
+# Devlika Stack Virtual Host: ${site.domain} (PHP ${site.phpVersion} / Static - HTTP)
 server {
     listen $httpPort;
-    ${hasSsl ? '''listen $httpsPort ssl;
-    ssl_certificate "$sslCert";
-    ssl_certificate_key "$sslKey";
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;''' : ''}
     server_name ${site.domain};
     root "$docRoot";
     index index.php index.html index.htm;
@@ -300,6 +329,48 @@ server {
         deny all;
     }
 }
+${hasSsl ? '''
+# Devlika Stack Virtual Host: ${site.domain} (PHP ${site.phpVersion} / Static - HTTPS)
+server {
+    listen $httpsPort ssl;
+    ssl_certificate "$sslCert";
+    ssl_certificate_key "$sslKey";
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    server_name ${site.domain};
+    root "$docRoot";
+    index index.php index.html index.htm;
+
+    client_max_body_size 512M;
+
+    # URL Rewriting for Laravel, WordPress, CodeIgniter, SPA
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \\.php\$ {
+        fastcgi_pass   $upstreamName;
+        fastcgi_keep_conn on;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+        include        fastcgi_params;
+        fastcgi_read_timeout 3600;
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+    }
+
+    # High-speed static caching (Flash delivery)
+    location ~* \\.(jpg|jpeg|png|gif|ico|css|js|woff2|woff|ttf|svg|webp|mp4|webm)\$ {
+        expires 7d;
+        add_header Cache-Control "public, no-transform";
+        access_log off;
+    }
+
+    location ~ /\\.(env|git|log|htaccess) {
+        deny all;
+    }
+}
+''' : ''}
 ''';
       }
 
@@ -308,9 +379,76 @@ server {
     }
   }
 
+  /// Ensure Apache httpd.conf has correct SRVROOT, required modules, and vhost include
+  Future<void> ensureApacheBaseConfig() async {
+    final config = ConfigService.instance;
+    final httpdConfFile = File(config.apacheConfFile);
+    if (!httpdConfFile.existsSync()) return;
+
+    try {
+      var content = httpdConfFile.readAsStringSync();
+      final forwardApacheDir = _toForwardSlash(config.apacheDir);
+
+      // 1. Ensure Define SRVROOT points to actual portable apache dir
+      content = content.replaceAll(
+        RegExp(r'^\s*Define\s+SRVROOT\s+.*$', multiLine: true),
+        'Define SRVROOT "$forwardApacheDir"',
+      );
+
+      // 2. Ensure ServerName localhost is set globally to suppress AH00558
+      if (!content.contains(RegExp(r'^\s*ServerName\s+localhost\b', multiLine: true))) {
+        if (content.contains(RegExp(r'^\s*#?\s*ServerName\s+', multiLine: true))) {
+          content = content.replaceFirst(
+            RegExp(r'^\s*#?\s*ServerName\s+.*$', multiLine: true),
+            'ServerName localhost',
+          );
+        } else {
+          content = 'ServerName localhost\n$content';
+        }
+      }
+
+      // 3. Ensure required modules are enabled
+      final modulesToEnable = [
+        'proxy_module modules/mod_proxy.so',
+        'proxy_fcgi_module modules/mod_proxy_fcgi.so',
+        'proxy_http_module modules/mod_proxy_http.so',
+        'rewrite_module modules/mod_rewrite.so',
+        'headers_module modules/mod_headers.so',
+        'ssl_module modules/mod_ssl.so',
+        'socache_shmcb_module modules/mod_socache_shmcb.so',
+        'vhost_alias_module modules/mod_vhost_alias.so',
+      ];
+
+      for (var mod in modulesToEnable) {
+        final modName = mod.split(' ').first;
+        content = content.replaceAll(
+          RegExp('^\\s*#\\s*LoadModule\\s+$modName\\s+.*\$', multiLine: true),
+          'LoadModule $mod',
+        );
+      }
+
+      // 4. Ensure httpd-vhosts.conf is included
+      content = content.replaceAll(
+        RegExp(r'^\s*#\s*Include\s+conf/extra/httpd-vhosts\.conf\s*$', multiLine: true),
+        'Include conf/extra/httpd-vhosts.conf',
+      );
+
+      // 5. Ensure Listen directives match httpPort
+      final httpPort = config.httpPort;
+      content = content.replaceAll(
+        RegExp(r'^\s*Listen\s+.*$', multiLine: true),
+        'Listen $httpPort',
+      );
+
+      httpdConfFile.writeAsStringSync(content);
+    } catch (_) {}
+  }
+
   /// Generate Apache HTTPD virtual host configuration
   Future<void> generateApacheConfigs(List<SiteModel> sites) async {
     final config = ConfigService.instance;
+    await ensureApacheBaseConfig();
+
     final extraDir = Directory(p.join(config.apacheConfDir, 'extra'));
     if (!extraDir.existsSync()) extraDir.createSync(recursive: true);
 
@@ -319,9 +457,22 @@ server {
     final httpPort = config.httpPort;
     final httpsPort = config.httpsPort;
 
+    final ssl = SslService.instance;
+    await ssl.ensureCertificate(sites: sites);
+    final hasSsl = ssl.hasCertificate;
+    final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
+    final sslCert = _toForwardSlash(certFile);
+    final sslKey = _toForwardSlash(ssl.keyPath);
+
     final buffer = StringBuffer();
     buffer.writeln('# Auto-generated by Devlika Stack Portable');
-    buffer.writeln('# Default Localhost VirtualHost');
+    if (hasSsl) {
+      buffer.writeln('<IfModule ssl_module>');
+      buffer.writeln('    Listen $httpsPort');
+      buffer.writeln('</IfModule>\n');
+    }
+
+    buffer.writeln('# Default Localhost VirtualHost (HTTP)');
     buffer.writeln('<VirtualHost *:$httpPort>');
     buffer.writeln('    ServerName localhost');
     buffer.writeln('    ServerAlias 127.0.0.1');
@@ -342,13 +493,31 @@ server {
     buffer.writeln('    </FilesMatch>');
     buffer.writeln('</VirtualHost>\n');
 
-    final ssl = SslService.instance;
-    await ssl.ensureCertificate(sites: sites);
-    final hasSsl = ssl.hasCertificate;
-    final certFile = File(ssl.fullChainCertPath).existsSync() ? ssl.fullChainCertPath : ssl.certPath;
-    final sslCert = _toForwardSlash(certFile);
-    final sslKey = _toForwardSlash(ssl.keyPath);
-
+    if (hasSsl) {
+      buffer.writeln('# Default Localhost VirtualHost (HTTPS)');
+      buffer.writeln('<VirtualHost *:$httpsPort>');
+      buffer.writeln('    ServerName localhost');
+      buffer.writeln('    ServerAlias 127.0.0.1');
+      buffer.writeln('    DocumentRoot "$demoRoot"');
+      buffer.writeln('    SSLEngine on');
+      buffer.writeln('    SSLCertificateFile "$sslCert"');
+      buffer.writeln('    SSLCertificateKeyFile "$sslKey"');
+      buffer.writeln('    <Directory "$demoRoot">');
+      buffer.writeln('        Options Indexes FollowSymLinks');
+      buffer.writeln('        AllowOverride All');
+      buffer.writeln('        Require all granted');
+      buffer.writeln('    </Directory>');
+      buffer.writeln('    Alias /__phpmyadmin "$pmaDir"');
+      buffer.writeln('    <Directory "$pmaDir">');
+      buffer.writeln('        Options Indexes FollowSymLinks');
+      buffer.writeln('        AllowOverride All');
+      buffer.writeln('        Require all granted');
+      buffer.writeln('    </Directory>');
+      buffer.writeln('    <FilesMatch \\.php\$>');
+      buffer.writeln('        SetHandler "proxy:fcgi://127.0.0.1:9000"');
+      buffer.writeln('    </FilesMatch>');
+      buffer.writeln('</VirtualHost>\n');
+    }
     for (var site in sites) {
       if (!site.isEnabled) continue;
       final cleanDomain = site.domain.trim().toLowerCase();

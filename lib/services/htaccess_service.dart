@@ -399,10 +399,21 @@ class HtaccessService {
     return currentOrGroupResult ?? true;
   }
 
+  String _resolveToDocRoot(String docRoot, String rawVal) {
+    var cleanVal = rawVal.contains('?') ? rawVal.split('?')[0] : rawVal;
+    cleanVal = cleanVal.replaceAll(r'\', '/');
+    // If it has a Windows drive letter (e.g. C:/ or D:/), it is already a full absolute path
+    if (RegExp(r'^[a-zA-Z]:[/\\]').hasMatch(cleanVal)) {
+      return p.normalize(cleanVal);
+    }
+    // Strip leading slashes to prevent package:path from jumping to drive root
+    final rel = cleanVal.startsWith('/') ? cleanVal.replaceFirst(RegExp(r'^/+'), '') : cleanVal;
+    return p.normalize(p.join(docRoot, rel));
+  }
+
   (bool, Match?) _evalSingleCondition(_RewriteCond cond, String value, String docRoot) {
     if (cond.isFileTest) {
-      final cleanVal = value.contains('?') ? value.split('?')[0] : value;
-      final path = p.isAbsolute(cleanVal) ? cleanVal : p.join(docRoot, cleanVal);
+      final path = _resolveToDocRoot(docRoot, value);
       bool exists = false;
       if (_fsExistsCache.containsKey(path)) {
         exists = _fsExistsCache[path]!;
@@ -417,8 +428,7 @@ class HtaccessService {
       return (cond.invert ? !exists : exists, null);
     }
     if (cond.isDirTest) {
-      final cleanVal = value.contains('?') ? value.split('?')[0] : value;
-      final path = p.isAbsolute(cleanVal) ? cleanVal : p.join(docRoot, cleanVal);
+      final path = _resolveToDocRoot(docRoot, value);
       final dirKey = 'd:$path';
       bool exists = false;
       if (_fsExistsCache.containsKey(dirKey)) {
@@ -464,8 +474,7 @@ class HtaccessService {
   ) {
     final upper = varName.toUpperCase().trim();
     if (upper == '%{REQUEST_FILENAME}') {
-      final cleanPath = currentPath.contains('?') ? currentPath.split('?')[0] : currentPath;
-      return p.normalize(p.join(docRoot, cleanPath));
+      return _resolveToDocRoot(docRoot, currentPath);
     }
     if (upper == '%{REQUEST_URI}') {
       return request.uri.path;
