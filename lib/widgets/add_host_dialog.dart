@@ -471,10 +471,10 @@ class _AddHostDialogState extends State<AddHostDialog> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E2330) : AppTheme.surfaceSubtle,
+          color: isSelected ? AppTheme.selectionBg : AppTheme.surfaceSubtle,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2E374A) : AppTheme.borderDark,
+            color: isSelected ? AppTheme.selectionBorder : AppTheme.borderDark,
             width: isSelected ? 1.2 : 1,
           ),
         ),

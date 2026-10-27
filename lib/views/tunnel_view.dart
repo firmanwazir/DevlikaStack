@@ -211,7 +211,7 @@ class _TunnelViewState extends State<TunnelView> {
               icon: const Icon(Icons.stop_rounded, size: 15, color: Colors.white),
               label: const Text('Hentikan Preview', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBE123C),
+                backgroundColor: AppTheme.accentRed,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 elevation: 0,
@@ -265,8 +265,8 @@ class _TunnelViewState extends State<TunnelView> {
                     : (newVal) => setState(() => _selectedMode = newVal.first),
                 style: SegmentedButton.styleFrom(
                   backgroundColor: AppTheme.surfaceSubtle,
-                  selectedBackgroundColor: const Color(0xFF1E2330),
-                  selectedForegroundColor: AppTheme.textPrimary,
+                  selectedBackgroundColor: AppTheme.selectionBg,
+                  selectedForegroundColor: AppTheme.accentIndigo,
                   foregroundColor: AppTheme.textSecondary,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   side: BorderSide(color: AppTheme.borderDark),
@@ -425,7 +425,7 @@ class _TunnelViewState extends State<TunnelView> {
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isRunning ? const Color(0xFFBE123C) : const Color(0xFF047857),
+                                backgroundColor: isRunning ? AppTheme.accentRed : AppTheme.accentGreen,
                                 padding: const EdgeInsets.symmetric(horizontal: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                 elevation: 0,

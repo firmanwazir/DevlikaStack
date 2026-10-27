@@ -19,26 +19,26 @@ class AppTheme {
   }
 
   // =========================================================================
-  // LIGHT PALETTE (Clean, Modern Developer Theme - Default)
+  // LIGHT PALETTE (Clean, Modern, Soft Developer Theme - Default)
   // =========================================================================
-  static const Color lightBg = Color(0xFFF8FAFC);          // Slate-50 clean canvas
+  static const Color lightBg = Color(0xFFF1F5F9);          // Slate-100 soothing canvas
   static const Color lightSidebar = Color(0xFFFFFFFF);     // Pure white sidebar
   static const Color lightCard = Color(0xFFFFFFFF);        // Crisp white card
-  static const Color lightCardHover = Color(0xFFF1F5F9);   // Slate-100 hover
+  static const Color lightCardHover = Color(0xFFF8FAFC);   // Slate-50 hover
   static const Color lightBorder = Color(0xFFE2E8F0);      // Slate-200 border
-  static const Color lightBorderSubtle = Color(0xFFF1F5F9);// Slate-100
+  static const Color lightBorderSubtle = Color(0xFFEEF2F6);// Slate-100 subtle
   static const Color lightSurfaceSubtle = Color(0xFFF8FAFC);
   static const Color lightSurfaceElevated = Color(0xFFFFFFFF);
 
-  static const Color lightTextPrimary = Color(0xFF0F172A);   // Slate-900 (High contrast)
-  static const Color lightTextSecondary = Color(0xFF475569); // Slate-600
-  static const Color lightTextMuted = Color(0xFF94A3B8);     // Slate-400
+  static const Color lightTextPrimary = Color(0xFF0F172A);   // Slate-900 (Crisp, deep, high contrast)
+  static const Color lightTextSecondary = Color(0xFF334155); // Slate-700 (Clear, legible secondary)
+  static const Color lightTextMuted = Color(0xFF64748B);     // Slate-500 (WCAG AA compliant, readable)
 
   static const Color lightAccentIndigo = Color(0xFF4F46E5); // Indigo-600
   static const Color lightAccentBlue = Color(0xFF2563EB);   // Blue-600
   static const Color lightAccentCyan = Color(0xFF0284C7);   // Sky-600
   static const Color lightAccentGreen = Color(0xFF059669);  // Emerald-600
-  static const Color lightAccentRed = Color(0xFFE11D48);    // Rose-600
+  static const Color lightAccentRed = Color(0xFFDC2626);    // Red-600
   static const Color lightAccentAmber = Color(0xFFD97706);  // Amber-600
   static const Color lightAccentPurple = Color(0xFF7C3AED); // Violet-600
 
@@ -91,15 +91,47 @@ class AppTheme {
   static Color get accentAmber => isDarkMode ? darkAccentAmber : lightAccentAmber;
   static Color get accentPurple => isDarkMode ? darkAccentPurple : lightAccentPurple;
 
-  // Semantic Aliases
+  // Semantic Aliases & Interactive Controls
   static Color get background => bgDark;
   static Color get card => cardDark;
   static Color get border => borderDark;
   static Color get text => textPrimary;
   static Color get navSelectedBg => isDarkMode ? const Color(0xFF1E2330) : const Color(0xFFEEF2FF);
   static Color get navSelectedBorder => isDarkMode ? const Color(0xFF2E374A) : const Color(0xFFC7D2FE);
+  static Color get selectionBg => isDarkMode ? const Color(0xFF1E2330) : const Color(0xFFEEF2FF);
+  static Color get selectionBorder => isDarkMode ? const Color(0xFF2E374A) : const Color(0xFFC7D2FE);
   static Color get logoBg => isDarkMode ? const Color(0xFF1E2330) : const Color(0xFFEEF2FF);
   static Color get logoBorder => isDarkMode ? const Color(0xFF2E374A) : const Color(0xFFC7D2FE);
+
+  // Terminal & Console Log Palette
+  static Color get terminalBg => isDarkMode ? const Color(0xFF090B0F) : const Color(0xFFF8FAFC);
+  static Color get terminalBorder => isDarkMode ? const Color(0xFF232836) : const Color(0xFFE2E8F0);
+  static Color get terminalText => isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF1E293B);
+
+  // Adaptive Tag / Category Colors (High Contrast in both Light & Dark modes)
+  static Color categoryColor(String category) {
+    if (isDarkMode) {
+      switch (category) {
+        case 'Database': return const Color(0xFF38BDF8);
+        case 'Web & API': return const Color(0xFF2DD4BF);
+        case 'Media & File': return const Color(0xFFFBBF24);
+        case 'Security & Crypto': return const Color(0xFF4ADE80);
+        case 'Framework & Text': return const Color(0xFFA78BFA);
+        case 'Performance & Debug': return const Color(0xFFFB923C);
+        default: return darkAccentIndigo;
+      }
+    } else {
+      switch (category) {
+        case 'Database': return const Color(0xFF0284C7); // Sky-600
+        case 'Web & API': return const Color(0xFF0D9488); // Teal-600
+        case 'Media & File': return const Color(0xFFD97706); // Amber-600
+        case 'Security & Crypto': return const Color(0xFF059669); // Emerald-600
+        case 'Framework & Text': return const Color(0xFF7C3AED); // Purple-600
+        case 'Performance & Debug': return const Color(0xFFEA580C); // Orange-600
+        default: return lightAccentIndigo;
+      }
+    }
+  }
 
   // Monospace Font Family
   static const String monoFont = 'Consolas';
@@ -131,6 +163,17 @@ class AppTheme {
         surface: lightCard,
         error: lightAccentRed,
       ),
+      textTheme: const TextTheme(
+        headlineSmall: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
+        titleMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(color: lightTextPrimary),
+        bodyMedium: TextStyle(color: lightTextPrimary),
+        bodySmall: TextStyle(color: lightTextSecondary),
+        labelLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600),
+        labelMedium: TextStyle(color: lightTextSecondary),
+        labelSmall: TextStyle(color: lightTextMuted),
+      ),
       cardTheme: CardThemeData(
         color: lightCard,
         elevation: 0,
@@ -138,6 +181,23 @@ class AppTheme {
           borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: lightBorder, width: 1),
         ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: lightCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: lightBorder, width: 1),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: lightCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: lightBorder, width: 1),
+        ),
+        textStyle: const TextStyle(color: lightTextPrimary, fontSize: 13),
       ),
       dividerTheme: const DividerThemeData(
         color: lightBorder,

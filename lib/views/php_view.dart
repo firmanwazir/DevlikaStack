@@ -341,12 +341,12 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: const Color(0xFF1E2330),
+                    color: AppTheme.selectionBg,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: const Color(0xFF2E374A)),
+                    border: Border.all(color: AppTheme.selectionBorder),
                   ),
-                  labelColor: AppTheme.textPrimary,
-                  unselectedLabelColor: AppTheme.textMuted,
+                  labelColor: AppTheme.accentIndigo,
+                  unselectedLabelColor: AppTheme.textSecondary,
                   labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
                   tabs: const [
                     Tab(
@@ -586,7 +586,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                                     decoration: BoxDecoration(
                                       color: AppTheme.surfaceSubtle,
                                       borderRadius: BorderRadius.circular(3),
-                                      border: Border.all(color: Colors.white12),
+                                      border: Border.all(color: AppTheme.borderDark),
                                     ),
                                     child: Text(
                                       releaseDate != null ? 'php.net ($releaseDate)' : 'Resmi php.net',
@@ -711,22 +711,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
   }
 
   Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Database':
-        return const Color(0xFF38BDF8); // Sky blue
-      case 'Web & API':
-        return const Color(0xFF2DD4BF); // Teal
-      case 'Media & File':
-        return const Color(0xFFFBBF24); // Amber
-      case 'Security & Crypto':
-        return const Color(0xFF4ADE80); // Emerald green
-      case 'Framework & Text':
-        return const Color(0xFFA78BFA); // Purple
-      case 'Performance & Debug':
-        return const Color(0xFFFB923C); // Orange
-      default:
-        return AppTheme.accentIndigo;
-    }
+    return AppTheme.categoryColor(category);
   }
 
   Future<void> _toggleExtension(PhpExtensionModel ext, bool newValue, String versionKey) async {
@@ -1050,21 +1035,21 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                   _buildPresetButton(
                     label: 'Laravel',
                     icon: Icons.rocket_launch_rounded,
-                    color: const Color(0xFFF43F5E),
+                    color: AppTheme.accentRed,
                     onPressed: () => _applyPreset('laravel', 'Laravel'),
                   ),
                   const SizedBox(width: 8),
                   _buildPresetButton(
                     label: 'WordPress',
                     icon: Icons.language_rounded,
-                    color: const Color(0xFF38BDF8),
+                    color: AppTheme.accentCyan,
                     onPressed: () => _applyPreset('wordpress', 'WordPress'),
                   ),
                   const SizedBox(width: 8),
                   _buildPresetButton(
                     label: 'Minimal',
                     icon: Icons.bolt_rounded,
-                    color: const Color(0xFFFBBF24),
+                    color: AppTheme.accentAmber,
                     onPressed: () => _applyPreset('minimal', 'Minimal'),
                   ),
                   const Spacer(),
@@ -1308,7 +1293,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                 runSpacing: 6,
                 children: categories.map((cat) {
                   final isSelected = _selectedCategory == cat;
-                  final catColor = cat == 'Semua' ? const Color(0xFF6366F1) : _getCategoryColor(cat);
+                  final catColor = cat == 'Semua' ? AppTheme.accentIndigo : _getCategoryColor(cat);
                   final catIcon = cat == 'Semua' ? Icons.apps_rounded : _getCategoryIcon(cat);
 
                   final totalCount = cat == 'Semua'
@@ -1541,15 +1526,15 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceSubtle,
                           borderRadius: BorderRadius.circular(3),
-                          border: Border.all(color: const Color(0xFFF97316).withOpacity(0.4)),
+                          border: Border.all(color: AppTheme.accentAmber.withOpacity(0.4)),
                         ),
-                        child: const Text(
+                        child: Text(
                           'ZEND',
                           style: TextStyle(
                             fontFamily: AppTheme.monoFont,
                             fontSize: 9.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFFF97316),
+                            color: AppTheme.accentAmber,
                           ),
                         ),
                       ),
@@ -1862,7 +1847,7 @@ class _PhpViewState extends State<PhpView> with SingleTickerProviderStateMixin {
                           : const Icon(Icons.check_rounded, size: 15, color: Colors.white),
                       label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Konfigurasi (${current.name})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF047857),
+                        backgroundColor: AppTheme.accentGreen,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         elevation: 0,

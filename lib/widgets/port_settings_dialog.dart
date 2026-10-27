@@ -344,7 +344,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF1E2330) : AppTheme.surfaceSubtle,
+                        color: isSelected ? AppTheme.selectionBg : AppTheme.surfaceSubtle,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
                           color: isSelected ? AppTheme.accentIndigo : AppTheme.borderDark,
@@ -436,7 +436,7 @@ class _PortSettingsDialogState extends State<PortSettingsDialog> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF1E2330) : AppTheme.surfaceSubtle,
+                      color: isSelected ? AppTheme.selectionBg : AppTheme.surfaceSubtle,
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
                         color: isSelected ? AppTheme.accentIndigo : AppTheme.borderDark,

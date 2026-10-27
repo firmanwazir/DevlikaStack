@@ -134,9 +134,9 @@ class _LogsViewState extends State<LogsView> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF090B0F),
+                    color: AppTheme.terminalBg,
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderDark),
+                    border: Border.all(color: AppTheme.terminalBorder),
                   ),
                   child: controller.logs.isEmpty
                       ? Center(
@@ -150,7 +150,7 @@ class _LogsViewState extends State<LogsView> {
                           itemCount: controller.logs.length,
                           itemBuilder: (context, index) {
                             final log = controller.logs[index];
-                            Color textColor = const Color(0xFFCBD5E1);
+                            Color textColor = AppTheme.terminalText;
                             if (log.contains('Error') || log.contains('Gagal') || log.contains('ERR')) {
                               textColor = AppTheme.accentRed;
                             } else if (log.contains('Berhasil') || log.contains('Running') || log.contains('Online')) {

@@ -335,13 +335,13 @@ class _WebServerViewState extends State<WebServerView> {
                             icon: Icon(
                               ConfigService.instance.isSslEnabled ? Icons.lock_rounded : Icons.lock_open_rounded,
                               size: 14,
-                              color: ConfigService.instance.isSslEnabled ? const Color(0xFF10B981) : AppTheme.textSecondary,
+                              color: ConfigService.instance.isSslEnabled ? AppTheme.accentGreen : AppTheme.textSecondary,
                             ),
                             label: Text(
                               ConfigService.instance.isSslEnabled ? 'SSL: ON' : 'SSL: OFF',
                               style: TextStyle(
                                 fontSize: 11.5,
-                                color: ConfigService.instance.isSslEnabled ? const Color(0xFF10B981) : AppTheme.textSecondary,
+                                color: ConfigService.instance.isSslEnabled ? AppTheme.accentGreen : AppTheme.textSecondary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -349,7 +349,7 @@ class _WebServerViewState extends State<WebServerView> {
                               foregroundColor: AppTheme.textPrimary,
                               backgroundColor: AppTheme.surfaceSubtle,
                               side: BorderSide(
-                                color: ConfigService.instance.isSslEnabled ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
+                                color: ConfigService.instance.isSslEnabled ? AppTheme.accentGreen.withOpacity(0.5) : AppTheme.borderDark,
                               ),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                             ),
@@ -387,7 +387,7 @@ class _WebServerViewState extends State<WebServerView> {
                                   : Icon(
                                       _isSslTrusted ? Icons.verified_rounded : Icons.shield_outlined,
                                       size: 14,
-                                      color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
+                                      color: _isSslTrusted ? AppTheme.accentGreen : AppTheme.textPrimary,
                                     ),
                               label: Text(
                                 _isTrustingSsl
@@ -395,7 +395,7 @@ class _WebServerViewState extends State<WebServerView> {
                                     : (_isSslTrusted ? 'SSL Trusted' : 'Trust SSL'),
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  color: _isSslTrusted ? const Color(0xFF10B981) : AppTheme.textPrimary,
+                                  color: _isSslTrusted ? AppTheme.accentGreen : AppTheme.textPrimary,
                                   fontWeight: _isSslTrusted ? FontWeight.w600 : FontWeight.normal,
                                 ),
                               ),
@@ -403,7 +403,7 @@ class _WebServerViewState extends State<WebServerView> {
                                 foregroundColor: AppTheme.textPrimary,
                                 backgroundColor: AppTheme.surfaceSubtle,
                                 side: BorderSide(
-                                  color: _isSslTrusted ? const Color(0xFF059669).withOpacity(0.5) : AppTheme.borderDark,
+                                  color: _isSslTrusted ? AppTheme.accentGreen.withOpacity(0.5) : AppTheme.borderDark,
                                 ),
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                               ),
@@ -435,7 +435,7 @@ class _WebServerViewState extends State<WebServerView> {
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isRunning ? const Color(0xFFBE123C) : const Color(0xFF047857),
+                            backgroundColor: isRunning ? AppTheme.accentRed : AppTheme.accentGreen,
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             elevation: 0,
@@ -780,10 +780,10 @@ class _WebServerViewState extends State<WebServerView> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E2330) : AppTheme.surfaceSubtle,
+          color: isSelected ? AppTheme.selectionBg : AppTheme.surfaceSubtle,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2E374A) : AppTheme.borderDark,
+            color: isSelected ? AppTheme.selectionBorder : AppTheme.borderDark,
             width: isSelected ? 1.2 : 1,
           ),
         ),

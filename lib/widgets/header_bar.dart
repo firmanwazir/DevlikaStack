@@ -169,11 +169,11 @@ class HeaderBar extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: controller.isStoppingAll || (isAllRunning && !controller.isStartingAll)
-                      ? const Color(0xFFBE123C)
-                      : const Color(0xFF047857),
+                      ? AppTheme.accentRed
+                      : AppTheme.accentGreen,
                   disabledBackgroundColor: controller.isStoppingAll || isAllRunning
-                      ? const Color(0xFFBE123C).withOpacity(0.7)
-                      : const Color(0xFF047857).withOpacity(0.7),
+                      ? AppTheme.accentRed.withOpacity(0.7)
+                      : AppTheme.accentGreen.withOpacity(0.7),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   elevation: 0,
