@@ -781,6 +781,26 @@ class HttpServerService {
       return;
     }
 
+    // Fast 404 for missing static assets (.css, .js, .png, etc.)
+    // Never fall through to PHP index.php for missing static assets.
+    // Routing missing CSS/JS to index.php causes PHP to output HTML, triggering strict MIME check
+    // errors in browsers ("Refused to apply style because MIME type is text/html").
+    final targetExt = p.extension(targetPath).toLowerCase();
+    final rawExt = p.extension(rawPath).toLowerCase();
+    if (_staticCacheExts.contains(targetExt) || _staticCacheExts.contains(rawExt)) {
+      final extToUse = targetExt.isNotEmpty ? targetExt : rawExt;
+      request.response.statusCode = HttpStatus.notFound;
+      request.response.headers.contentType = _getContentType(extToUse);
+      request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, must-revalidate');
+      if (extToUse == '.css' || extToUse == '.js' || extToUse == '.mjs') {
+        request.response.write('/* 404 Not Found: ${request.uri.path} */');
+      } else {
+        request.response.write(_errorPage(404, 'File Tidak Ditemukan', 'Berkas static <code>${request.uri.path}</code> tidak ditemukan di server.'));
+      }
+      await request.response.close();
+      return;
+    }
+
     // 3. URL Rewrite fallback to front controller index.php if available (CRITICAL FOR LARAVEL & CODEIGNITER)
     final rootIndexPhp = p.join(effectiveDocRoot, 'index.php');
     if (_cachedFileExists(rootIndexPhp)) {
@@ -1193,8 +1213,6 @@ class HttpServerService {
       stat = file.statSync();
       lastModified = stat.modified;
       request.response.headers.set(HttpHeaders.lastModifiedHeader, HttpDate.format(lastModified));
-      request.response.contentLength = stat.size;
-
       // Cache-Control for static assets in local development: use no-cache with ETag so browser checks for updates
       // instead of locking into permanent disk cache (public, immutable)
       if (_staticCacheExts.contains(ext)) {
@@ -1207,7 +1225,8 @@ class HttpServerService {
       final ifNoneMatch = request.headers.value('if-none-match');
       if (ifNoneMatch != null) {
         final expectedEtag = '"${stat.size}-${lastModified.millisecondsSinceEpoch}"';
-        if (ifNoneMatch == expectedEtag) {
+        final cleanEtag = ifNoneMatch.replaceAll('W/', '').trim();
+        if (cleanEtag == expectedEtag || cleanEtag.contains(expectedEtag) || cleanEtag == '*') {
           request.response.statusCode = HttpStatus.notModified;
           await request.response.close();
           return;
@@ -1270,6 +1289,10 @@ class HttpServerService {
         request.response.headers.set(k, v);
       } catch (_) {}
     });
+
+    if (stat != null) {
+      request.response.contentLength = stat.size;
+    }
 
     if (request.method == 'HEAD') {
       await request.response.close();
