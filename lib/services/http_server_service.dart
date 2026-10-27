@@ -685,6 +685,7 @@ class HttpServerService {
       request.response.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store, must-revalidate, max-age=0');
       request.response.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
       request.response.headers.set(HttpHeaders.expiresHeader, '0');
+      request.response.headers.set('Clear-Site-Data', '"cache"');
       htaccess.responseHeaders.forEach((k, v) {
         try {
           request.response.headers.set(k, v);

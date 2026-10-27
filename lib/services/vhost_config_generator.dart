@@ -316,6 +316,9 @@ server {
         fastcgi_read_timeout 3600;
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
+        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
     }
 
     # High-speed static caching (Flash delivery)
@@ -357,6 +360,9 @@ server {
         fastcgi_read_timeout 3600;
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
+        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
     }
 
     # High-speed static caching (Flash delivery)
