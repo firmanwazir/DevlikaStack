@@ -36,6 +36,7 @@ class _LogsViewState extends State<LogsView> {
   void _scrollToBottom() {
     if (!_autoScrollEnabled) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }

@@ -24,6 +24,9 @@ class PhpManager {
       return await action();
     } finally {
       completer.complete();
+      if (_locks[key] == completer.future) {
+        _locks.remove(key);
+      }
     }
   }
 

@@ -412,6 +412,11 @@ class HtaccessService {
   }
 
   (bool, Match?) _evalSingleCondition(_RewriteCond cond, String value, String docRoot) {
+    _checkFsCacheTtl();
+    if (_fsExistsCache.length > 2000) {
+      _fsExistsCache.clear();
+    }
+
     if (cond.isFileTest) {
       final path = _resolveToDocRoot(docRoot, value);
       bool exists = false;

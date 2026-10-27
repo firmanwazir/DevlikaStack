@@ -36,10 +36,13 @@ class PortCheckerService {
     ServerSocket? socket;
     try {
       socket = await ServerSocket.bind(InternetAddress.anyIPv4, port);
-      await socket.close();
       return PortStatus(port: port, isFree: true);
     } catch (_) {
       // Port is occupied
+    } finally {
+      try {
+        await socket?.close();
+      } catch (_) {}
     }
 
     // 2. Identify process on Windows

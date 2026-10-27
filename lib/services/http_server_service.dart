@@ -51,6 +51,9 @@ class HttpServerService {
 
   bool _cachedFileExists(String path) {
     if (_fileExistsCache.containsKey(path)) return _fileExistsCache[path]!;
+    if (_fileExistsCache.length > 2000) {
+      _fileExistsCache.clear();
+    }
     try {
       final exists = File(path).existsSync();
       _fileExistsCache[path] = exists;
@@ -63,6 +66,9 @@ class HttpServerService {
 
   bool _cachedDirExists(String path) {
     if (_dirExistsCache.containsKey(path)) return _dirExistsCache[path]!;
+    if (_dirExistsCache.length > 2000) {
+      _dirExistsCache.clear();
+    }
     try {
       final exists = Directory(path).existsSync();
       _dirExistsCache[path] = exists;
@@ -169,6 +175,17 @@ class HttpServerService {
     // Stop FastCGI daemon first
     await _stopFastCgiDaemon();
 
+    for (var timer in _fastCgiDebounceTimers.values) {
+      timer?.cancel();
+    }
+    _fastCgiDebounceTimers.clear();
+    for (var list in _fastCgiPendingCompleters.values) {
+      for (var c in list) {
+        if (!c.isCompleted) c.complete();
+      }
+    }
+    _fastCgiPendingCompleters.clear();
+
     if (_server != null) {
       await _server!.close(force: true);
       _server = null;
@@ -185,17 +202,8 @@ class HttpServerService {
       await _secureServerIpv6!.close(force: true);
       _secureServerIpv6 = null;
     }
-    _staticFileCache.clear();
     _isRunning = false;
-    // Clear all caches on stop
-    _fileExistsCache.clear();
-    _dirExistsCache.clear();
-    _phpModelCache.clear();
-    _phpExeCache.clear();
-    _phpIniExistsCache.clear();
-    _extDirExistsCache.clear();
-    _opcacheDirExistsCache.clear();
-    _phpBaseArgsCache.clear();
+    clearDocRootCache();
     _logController.add('[Web Server] Berhenti.');
   }
 
@@ -383,30 +391,41 @@ class HttpServerService {
 
     // Clean up any orphaned php-cgi processes on all known ports
     if (Platform.isWindows) {
-      const ports = '9000,9074,9081,9082,9083,9123';
+      final allPorts = ['default', '7.4', '8.1', '8.2', '8.3', '8.4', '8.5']
+          .expand((k) => VhostConfigGenerator.getFastCgiPorts(k))
+          .toSet()
+          .join(',');
       try {
         await Process.run('powershell', [
           '-NoProfile', '-Command',
-          'Get-NetTCPConnection -LocalPort @($ports) -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }'
+          'Get-NetTCPConnection -LocalPort @($allPorts) -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }'
         ]);
       } catch (_) {}
     }
   }
 
   final Map<String, Timer?> _fastCgiDebounceTimers = {};
+  final Map<String, List<Completer<void>>> _fastCgiPendingCompleters = {};
   final Map<String, Completer<void>?> _fastCgiRestartLocks = {};
 
   /// Hot-reloads the FastCGI worker pool for a specific PHP version (e.g. after editing php.ini or toggling extensions)
   Future<void> restartFastCgiPool(String versionKey, {bool debounce = true}) async {
     if (debounce) {
       final completer = Completer<void>();
+      _fastCgiPendingCompleters.putIfAbsent(versionKey, () => []).add(completer);
       _fastCgiDebounceTimers[versionKey]?.cancel();
       _fastCgiDebounceTimers[versionKey] = Timer(const Duration(milliseconds: 250), () async {
+        final completers = List<Completer<void>>.from(_fastCgiPendingCompleters[versionKey] ?? []);
+        _fastCgiPendingCompleters[versionKey]?.clear();
         try {
           await _executeRestartFastCgiPool(versionKey);
-          if (!completer.isCompleted) completer.complete();
+          for (final c in completers) {
+            if (!c.isCompleted) c.complete();
+          }
         } catch (e) {
-          if (!completer.isCompleted) completer.completeError(e);
+          for (final c in completers) {
+            if (!c.isCompleted) c.completeError(e);
+          }
         }
       });
       return completer.future;
@@ -1089,7 +1108,7 @@ class HttpServerService {
         } catch (_) {}
       });
       response.add(output);
-      response.close();
+      response.close().catchError((_) {});
       return;
     }
 
@@ -1125,7 +1144,7 @@ class HttpServerService {
     });
 
     response.add(bodyBytes);
-    response.close();
+    response.close().catchError((_) {});
   }
 
   // Static cache extension set for fast lookup
@@ -1369,10 +1388,16 @@ class HttpServerService {
 
       await streamedResponse.stream.pipe(request.response);
     } catch (e) {
-      request.response.statusCode = 502;
-      request.response.headers.contentType = ContentType.html;
-      request.response.write(_errorPage(502, 'Bad Gateway', 'Aplikasi pada port <code>$targetPort</code> tidak merespons.<br><small>$e</small>'));
-      await request.response.close();
+      try {
+        request.response.statusCode = 502;
+        request.response.headers.contentType = ContentType.html;
+        request.response.write(_errorPage(502, 'Bad Gateway', 'Aplikasi pada port <code>$targetPort</code> tidak merespons.<br><small>$e</small>'));
+        await request.response.close();
+      } catch (_) {
+        try {
+          await request.response.close();
+        } catch (_) {}
+      }
     }
   }
 

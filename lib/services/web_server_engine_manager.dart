@@ -168,6 +168,8 @@ class WebServerEngineManager extends ChangeNotifier {
         ['-p', config.nginxDir, '-c', 'conf/nginx.conf'],
         runInShell: false,
       );
+      _nginxProcess?.stdout.listen((_) {}, onError: (_) {});
+      _nginxProcess?.stderr.listen((_) {}, onError: (_) {});
 
       // Verify HTTP port is listening
       final httpPort = config.httpPort;
@@ -234,6 +236,8 @@ class WebServerEngineManager extends ChangeNotifier {
         ['-d', config.apacheDir, '-f', 'conf/httpd.conf'],
         runInShell: false,
       );
+      _apacheProcess?.stdout.listen((_) {}, onError: (_) {});
+      _apacheProcess?.stderr.listen((_) {}, onError: (_) {});
 
       final httpPort = config.httpPort;
       for (int i = 0; i < 20; i++) {
@@ -311,6 +315,8 @@ class WebServerEngineManager extends ChangeNotifier {
               'PATH': '${defaultModel.dirPath};$defaultExtDir;${Platform.environment['PATH'] ?? ''}',
             },
           );
+          proc.stdout.listen((_) {}, onError: (_) {});
+          proc.stderr.listen((_) {}, onError: (_) {});
           _fastCgiProcesses.add(proc);
           for (int i = 0; i < 15; i++) {
             await Future.delayed(const Duration(milliseconds: 100));
@@ -353,6 +359,8 @@ class WebServerEngineManager extends ChangeNotifier {
                 'PATH': '${phpModel.dirPath};$extDir;${Platform.environment['PATH'] ?? ''}',
               },
             );
+            proc.stdout.listen((_) {}, onError: (_) {});
+            proc.stderr.listen((_) {}, onError: (_) {});
             _fastCgiProcesses.add(proc);
             for (int i = 0; i < 15; i++) {
               await Future.delayed(const Duration(milliseconds: 100));

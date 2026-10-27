@@ -45,6 +45,7 @@ class FastCgiClient {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     Socket? socket;
+    StreamSubscription<Uint8List>? sub;
     try {
       socket = await Socket.connect(host, port,
           timeout: const Duration(milliseconds: 5000));
@@ -97,7 +98,6 @@ class FastCgiClient {
       final pendingBytes = BytesBuilder(copy: false);
 
       final completer = Completer<void>();
-      late final StreamSubscription<Uint8List> sub;
       sub = socket.listen(
         (data) {
           pendingBytes.add(data);
@@ -147,9 +147,6 @@ class FastCgiClient {
       );
 
       await completer.future.timeout(timeout);
-      try {
-        await sub.cancel();
-      } catch (_) {}
 
       return FastCgiResponse(
         stdout: stdoutBuilder.takeBytes(),
@@ -164,6 +161,9 @@ class FastCgiClient {
         error: e.toString(),
       );
     } finally {
+      try {
+        await sub?.cancel();
+      } catch (_) {}
       try {
         await socket?.flush();
         await socket?.close();

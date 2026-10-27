@@ -39,6 +39,7 @@ class _TunnelViewState extends State<TunnelView> {
           if (_logs.length > 500) _logs.removeRange(0, _logs.length - 500);
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
           if (_logScrollController.hasClients) {
             _logScrollController.animateTo(
               _logScrollController.position.maxScrollExtent,
